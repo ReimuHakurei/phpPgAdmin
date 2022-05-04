@@ -229,8 +229,10 @@ class Postgres extends ADODB_base {
 	 * @param $data The bytea data
 	 * @return Data formatted for on-screen display
 	 */
-	function escapeBytea($data) {
-		return htmlentities($data, ENT_QUOTES, 'UTF-8');
+	function escapeBytea($input) {
+		global $data;
+
+		return htmlentities($data->conn->BlobEncode($input), ENT_QUOTES, 'UTF-8');
 	}
 
 	/**
@@ -2560,28 +2562,29 @@ class Postgres extends ADODB_base {
 					}
 					else $sql .= " AND \"{$k}\"='{$v}'";
 				}
-		}
+			}
 
 			// Begin transaction.  We do this so that we can ensure only one row is
 			// edited
 			$status = $this->beginTransaction();
-		if ($status != 0) {
-			$this->rollbackTransaction();
+			if ($status != 0) {
+				$this->rollbackTransaction();
 				return -1;
-		}
+			}
 
-	   	$status = $this->execute($sql);
+			$status = $this->execute($sql);
+
 			if ($status != 0) { // update failed
-			$this->rollbackTransaction();
+				$this->rollbackTransaction();
 				return -1;
 			} elseif ($this->conn->Affected_Rows() != 1) { // more than one row could be updated
 				$this->rollbackTransaction();
 				return -2;
-		}
+			}
 
 			// End transaction
-		return $this->endTransaction();
-	}
+			return $this->endTransaction();
+		}
 	}
 
 	/**

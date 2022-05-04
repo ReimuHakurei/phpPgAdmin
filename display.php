@@ -29,9 +29,9 @@
 		global $lang;
 
 		if (is_array($_REQUEST['key']))
-           $key = $_REQUEST['key'];
-        else
-           $key = unserialize(urldecode($_REQUEST['key']));
+			$key = $_REQUEST['key'];
+		else
+			$key = unserialize(urldecode($_REQUEST['key']));
 
 		if ($confirm) {
 			$misc->printTrail($_REQUEST['subject']);
@@ -624,11 +624,23 @@
 					$keys_array = array();
 					$has_nulls = false;
 					foreach ($key as $v) {
+						$finfo = $rs->fieldTypesArray();
+
 						if ($rs->fields[$v] === null) {
 							$has_nulls = true;
 							break;
 						}
-						$keys_array["key[{$v}]"] = $rs->fields[$v];
+
+						foreach ($finfo as $field) {
+							if ($field->name === $v) {
+								if ($field->type === 'bytea') {
+									$keys_array["key[{$v}]"] = $data->conn->BlobEncode($rs->fields[$v]);
+								} else {
+									$keys_array["key[{$v}]"] = $rs->fields[$v];
+								}
+
+							}
+						}
 					}
 					if ($has_nulls) {
 						echo "<td colspan=\"{$colspan}\">&nbsp;</td>\n";
