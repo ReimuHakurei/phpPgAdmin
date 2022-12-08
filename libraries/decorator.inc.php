@@ -91,6 +91,17 @@ function value_url(&$var, &$fields) {
 
 class Decorator
 {
+	var $v; 
+	var $f; 
+	var $m; 
+	var $fn; 
+	var $p; 
+	var $e; 
+	var $d; 
+	var $c;
+	var $q; 
+	var $s; 
+	var $b; 
 	function __construct($value) {
 		$this->v = $value;
 	}
