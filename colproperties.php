@@ -75,7 +75,9 @@
 					$_REQUEST['default'] = $_REQUEST['olddefault'] = $column->fields['adsrc'];
 					if ($column->fields['attnotnull']) $_REQUEST['notnull'] = 'YES';
 					$_REQUEST['comment'] = $column->fields['comment'];
-				}				
+				}else{
+					$_REQUEST['default'] ='';
+				}		
 
 				// Column name
 				echo "<tr><td><input name=\"field\" size=\"16\" maxlength=\"{$data->_maxNameLen}\" value=\"",
@@ -117,9 +119,9 @@
 				
 				echo "<td><input type=\"checkbox\" name=\"notnull\"", (isset($_REQUEST['notnull'])) ? ' checked="checked"' : '', " /></td>\n";
 				echo "<td><input name=\"default\" size=\"20\" value=\"", 
-					htmlspecialchars($_REQUEST['default']), "\" /></td>\n";
+					htmlspecialchars($_REQUEST['default'].''), "\" /></td>\n";
 				echo "<td><input name=\"comment\" size=\"40\" value=\"", 
-					htmlspecialchars($_REQUEST['comment']), "\" /></td></tr>\n";
+					htmlspecialchars($_REQUEST['comment'].''), "\" /></td></tr>\n";
 				echo "</table>\n";
 				echo "<p><input type=\"hidden\" name=\"action\" value=\"properties\" />\n";
 				echo "<input type=\"hidden\" name=\"stage\" value=\"2\" />\n";
