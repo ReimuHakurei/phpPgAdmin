@@ -1,12 +1,13 @@
 {
     "name": "phppgadmin/phppgadmin",
     "description": "phpPgAdmin is a web-based administration tool for PostgreSQL. It is perfect for PostgreSQL DBAs, newbies, and hosting services.",
-    "type": "Application",
+    "type": "application",
     "license": "GPL-2.0+",
     "require": {
-        "php": ">=7.1",
+        "php": ">=7.4",
 		"ext-pgsql": "*",
-        "ext-mbstring": "*"
+        "ext-mbstring": "*",
+        "adodb/adodb-php": "^5.22"
     },
     "minimum-stability": "stable",
     "autoload": {
