@@ -591,31 +591,31 @@ function syntax_highlight($text, $language)
 {
     if ($language == "Plain Text") return $text;
 
-    define("normal_text",   1, true);
-    define("dq_literal",    2, true);
-    define("dq_escape",     3, true);
-    define("sq_literal",    4, true);
-    define("sq_escape",     5, true);
-    define("slash_begin",   6, true);
-    define("star_comment",  7, true);
-    define("star_end",      8, true);
-    define("line_comment",  9, true);
-    define("html_entity",  10, true);
-    define("lc_escape",    11, true);
-    define("block_comment",12, true);
-    define("paren_begin",  13, true);
-    define("dash_begin",   14, true);
-    define("bt_literal",   15, true);
-    define("bt_escape",    16, true);
-    define("xml_tag_begin",17, true);
-    define("xml_tag",      18, true);
-    define("xml_pi",       19, true);
-    define("sch_normal",   20, true);
-    define("sch_stresc",    21, true);
-    define("sch_idexpr",   22, true);
-    define("sch_numlit",   23, true);
-    define("sch_chrlit",   24, true);
-    define("sch_strlit",   25, true);
+    define("normal_text",   1);
+    define("dq_literal",    2);
+    define("dq_escape",     3);
+    define("sq_literal",    4);
+    define("sq_escape",     5);
+    define("slash_begin",   6);
+    define("star_comment",  7);
+    define("star_end",      8);
+    define("line_comment",  9);
+    define("html_entity",  10);
+    define("lc_escape",    11);
+    define("block_comment",12);
+    define("paren_begin",  13);
+    define("dash_begin",   14);
+    define("bt_literal",   15);
+    define("bt_escape",    16);
+    define("xml_tag_begin",17);
+    define("xml_tag",      18);
+    define("xml_pi",       19);
+    define("sch_normal",   20);
+    define("sch_stresc",   21);
+    define("sch_idexpr",   22);
+    define("sch_numlit",   23);
+    define("sch_chrlit",   24);
+    define("sch_strlit",   25);
 
     $initial_state["Scheme"] = sch_normal;
 
