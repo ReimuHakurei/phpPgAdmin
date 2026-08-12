@@ -2377,7 +2377,7 @@
 				) {
 					$server_id = $info['host'].':'.$info['port'].':'.$info['sslmode'];
 
-					if (isset($logins[$server_id])) $srvs[$server_id] = $logins[$server_id];
+					if (isset($logins[$server_id])) $srvs[$server_id] = array_merge($info, $logins[$server_id]);
 					else $srvs[$server_id] = $info;
 
 					$srvs[$server_id]['id'] = $server_id;
@@ -2404,10 +2404,9 @@
 				}
 			}
 
-			function _cmp_desc($a, $b) {
+			uasort($srvs, function($a, $b) {
 				return strcmp($a['desc'], $b['desc']);
-			}
-			uasort($srvs, '_cmp_desc');
+			});
 
 			if ($recordset) {
 				include_once('./classes/ArrayRecordSet.php');
@@ -2429,23 +2428,32 @@
 			if ($server_id === null && isset($_REQUEST['server']))
 				$server_id = $_REQUEST['server'];
 
-			// Check for the server in the logged-in list
-			if (isset($_SESSION['webdbLogin'][$server_id]))
-				return $_SESSION['webdbLogin'][$server_id];
-
-			// Otherwise, look for it in the conf file
+			// Look for the server in the conf file
+			$server_info = null;
 			foreach($conf['servers'] as $idx => $info) {
 				if ($server_id == $info['host'].':'.$info['port'].':'.$info['sslmode']) {
-					// Automatically use shared credentials if available
-					if (!isset($info['username']) && isset($_SESSION['sharedUsername'])) {
-						$info['username'] = $_SESSION['sharedUsername'];
-						$info['password'] = $_SESSION['sharedPassword'];
-						$_reload_browser = true;
-						$this->setServerInfo(null, $info, $server_id);
-					}
-
-					return $info;
+					$server_info = $info;
+					break;
 				}
+			}
+
+			if (isset($_SESSION['webdbLogin'][$server_id])) {
+				if ($server_info === null)
+					return $_SESSION['webdbLogin'][$server_id];
+
+				return array_merge($server_info, $_SESSION['webdbLogin'][$server_id]);
+			}
+
+			if ($server_info !== null) {
+				// Automatically use shared credentials if available
+				if (!isset($server_info['username']) && isset($_SESSION['sharedUsername'])) {
+					$server_info['username'] = $_SESSION['sharedUsername'];
+					$server_info['password'] = $_SESSION['sharedPassword'];
+					$_reload_browser = true;
+					$this->setServerInfo(null, $server_info, $server_id);
+				}
+
+				return $server_info;
 			}
 
 			if ($server_id === null){
@@ -2671,4 +2679,3 @@
 			return $fksprops;
 		}
 	}
-?>
