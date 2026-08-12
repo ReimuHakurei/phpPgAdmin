@@ -467,7 +467,10 @@
 			}
 		} else {
 			$misc->printTitle($lang['strqueryresults']);
-			/*we comes from sql.php, $_SESSION['sqlquery'] has been set there */
+			/* We come either from sql.php, which has already set $_SESSION['sqlquery'],
+			 * or from the query form below, which posts back an edited query. */
+			if (isset($_POST['query']))
+				$_SESSION['sqlquery'] = $_POST['query'];
 			$type = 'QUERY';
 		}
 
@@ -505,6 +508,21 @@
 			$conf['max_rows'], $max_pages,
 			isset($fkey_information['pkey']) ? $fkey_information['pkey'] : null);
 
+		/* The requested page can be past the end of the result set, eg. when a new
+		 * query is submitted while browsing a later page of the previous one.  Fall
+		 * back to the last page instead of reporting no data at all. */
+		if ($rs === -3 && $max_pages >= 1
+				&& is_numeric($_REQUEST['page']) && $_REQUEST['page'] > $max_pages) {
+
+			$_REQUEST['page'] = (int)$max_pages;
+			$rs = $data->browseQuery($type,
+				isset($object) ? $object : null,
+				isset($_SESSION['sqlquery']) ? $_SESSION['sqlquery'] : null,
+				$_REQUEST['sortkey'], $_REQUEST['sortdir'], $_REQUEST['page'],
+				$conf['max_rows'], $max_pages,
+				isset($fkey_information['pkey']) ? $fkey_information['pkey'] : null);
+		}
+
 		// Build strings for GETs in array
 		$_gets = array(
 			'server' => $_REQUEST['server'],
@@ -525,10 +543,23 @@
 		$_gets['strings'] = $_REQUEST['strings'];
 
 		if ($save_history && is_object($rs) && ($type == 'QUERY')) //{
-			$misc->saveScriptHistory($_REQUEST['query']);
+			$misc->saveScriptHistory($_SESSION['sqlquery']);
 
-		echo '<form method="POST" action="'.$_SERVER['REQUEST_URI'].'"><textarea width="90%" name="query" rows="5" cols="100" resizable="true">';
-		if (isset($_REQUEST['query'])) {
+		/* The query form must carry the current context (server, database, schema,
+		 * ...) in its own fields: display.php can be reached through a POST with an
+		 * empty query string, eg. right after saving an edited row. */
+		echo '<form method="post" action="display.php">';
+		foreach ($_gets as $_k => $_v) {
+			if ($_k == 'query') continue;
+			echo "<input type=\"hidden\" name=\"", htmlspecialchars($_k), "\" value=\"", htmlspecialchars($_v), "\" />\n";
+		}
+		echo "<input type=\"hidden\" name=\"page\" value=\"", htmlspecialchars($_REQUEST['page']), "\" />\n";
+		echo '<textarea width="90%" name="query" rows="5" cols="100" resizable="true">';
+		/* Show the query that was actually executed.  For SELECT and QUERY types that
+		 * is the session copy, since a GET link may only carry a truncated one. */
+		if ($type != 'TABLE' && isset($_SESSION['sqlquery'])) {
+			$query = $_SESSION['sqlquery'];
+		} elseif (isset($_REQUEST['query'])) {
 			$query = $_REQUEST['query'];
 		} else {
 			$query = "SELECT * FROM ".$data->escapeIdentifier($_REQUEST['schema']);
