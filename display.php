@@ -11,8 +11,8 @@
 	 * $Id: display.php,v 1.68 2008/04/14 12:44:27 ioguix Exp $
 	 */
 
-	// Prevent timeouts on large exports (non-safe mode only)
-	if (!ini_get('safe_mode')) set_time_limit(0);
+	// Prevent timeouts on large exports
+	set_time_limit(0);
 
 	// Include application functions
 	include_once('./libraries/lib.inc.php');

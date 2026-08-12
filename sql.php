@@ -11,8 +11,8 @@
 
 	 global $lang;
 
-	// Prevent timeouts on large exports (non-safe mode only)
-	if (!ini_get('safe_mode')) set_time_limit(0);
+	// Prevent timeouts on large exports
+	set_time_limit(0);
 
 	// Include application functions
 	include_once('./libraries/lib.inc.php');
@@ -32,10 +32,10 @@
 			switch (pg_result_status($rs)) {
 				case PGSQL_TUPLES_OK:
 					// If rows returned, then display the results
-					$num_fields = pg_numfields($rs);
+					$num_fields = pg_num_fields($rs);
 					echo "<p><table>\n<tr>";
 					for ($k = 0; $k < $num_fields; $k++) {
-						echo "<th class=\"data\">", $misc->printVal(pg_fieldname($rs, $k)), "</th>";
+						echo "<th class=\"data\">", $misc->printVal(pg_field_name($rs, $k)), "</th>";
 					}
 		
 					$i = 0;
@@ -44,7 +44,7 @@
 						$id = (($i % 2) == 0 ? '1' : '2');
 						echo "<tr class=\"data{$id}\">\n";
 						foreach ($row as $k => $v) {
-							echo "<td style=\"white-space:nowrap;\">", $misc->printVal($v, pg_fieldtype($rs, $k), array('null' => true)), "</td>";
+							echo "<td style=\"white-space:nowrap;\">", $misc->printVal($v, pg_field_type($rs, $k), array('null' => true)), "</td>";
 						}							
 						echo "</tr>\n";
 						$row = pg_fetch_row($rs);

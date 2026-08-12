@@ -1816,24 +1816,28 @@
 		 */
 		function inisizeToBytes($strIniSize) {
 			// This function will take the string value of an ini 'size' parameter,
-			// and return a double (64-bit float) representing the number of bytes
-			// that the parameter represents. Or false if $strIniSize is unparsable.
+			// and return a float (64-bit) representing the number of bytes that
+			// the parameter represents. Or false if $strIniSize is unparsable.
+			// PHP's shorthand notation allows a single optional K, M or G suffix;
+			// a bare B suffix is also accepted here for backwards compatibility.
 			$a_IniParts = array();
 
 			if (!is_string($strIniSize))
 				return false;
 
-			if (!preg_match ('/^(\d+)([bkm]*)$/i', $strIniSize,$a_IniParts))
+			if (!preg_match('/^\s*(\d+)\s*([bkmg]?)\s*$/i', $strIniSize, $a_IniParts))
 				return false;
 
-			$nSize = (double) $a_IniParts[1];
+			$nSize = (float) $a_IniParts[1];
 			$strUnit = strtolower($a_IniParts[2]);
 
 			switch($strUnit) {
+				case 'g':
+					return ($nSize * (float) 1073741824);
 				case 'm':
-					return ($nSize * (double) 1048576);
+					return ($nSize * (float) 1048576);
 				case 'k':
-					return ($nSize * (double) 1024);
+					return ($nSize * (float) 1024);
 				case 'b':
 				default:
 					return $nSize;

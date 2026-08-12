@@ -6,8 +6,8 @@
 	 * $Id: dbexport.php,v 1.22 2007/03/25 03:15:09 xzilla Exp $
 	 */
 
-	// Prevent timeouts on large exports (non-safe mode only)
-	if (!ini_get('safe_mode')) set_time_limit(0);
+	// Prevent timeouts on large exports
+	set_time_limit(0);
 
 	// Include application functions
 	$_no_output = true;

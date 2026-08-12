@@ -21,7 +21,7 @@
 	// PostgreSQL and PHP minimum version
 	global $postgresqlMinVer;
 	$postgresqlMinVer = '7.4';
-	$phpMinVer = '7.2';
+	$phpMinVer = '7.4';
 
 	// Check the version of PHP
 	if (version_compare(phpversion(), $phpMinVer, '<'))
@@ -55,10 +55,6 @@
 	// is on (exit if we fail); otherwise, just start the session
 	$our_session_name = 'PPA_ID';
 	if (($conf['extra_session_security'] ?? true) === true) {
-		if (version_compare(phpversion(), '7.3', '<')) {
-			exit('phpPgAdmin cannot be fully secured while running under PHP versions before 7.3. Please upgrade PHP if possible. If you cannot upgrade, and you\'re willing to assume the risk of CSRF attacks, you can change the value of "extra_session_security" to false in your config.inc.php file.');
-		}
-
 		if (ini_get('session.auto_start')) {
 			// If session.auto_start is on, and the session doesn't have
 			// session.cookie_samesite set, destroy and re-create the session

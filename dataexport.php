@@ -16,8 +16,8 @@
 		'xml' => 'xml'
 	);
 
-	// Prevent timeouts on large exports (non-safe mode only)
-	if (!ini_get('safe_mode')) set_time_limit(0);
+	// Prevent timeouts on large exports
+	set_time_limit(0);
 
 	// if (!isset($_REQUEST['table']) && !isset($_REQUEST['query']))
 	// What must we do in this case? Maybe redirect to the homepage?
