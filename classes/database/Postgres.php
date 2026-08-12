@@ -6983,9 +6983,43 @@ class Postgres extends ADODB_base {
 	 * Helper function that computes encrypted PostgreSQL passwords
 	 * @param $username The username
 	 * @param $password The password
+	 * @return A password verifier suitable for ENCRYPTED PASSWORD
 	 */
 	function _encryptPassword($username, $password) {
-		return 'md5' . md5($password . $username);
+		return $this->_scramSha256Verifier($password);
+	}
+
+	/**
+	 * Builds a SCRAM-SHA-256 password verifier, as understood by PostgreSQL 10
+	 * and later.  The layout is the one described in RFC 5803:
+	 *
+	 *   SCRAM-SHA-256$<iterations>:<salt>$<StoredKey>:<ServerKey>
+	 *
+	 * with the salt and the two keys base64 encoded.  Unlike the older md5
+	 * scheme, the username is not part of the verifier, so renaming a role no
+	 * longer invalidates its password.
+	 *
+	 * @param $password The plaintext password
+	 * @param $iterations The PBKDF2 iteration count (PostgreSQL's default is 4096)
+	 * @param $salt The raw salt, or null to generate 16 secure random bytes
+	 * @return The verifier string
+	 * @throws Exception if no cryptographically secure salt is available
+	 */
+	function _scramSha256Verifier($password, $iterations = 4096, $salt = null) {
+		if ($salt === null) $salt = random_bytes(16);
+
+		// A length of 0 asks for the full digest width, ie. 32 bytes for SHA-256
+		$saltedpassword = hash_pbkdf2('sha256', (string)$password, $salt, $iterations, 0, true);
+
+		$clientkey = hash_hmac('sha256', 'Client Key', $saltedpassword, true);
+		$storedkey = hash('sha256', $clientkey, true);
+		$serverkey = hash_hmac('sha256', 'Server Key', $saltedpassword, true);
+
+		return sprintf('SCRAM-SHA-256$%d:%s$%s:%s',
+			$iterations,
+			base64_encode($salt),
+			base64_encode($storedkey),
+			base64_encode($serverkey));
 	}
 
 	// Tablespace functions
