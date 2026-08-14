@@ -488,12 +488,21 @@
 					$fields[$attrs->fields['attnum']] = $attrs->fields['attname'];
 					$attrs->fields['attnotnull'] = $data->phpBool($attrs->fields['attnotnull']);
 					// Set up default value if there isn't one already
-					if (!isset($_REQUEST['values'][$attrs->fields['attnum']]))
-						$_REQUEST['values'][$attrs->fields['attnum']] = $attrs->fields['adsrc'];
+					if (!isset($_REQUEST['values'][$attrs->fields['attnum']])) {
+						// Identity (PostgreSQL 10+) and generated (PostgreSQL 12+)
+						// columns cannot take an explicit value on insert: prefill
+						// them with the DEFAULT keyword, as nextval() is prefilled
+						// for serial columns
+						if (!empty($attrs->fields['attidentity']) || !empty($attrs->fields['attgenerated']))
+							$_REQUEST['values'][$attrs->fields['attnum']] = 'DEFAULT';
+						else
+							$_REQUEST['values'][$attrs->fields['attnum']] = $attrs->fields['adsrc'];
+					}
 					// Default format to 'VALUE' if there is no default,
 					// otherwise default to 'EXPRESSION'
 					if (!isset($_REQUEST['format'][$attrs->fields['attnum']]))
-						$_REQUEST['format'][$attrs->fields['attnum']] = ($attrs->fields['adsrc'] === null) ? 'VALUE' : 'EXPRESSION';
+						$_REQUEST['format'][$attrs->fields['attnum']] = ($attrs->fields['adsrc'] === null
+							&& empty($attrs->fields['attidentity']) && empty($attrs->fields['attgenerated'])) ? 'VALUE' : 'EXPRESSION';
 					// Continue drawing row
 					$id = (($i % 2) == 0 ? '1' : '2');
 					echo "<tr class=\"data{$id}\">\n";
