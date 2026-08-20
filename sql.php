@@ -54,15 +54,8 @@
 					echo $i, " {$lang['strrows']}</p>\n";
 					break;
 				case PGSQL_COMMAND_OK:
-					// If we have the command completion tag
-					if (version_compare(phpversion(), '4.3', '>=')) {
-						echo htmlspecialchars(pg_result_status($rs, PGSQL_STATUS_STRING)), "<br/>\n";
-					}
-					// Otherwise if any rows have been affected
-					elseif ($data->conn->Affected_Rows() > 0) {
-						echo $data->conn->Affected_Rows(), " {$lang['strrowsaff']}<br/>\n";
-					}
-					// Otherwise output nothing...
+					// Print the command completion tag
+					echo htmlspecialchars(pg_result_status($rs, PGSQL_STATUS_STRING)), "<br/>\n";
 					break;
 				case PGSQL_EMPTY_QUERY:
 					break;
