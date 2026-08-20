@@ -175,6 +175,7 @@ class ADODB_base {
 	 * @return -2 if a referential constraint is violated
 	 */
 	function insert($table, $vars) {
+		$sql = '';
 		$this->fieldClean($table);
 
 		// Build clause

@@ -45,7 +45,7 @@
 			case 'download':
 				// Set headers.  MSIE is totally broken for SSL downloading, so
 				// we need to have it download in-place as plain text
-				if (strstr($_SERVER['HTTP_USER_AGENT'], 'MSIE') && isset($_SERVER['HTTPS'])) {
+				if (strstr(($_SERVER['HTTP_USER_AGENT'] ?? ''), 'MSIE') && isset($_SERVER['HTTPS'])) {
 					header('Content-Type: text/plain');
 				}
 				else {
@@ -129,7 +129,7 @@
 		}
 
 		if (!$dumpall) {
-			putenv('PGDATABASE=' . $_REQUEST['database']);
+			putenv('PGDATABASE=' . ($_REQUEST['database'] ?? ''));
 		}
 
 		// Execute command and return the output to the screen

@@ -28,12 +28,12 @@ abstract class Plugin {
 				include_once("{$plugin_directory}/lang/{$language}.php");
 			}
 
-			$this->lang = $plugin_lang;
+			$this->lang = $plugin_lang ?? array();
 		}
 
 		if (file_exists("{$plugin_directory}/conf/config.inc.php")) {
 			include_once("{$plugin_directory}/conf/config.inc.php");
-			$this->conf = $plugin_conf;
+			$this->conf = $plugin_conf ?? array();
 		}
 	}
 

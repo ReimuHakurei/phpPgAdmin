@@ -264,9 +264,9 @@
 
 		if ($err != '') return doCreateConfig($err);
 
-		if ($_POST['formParser'] != '') $formParser = safeUnserialize($_POST['formParser']);
+		if (($_POST['formParser'] ?? '') != '') $formParser = safeUnserialize($_POST['formParser'] ?? '');
 		else $formParser = '';
-		if ($_POST['formTemplate'] != '') $formTemplate = safeUnserialize($_POST['formTemplate']);
+		if (($_POST['formTemplate'] ?? '') != '') $formTemplate = safeUnserialize($_POST['formTemplate'] ?? '');
 		else $formTemplate = '';
 
 		$status = $data->createFtsConfiguration($_POST['formName'], $formParser, $formTemplate, $_POST['formComment']);
@@ -774,6 +774,7 @@
 
 				foreach($_REQUEST['ma'] as $v) {
 					$a = safeUnserialize(htmlspecialchars_decode($v, ENT_QUOTES));
+					if (!is_array($a)) continue;
 					echo "<p>", sprintf($lang['strconfdropftsmapping'], $misc->printVal($a['mapping']), $misc->printVal($_REQUEST['ftscfg'])), "</p>\n";
 					printf('<input type="hidden" name="mapping[]" value="%s" />', htmlspecialchars($a['mapping']));
 				}
@@ -831,11 +832,13 @@
 			echo "\t\t<td class=\"data1\">";
 
 			// Case of multiaction drop
+			$ma_mappings = array();
+			$mapping = null;
 			if (isset($_REQUEST['ma'])) {
-				$ma_mappings = array();
 				$ma_mappings_names = array();
 				foreach($_REQUEST['ma'] as $v) {
 					$a = safeUnserialize(htmlspecialchars_decode($v, ENT_QUOTES));
+					if (!is_array($a)) continue;
 					printf('<input type="hidden" name="formMapping[]" value="%s" />', htmlspecialchars($a['mapping']));
 					$ma_mappings[] = $data->getFtsMappingByName($_POST['ftscfg'], $a['mapping']);
 					$ma_mappings_names[] = $a['mapping'];
@@ -858,8 +861,11 @@
 			echo "\t\t\t<select name=\"formDictionary\">\n";
 			while (!$ftsdicts->EOF) {
 				$ftsdict = htmlspecialchars($ftsdicts->fields['name']);
+				$dictFound = ($ftsdict == $_POST['formDictionary'])
+					|| (isset($mapping) && isset($mapping->fields['dictionaries']) && $ftsdict == $mapping->fields['dictionaries'])
+					|| (isset($ma_mappings[0]) && isset($ma_mappings[0]->fields['dictionaries']) && $ftsdict == $ma_mappings[0]->fields['dictionaries']);
 				echo "\t\t\t\t<option value=\"{$ftsdict}\"",
-					($ftsdict == $_POST['formDictionary'] || $ftsdict == @$mapping->fields['dictionaries'] || $ftsdict == @$ma_mappings[0]->fields['dictionaries']) ? ' selected="selected"' : '', ">{$ftsdict}</option>\n";
+					$dictFound ? ' selected="selected"' : '', ">{$ftsdict}</option>\n";
 				$ftsdicts->moveNext();
 			}
 

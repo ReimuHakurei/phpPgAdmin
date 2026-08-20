@@ -46,8 +46,10 @@
 
 					// Unserialize target and fetch appropriate table. This is a bit messy
 					// because the table could be in another schema.
-					$data->setSchema($_REQUEST['target']['schemaname']);
-					$attrs = $data->getTableAttributes($_REQUEST['target']['tablename']);
+					$req_target = $_REQUEST['target'] ?? null;
+					$target = is_array($req_target) ? $req_target : array();
+					$data->setSchema($target['schemaname'] ?? null);
+					$attrs = $data->getTableAttributes($target['tablename'] ?? null);
 					$data->setSchema($_REQUEST['schema']);
 
 					$selColumns = new XHTML_select('TableColumnList', true, 10);
@@ -137,8 +139,10 @@
 						|| sizeof($_POST['IndexColumnList']) == 0 || !isset($temp)
 						|| !is_array($temp) || sizeof($temp) == 0) addForeignKey(2, $lang['strfkneedscols']);
 				else {
-					$status = $data->addForeignKey($_POST['table'], $_POST['target']['schemaname'], $_POST['target']['tablename'],
-						safeUnserialize($_POST['SourceColumnList']), $_POST['IndexColumnList'], $_POST['upd_action'], $_POST['del_action'],
+					$post_target_raw = $_POST['target'] ?? null;
+					$post_target = is_array($post_target_raw) ? $post_target_raw : array();
+					$status = $data->addForeignKey($_POST['table'], $post_target['schemaname'] ?? null, $post_target['tablename'] ?? null,
+						safeUnserialize($_POST['SourceColumnList'] ?? ''), $_POST['IndexColumnList'], $_POST['upd_action'], $_POST['del_action'],
 						$_POST['match'], $_POST['deferrable'], $_POST['initially'], $_POST['name']);
 					if ($status == 0)
 						doDefault($lang['strfkadded']);
@@ -245,7 +249,7 @@
 
 			$attrs = $data->getTableAttributes($_REQUEST['table']);
 			// Fetch all tablespaces from the database
-			if ($data->hasTablespaces()) $tablespaces = $data->getTablespaces();
+			$tablespaces = $data->hasTablespaces() ? $data->getTablespaces() : null;
 
 
 			$selColumns = new XHTML_select('TableColumnList', true, 10);
@@ -283,7 +287,7 @@
 			echo "<td class=data1>" . $selIndex->fetch() . "</td></tr>\n";
 
 			// Tablespace (if there are any)
-			if ($data->hasTablespaces() && $tablespaces->recordCount() > 0) {
+			if ($tablespaces !== null && $tablespaces->recordCount() > 0) {
 				echo "<tr><th class=\"data\" colspan=\"3\">{$lang['strtablespace']}</th></tr>";
 				echo "<tr><td class=\"data1\" colspan=\"3\"><select name=\"tablespace\">\n";
 				// Always offer the default (empty) option

@@ -180,7 +180,7 @@ class Postgres extends ADODB_base {
 	/**
 	 * Cleans (escapes) a string
 	 * @param $str The string to clean, by reference
-	 * @return The cleaned string
+	 * @return string The cleaned string
 	 */
 	function clean(&$str) {
 		if ($str === null) return null;
@@ -196,7 +196,7 @@ class Postgres extends ADODB_base {
 	/**
 	 * Cleans (escapes) an object name (eg. table, field)
 	 * @param $str The string to clean, by reference
-	 * @return The cleaned string
+	 * @return string The cleaned string
 	 */
 	function fieldClean(&$str) {
 		if ($str === null) return null;
@@ -2574,6 +2574,7 @@ class Postgres extends ADODB_base {
 		if (!is_array($vars) || !is_array($nulls) || !is_array($format) || !is_array($types))
 			return -1;
 		else {
+			$sql = null;
 			$f_schema = $this->_schema;
 			$this->fieldClean($f_schema);
 			$this->fieldClean($table);
@@ -6534,7 +6535,7 @@ class Postgres extends ADODB_base {
 	function isSuperUser($username = '') {
 		$this->clean($username);
 
-		if (empty($usename)) {
+		if (empty($username)) {
 			$val = pg_parameter_status($this->conn->_connectionID, 'is_superuser');
 			if ($val !== false) return $val === 'on';
 		}
@@ -6749,8 +6750,8 @@ class Postgres extends ADODB_base {
 			// Break on unquoted equals sign...
 			$i = 0;
 			$in_quotes = false;
-			$entity = null;
-			$chars = null;
+			$entity = '';
+			$chars = '';
 			while ($i < strlen($v)) {
 				// If current char is a double quote and it's not escaped, then
 				// enter quoted bit
@@ -7264,6 +7265,7 @@ class Postgres extends ADODB_base {
 
 		$sql = "ALTER TABLE \"{$f_schema}\".\"{$table}\" SET (";
 
+		$params = array();
 		if (!empty($vacenabled)) {
 			$this->clean($vacenabled);
 			$params[] = "autovacuum_enabled='{$vacenabled}'";
@@ -7507,7 +7509,7 @@ class Postgres extends ADODB_base {
 		if (!$fd) return false;
 
 		// Build up each SQL statement, they can be multiline
-		$query_buf = null;
+		$query_buf = '';
 		$query_start = 0;
 		$in_quote = 0;
 		$in_xcomment = 0;
@@ -7522,7 +7524,7 @@ class Postgres extends ADODB_base {
 
 		// Loop over each line in the file
 		while (!feof($fd)) {
-			$line = fgets($fd);
+			$line = (string) fgets($fd);
 			$lineno++;
 
 			// Nothing left on line? Then ignore...
@@ -7664,7 +7666,7 @@ class Postgres extends ADODB_base {
 						}
 					}
 
-					$query_buf = null;
+					$query_buf = '';
 					$query_start = $i + $thislen;
 				}
 
@@ -7696,7 +7698,7 @@ class Postgres extends ADODB_base {
 				$query_buf .= $subline;
 			}
 
-			$line = null;
+			$line = '';
 
 		} // end while
 

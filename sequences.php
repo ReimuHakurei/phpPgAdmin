@@ -309,6 +309,7 @@
 			if (isset($_REQUEST['ma'])) {
 				foreach($_REQUEST['ma'] as $v) {
 					$a = safeUnserialize(htmlspecialchars_decode($v, ENT_QUOTES));
+					if (!is_array($a)) continue;
 					echo "<p>", sprintf($lang['strconfdropsequence'], $misc->printVal($a['sequence'])), "</p>\n";
 					printf('<input type="hidden" name="sequence[]" value="%s" />', htmlspecialchars($a['sequence']));
 				}

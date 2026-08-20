@@ -244,7 +244,7 @@
 		 *			lineno   - prefix each line with a line number.
 		 *			map      - an associative array.
 		 *
-		 * @return The HTML rendered value
+		 * @return string The HTML rendered value
 		 */
 		function printVal($str, $type = null, $params = array()) {
 			global $lang, $conf, $data;
@@ -403,7 +403,8 @@
 			if (isset($params['lineno']) && $params['lineno'] === true) {
 				$lines = explode("\n", $str);
 				$num = count($lines);
-				if ($num > 0) {
+			if ($num > 0) {
+					if (!isset($class)) $class = '';
 					$temp = "<table>\n<tr><td class=\"{$class}\" style=\"vertical-align: top; padding-right: 10px;\"><pre class=\"{$class}\">";
 					for ($i = 1; $i <= $num; $i++) {
 						$temp .= $i . "\n";
@@ -546,9 +547,10 @@
 						});
 
 				EOL;
+				$requestMethod = $_SERVER['REQUEST_METHOD'] ?? '';
 				if (!$frameset) echo <<<EOL
 
-						if ("{$_SERVER['REQUEST_METHOD']}" === "GET" && (window.self === window.top) && (!window.opener)) {
+						if ("{$requestMethod}" === "GET" && (window.self === window.top) && (!window.opener)) {
 							$.post(new URL('./', location.href).href, { _originalPath: location.href }, function (data) {
 								// GET request from outside frame. Reload encapsulated in our frameset.
 								document.write(data);
@@ -1412,8 +1414,8 @@
 							'href' => array (
 								'url' => 'servers.php',
 								'urlvars' => array (
-									'action' => 'logout',
-									'logoutServer' => "{$server_info['host']}:{$server_info['port']}:{$server_info['sslmode']}"
+								'action' => 'logout',
+								'logoutServer' => ($server_info['host'] ?? '').":{$server_info['port']}:{$server_info['sslmode']}"
 								)
 							),
 							'id' => 'toplink_logout',
@@ -1965,8 +1967,8 @@
 			);
 			$plugin_manager->do_hook('actionbuttons', $plugin_functions_parameters);
 
-			if ($has_ma = isset($actions['multiactions']))
-				$ma = $actions['multiactions'];
+			$ma = $actions['multiactions'] ?? null;
+			$has_ma = $ma !== null;
 			unset($actions['multiactions']);
 
 			if ($tabledata->recordCount() > 0) {
@@ -1981,7 +1983,7 @@
 					//$columns['comment']['params']['clip'] = true;
 				}
 
-				if ($has_ma) {
+				if ($ma !== null) {
 					echo "<script src=\"multiactionform.js\" type=\"text/javascript\"></script>\n";
 					echo "<form id=\"multi_form\" action=\"{$ma['url']}\" method=\"post\" enctype=\"multipart/form-data\">\n";
 					if (isset($ma['vars']))
@@ -1992,16 +1994,11 @@
 				echo "<table>\n";
 				echo "<tr>\n";
 
-				// Handle cases where no class has been passed
-				if (isset($column['class'])) {
-					$class = $column['class'] !== '' ? " class=\"{$column['class']}\"":'';
-				} else {
-					$class = '';
-				}
-
 				// Display column headings
-				if ($has_ma) echo "<th></th>";
+				if ($ma !== null) echo "<th></th>";
 				foreach ($columns as $column_id => $column) {
+					// Optional extra CSS class for this column's heading ('class' key)
+					$class = ($column['class'] ?? '') !== '' ? " {$column['class']}" : '';
 					switch ($column_id) {
 						case 'actions':
 							if (sizeof($actions) > 0) echo "<th class=\"data\" colspan=\"", count($actions), "\">{$column['title']}</th>\n";
@@ -2020,6 +2017,7 @@
 
 				// Display table rows
 				$i = 0;
+				$a = array();
 				while (!$tabledata->EOF) {
 					$id = ($i % 2) + 1;
 
@@ -2028,7 +2026,7 @@
 					if (!isset($alt_actions)) $alt_actions =& $actions;
 
 					echo "<tr class=\"data{$id}\">\n";
-					if ($has_ma) {
+					if ($ma !== null) {
 						foreach ($ma['keycols'] as $k => $v)
 							$a[$k] = $tabledata->fields[$v];
 						echo "<td>";
@@ -2040,13 +2038,16 @@
 						// Apply default values for missing parameters
 						if (isset($column['url']) && !isset($column['vars'])) $column['vars'] = array();
 
+						// Optional extra CSS class for this column's cells ('class' key)
+						$class = ($column['class'] ?? '') !== '' ? " class=\"{$column['class']}\"" : '';
+
 						switch ($column_id) {
 							case 'actions':
 								foreach ($alt_actions as $action) {
 									if (isset($action['disable']) && $action['disable'] === true) {
 										echo "<td></td>\n";
 									} else {
-										echo "<td class=\"opbutton{$id} {$class}\">";
+										echo "<td class=\"opbutton{$id}\">";
 										$action['fields'] = $tabledata->fields;
 										$this->printLink($action);
 										echo "</td>\n";
@@ -2088,7 +2089,7 @@
 				echo "</table>\n";
 
 				// Multi action table footer w/ options & [un]check'em all
-				if ($has_ma) {
+				if ($ma !== null) {
 					// if default is not set or doesn't exist, set it to null
 					if (!isset($ma['default']) || !isset($actions[$ma['default']]))
 						$ma['default'] = null;
@@ -2248,7 +2249,7 @@
 		/**
 		 * Function to escape command line parameters
 		 * @param $str The string to escape
-		 * @return The escaped string
+		 * @return string The escaped string
 		 */
 		function escapeShellArg($str) {
 			global $data, $lang;
@@ -2271,7 +2272,7 @@
 		/**
 		 * Function to escape command line programs
 		 * @param $str The string to escape
-		 * @return The escaped string
+		 * @return string The escaped string
 		 */
 		function escapeShellCmd($str) {
 			global $data;
@@ -2420,7 +2421,7 @@
 		 * If the parameter isn't supplied then the currently
 		 * connected server is returned.
 		 * @param $server_id A server identifier (host:port)
-		 * @return An associative array of server properties
+		 * @return array|null An associative array of server properties
 		 */
 		function getServerInfo($server_id = null) {
 			global $conf, $_reload_browser, $lang;

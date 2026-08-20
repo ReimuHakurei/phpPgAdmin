@@ -142,6 +142,7 @@
 			if (isset($_REQUEST['ma'])) {
 				foreach($_REQUEST['ma'] as $v) {
 					$a = safeUnserialize(htmlspecialchars_decode($v, ENT_QUOTES));
+					if (!is_array($a)) continue;
 					echo "<p>", sprintf($lang['strconfdropview'], $misc->printVal($a['view'])), "</p>\n";
 					echo '<input type="hidden" name="view[]" value="', htmlspecialchars($a['view']), "\" />\n";
 				}
@@ -215,6 +216,7 @@
 
 			$tblCount = sizeof($_POST['formTables']);
 			// Unserialize our schema/table information and store in arrSelTables
+			$arrSelTables = array();
 			for ($i = 0; $i < $tblCount; $i++) {
 				$arrSelTables[] = safeUnserialize($_POST['formTables'][$i]);
 			}
@@ -231,15 +233,17 @@
 			//with getTableAttributes
 			$curSchema = $data->_schema;
 			for ($i = 0; $i < $tblCount; $i++) {
-				if ($data->_schema != $arrSelTables[$i]['schemaname']) {
-					$data->setSchema($arrSelTables[$i]['schemaname']);
+				$selSchema = $arrSelTables[$i]['schemaname'] ?? null;
+				$selTable = $arrSelTables[$i]['tablename'] ?? null;
+				if ($data->_schema != $selSchema) {
+					$data->setSchema($selSchema);
 				}
 
-				$attrs = $data->getTableAttributes($arrSelTables[$i]['tablename']);
+				$attrs = $data->getTableAttributes($selTable);
 				while (!$attrs->EOF) {
-					$arrFields["{$arrSelTables[$i]['schemaname']}.{$arrSelTables[$i]['tablename']}.{$attrs->fields['attname']}"] = serialize(array(
-						'schemaname' => $arrSelTables[$i]['schemaname'],
-						'tablename' => $arrSelTables[$i]['tablename'],
+					$arrFields["{$selSchema}.{$selTable}.{$attrs->fields['attname']}"] = serialize(array(
+						'schemaname' => $selSchema,
+						'tablename' => $selTable,
 						'fieldname' => $attrs->fields['attname'])
 					);
 					$attrs->moveNext();
@@ -278,6 +282,7 @@
 			echo "<table>\n";
 			echo "<tr><th class=\"data\">{$lang['strviewlink']}</th></tr>";
 			$rowClass = 'data1';
+			$formLink = array();
 			for ($i = 0; $i < $linkCount; $i++) {
 				// Initialise variables
 				if (!isset($formLink[$i]['operator'])) $formLink[$i]['operator'] = 'INNER JOIN';
@@ -442,11 +447,10 @@
 		else {
 			$selFields = '';
 
-			if (! empty($_POST['dblFldMeth']) )
-				$tmpHsh = array();
-
+			$tmpHsh = array();
 			foreach ($_POST['formFields'] as $curField) {
 				$arrTmp = safeUnserialize($curField);
+				if (!is_array($arrTmp)) continue;
 				$data->fieldArrayClean($arrTmp);
 				if (! empty($_POST['dblFldMeth']) ) { // doublon control
 					if (empty($tmpHsh[$arrTmp['fieldname']])) { // field does not exist
@@ -471,6 +475,7 @@
 				// Filter out invalid/blank entries for our links
 				$arrLinks = array();
 				foreach ($_POST['formLink'] as $curLink) {
+					if (!is_array($curLink)) continue;
 					if (strlen($curLink['leftlink']) && strlen($curLink['rightlink']) && strlen($curLink['operator'])) {
 						$arrLinks[] = $curLink;
 					}
@@ -488,6 +493,7 @@
 
 							$arrLeftLink = safeUnserialize($curLink['leftlink']);
 							$arrRightLink = safeUnserialize($curLink['rightlink']);
+							if (!is_array($arrLeftLink) || !is_array($arrRightLink)) continue;
 							$data->fieldArrayClean($arrLeftLink);
 							$data->fieldArrayClean($arrRightLink);
 
@@ -498,7 +504,7 @@
 
 								// Make sure for multi-column foreign keys that we use a table alias tables joined to more than once
 								// This can (and should be) more optimized for multi-column foreign keys
-								$adj_tbl2 = in_array($tbl2, $arrUsedTbls) ? "$tbl2 AS alias_ppa_" . mktime() : $tbl2;
+								$adj_tbl2 = in_array($tbl2, $arrUsedTbls) ? "$tbl2 AS alias_ppa_" . time() : $tbl2;
 
 								$linkFields .= strlen($linkFields) ? "{$curLink['operator']} $adj_tbl2 ON (\"{$arrLeftLink['schemaname']}\".\"{$arrLeftLink['tablename']}\".\"{$arrLeftLink['fieldname']}\" = \"{$arrRightLink['schemaname']}\".\"{$arrRightLink['tablename']}\".\"{$arrRightLink['fieldname']}\") " 
 									: "$tbl1 {$curLink['operator']} $adj_tbl2 ON (\"{$arrLeftLink['schemaname']}\".\"{$arrLeftLink['tablename']}\".\"{$arrLeftLink['fieldname']}\" = \"{$arrRightLink['schemaname']}\".\"{$arrRightLink['tablename']}\".\"{$arrRightLink['fieldname']}\") ";
@@ -518,6 +524,7 @@
 			if (!strlen($linkFields) ) {
 				foreach ($_POST['formTables'] as $curTable) {
 					$arrTmp = safeUnserialize($curTable);
+					if (!is_array($arrTmp)) continue;
 					$data->fieldArrayClean($arrTmp);
 					$linkFields .= strlen($linkFields) ? ", \"{$arrTmp['schemaname']}\".\"{$arrTmp['tablename']}\"" : "\"{$arrTmp['schemaname']}\".\"{$arrTmp['tablename']}\"";
 				}
@@ -526,8 +533,10 @@
 			$addConditions = '';
 			if (is_array($_POST['formCondition']) ) {
 				foreach ($_POST['formCondition'] as $curCondition) {
+					if (!is_array($curCondition)) continue;
 					if (strlen($curCondition['field']) && strlen($curCondition['txt']) ) {
 						$arrTmp = safeUnserialize($curCondition['field']);
+						if (!is_array($arrTmp)) continue;
 						$data->fieldArrayClean($arrTmp);
 						$addConditions .= strlen($addConditions) ? " AND \"{$arrTmp['schemaname']}\".\"{$arrTmp['tablename']}\".\"{$arrTmp['fieldname']}\" {$curCondition['operator']} '{$curCondition['txt']}' " 
 							: " \"{$arrTmp['schemaname']}\".\"{$arrTmp['tablename']}\".\"{$arrTmp['fieldname']}\" {$curCondition['operator']} '{$curCondition['txt']}' ";

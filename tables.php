@@ -32,7 +32,7 @@
 		switch ($_REQUEST['stage']) {
 			case 1:
 				// Fetch all tablespaces from the database
-				if ($data->hasTablespaces()) $tablespaces = $data->getTablespaces();
+				$tablespaces = $data->hasTablespaces() ? $data->getTablespaces() : null;
 
 				$misc->printTrail('schema');
 				$misc->printTitle($lang['strcreatetable'], 'pg.table.create');
@@ -54,7 +54,7 @@
 				}
 
 				// Tablespace (if there are any)
-				if ($data->hasTablespaces() && $tablespaces->recordCount() > 0) {
+				if ($tablespaces !== null && $tablespaces->recordCount() > 0) {
 					echo "\t<tr>\n\t\t<th class=\"data left\">{$lang['strtablespace']}</th>\n";
 					echo "\t\t<td class=\"data1\">\n\t\t\t<select name=\"spcname\">\n";
 					// Always offer the default (empty) option
@@ -614,6 +614,7 @@
 				echo "<form action=\"tables.php\" method=\"post\">\n";
 				foreach ($_REQUEST['ma'] as $v) {
 					$a = safeUnserialize(htmlspecialchars_decode($v, ENT_QUOTES));
+					if (!is_array($a)) continue;
 					echo "<p>", sprintf($lang['strconfemptytable'], $misc->printVal($a['table'])), "</p>\n";
 					printf('<input type="hidden" name="table[]" value="%s" />', htmlspecialchars($a['table']));
 				}
@@ -679,6 +680,7 @@
 				echo "<form action=\"tables.php\" method=\"post\">\n";
 				foreach($_REQUEST['ma'] as $v) {
 					$a = safeUnserialize(htmlspecialchars_decode($v, ENT_QUOTES));
+					if (!is_array($a)) continue;
 					echo "<p>", sprintf($lang['strconfdroptable'], $misc->printVal($a['table'])), "</p>\n";
 					printf('<input type="hidden" name="table[]" value="%s" />', htmlspecialchars($a['table']));
 				}

@@ -190,9 +190,9 @@
 			if ($data->hasFunctionCosting()) {
 				echo "<tr><th class=\"data required\" colspan=\"5\">{$lang['strfunctioncosting']}</th></tr>\n";
 				echo "<td class=\"data1\" colspan=\"2\">{$lang['strexecutioncost']}: <input name=\"formCost\" size=\"16\" value=\"".
-					htmlspecialchars($_POST['formCost']) ."\" /></td>";
+					htmlspecialchars($_POST['formCost'] ?? '') ."\" /></td>";
 				echo "<td class=\"data1\" colspan=\"2\">{$lang['strresultrows']}: <input name=\"formRows\" size=\"16\" value=\"",
-					htmlspecialchars($_POST['formRows']) ,"\"", (!$fndata->fields['proretset']) ? 'disabled' : '', "/></td>";
+					htmlspecialchars($_POST['formRows'] ?? '') ,"\"", (!$fndata->fields['proretset']) ? 'disabled' : '', "/></td>";
 			}
 
 			// Display function properties
@@ -251,7 +251,7 @@
 		$misc->printMsg($msg);
 
 		$funcdata = $data->getFunction($_REQUEST['function_oid']);
-
+		$func_full = '';
 		if ($funcdata->recordCount() > 0) {
 			// Deal with named parameters
 			if ($data->hasNamedParams()) {
@@ -427,6 +427,7 @@
 			if (isset($_REQUEST['ma'])) {
 				foreach($_REQUEST['ma'] as $v) {
 					$a = safeUnserialize(htmlspecialchars_decode($v, ENT_QUOTES));
+					if (!is_array($a)) continue;
 					echo "<p>", sprintf($lang['strconfdropfunction'], $misc->printVal($a['function'])), "</p>\n";
 					echo '<input type="hidden" name="function[]" value="', htmlspecialchars($a['function']), "\" />\n";
 					echo "<input type=\"hidden\" name=\"function_oid[]\" value=\"", htmlspecialchars($a['function_oid']), "\" />\n";
@@ -488,7 +489,7 @@
 	 */
 	function doCreate($msg = '',$szJS="") {
 		global $data, $misc;
-		global $lang;
+		global $conf, $lang;
 
 		$misc->printTrail('schema');
 		if (!isset($_POST['formFunction'])) $_POST['formFunction'] = '';
@@ -785,6 +786,7 @@
 		$arrayProperArgs = array();
 		$nC = 0;
 		$szReturn = '';
+		$szMode = '';
 		foreach($arrayArgs as $pV) {
 			$arrayWords = explode(' ',$pV);
 			if(in_array($arrayWords[0],$arrayModes)===true) {

@@ -78,15 +78,15 @@
 					$elements++;
 					echo "<td style=\"white-space:nowrap;\">\n";
 					echo "<select name=\"format[", htmlspecialchars($attrs->fields['attname']), "]\">\n";
-					echo "<option value=\"VALUE\"", ($_REQUEST['format'][$attrs->fields['attname']] == 'VALUE') ? ' selected="selected"' : '', ">{$lang['strvalue']}</option>\n";
-					echo "<option value=\"EXPRESSION\"", ($_REQUEST['format'][$attrs->fields['attname']] == 'EXPRESSION') ? ' selected="selected"' : '', ">{$lang['strexpression']}</option>\n";
+					echo "<option value=\"VALUE\"", (($_REQUEST['format'][$attrs->fields['attname']] ?? null) == 'VALUE') ? ' selected="selected"' : '', ">{$lang['strvalue']}</option>\n";
+					echo "<option value=\"EXPRESSION\"", (($_REQUEST['format'][$attrs->fields['attname']] ?? null) == 'EXPRESSION') ? ' selected="selected"' : '', ">{$lang['strexpression']}</option>\n";
 					echo "</select>\n</td>\n";
 					$elements++;
 					echo "<td style=\"white-space:nowrap;\">";
 					// Output null box if the column allows nulls (doesn't look at CHECKs or ASSERTIONS)
 					if (!$attrs->fields['attnotnull']) {
 						// Set initial null values
-						if ($_REQUEST['action'] == 'confeditrow' && $rs->fields[$attrs->fields['attname']] === null) {
+						if (($_REQUEST['action'] ?? '') == 'confeditrow' && $rs->fields[$attrs->fields['attname']] === null) {
 							$_REQUEST['nulls'][$attrs->fields['attname']] = 'on';
 						}
 						echo "<label><span><input type=\"checkbox\" name=\"nulls[{$attrs->fields['attname']}]\"",
@@ -501,10 +501,11 @@
 		$fkey_information =& getFKInfo();
 
 		// Retrieve page from query.  $max_pages is returned by reference.
+		$max_pages = null;
 		$rs = $data->browseQuery($type,
 			isset($object) ? $object : null,
 			isset($_SESSION['sqlquery']) ? $_SESSION['sqlquery'] : null,
-			$_REQUEST['sortkey'], $_REQUEST['sortdir'], $_REQUEST['page'],
+			$_REQUEST['sortkey'] ?? null, $_REQUEST['sortdir'] ?? null, $_REQUEST['page'] ?? null,
 			$conf['max_rows'], $max_pages,
 			isset($fkey_information['pkey']) ? $fkey_information['pkey'] : null);
 
@@ -562,11 +563,11 @@
 		} elseif (isset($_REQUEST['query'])) {
 			$query = $_REQUEST['query'];
 		} else {
-			$query = "SELECT * FROM ".$data->escapeIdentifier($_REQUEST['schema']);
-			if ($_REQUEST['subject'] == 'view') {
-				$query = "{$query}.".$data->escapeIdentifier($_REQUEST['view']).";";
+			$query = "SELECT * FROM ".$data->escapeIdentifier($_REQUEST['schema'] ?? '');
+			if (($_REQUEST['subject'] ?? '') == 'view') {
+				$query = "{$query}.".$data->escapeIdentifier($_REQUEST['view'] ?? '').";";
 			} else {
-				$query = "{$query}.".$data->escapeIdentifier($_REQUEST['table']).";";
+				$query = "{$query}.".$data->escapeIdentifier($_REQUEST['table'] ?? '').";";
 			}
 		}
 		//$query = isset($_REQUEST['query'])? $_REQUEST['query'] : "select * from {$_REQUEST['schema']}.{$_REQUEST['table']};";

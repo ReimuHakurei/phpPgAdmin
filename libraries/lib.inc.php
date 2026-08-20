@@ -9,8 +9,8 @@
 	include_once('./libraries/decorator.inc.php');
 	include_once('./lang/translations.php');
 
-	// Do not show depreciation warnings.
-	error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+	// Report everything.
+	error_reporting(E_ALL);
 
 	// Application name
 	$appName = 'phpPgAdmin';
@@ -86,6 +86,10 @@
 	// Enforce PHP environment
 	ini_set('arg_separator.output', '&amp;');
 
+	foreach ($_POST as $_login_key => $_login_val) {
+		if (strncmp((string) $_login_key, 'login', 5) === 0 && !is_scalar($_login_val))
+			unset($_POST[$_login_key]);
+	}
 	// If login action is set, then set session variables
 	if (isset($_POST['loginServer']) && isset($_POST['loginUsername']) &&
 		isset($_POST['loginPassword_'.md5($_POST['loginServer'])])) {

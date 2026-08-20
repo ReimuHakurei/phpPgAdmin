@@ -35,6 +35,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 function keyword_replace($keywords, $text, $ncs = false)
 {
     $cm = ($ncs)? "i" : "";
+    $search = array();
+    $replace = array();
     foreach ($keywords as $keyword)
     {
         $search[]  = "/(\\b$keyword\\b)/" . $cm;
@@ -50,6 +52,8 @@ function keyword_replace($keywords, $text, $ncs = false)
 
 function preproc_replace($preproc, $text)
 {
+    $search = array();
+    $replace = array();
     foreach ($preproc as $proc)
     {
         $search[] = "/(\\s*#\s*$proc\\b)/";
@@ -591,31 +595,44 @@ function syntax_highlight($text, $language)
 {
     if ($language == "Plain Text") return $text;
 
-    define("normal_text",   1);
-    define("dq_literal",    2);
-    define("dq_escape",     3);
-    define("sq_literal",    4);
-    define("sq_escape",     5);
-    define("slash_begin",   6);
-    define("star_comment",  7);
-    define("star_end",      8);
-    define("line_comment",  9);
-    define("html_entity",  10);
-    define("lc_escape",    11);
-    define("block_comment",12);
-    define("paren_begin",  13);
-    define("dash_begin",   14);
-    define("bt_literal",   15);
-    define("bt_escape",    16);
-    define("xml_tag_begin",17);
-    define("xml_tag",      18);
-    define("xml_pi",       19);
-    define("sch_normal",   20);
-    define("sch_stresc",   21);
-    define("sch_idexpr",   22);
-    define("sch_numlit",   23);
-    define("sch_chrlit",   24);
-    define("sch_strlit",   25);
+    // State transition tables, initialized up front
+    $initial_state = array();
+    $sch = array();
+    $c89 = array();
+    $perl = array();
+    $mirc = array();
+    $pascal = array();
+    $sql = array();
+    $xml = array();
+    $process = array();
+    $process_end = array();
+    $edges = array();
+
+    defined("normal_text") || define("normal_text", 1);
+    defined("dq_literal") || define("dq_literal", 2);
+    defined("dq_escape") || define("dq_escape", 3);
+    defined("sq_literal") || define("sq_literal", 4);
+    defined("sq_escape") || define("sq_escape", 5);
+    defined("slash_begin") || define("slash_begin", 6);
+    defined("star_comment") || define("star_comment", 7);
+    defined("star_end") || define("star_end", 8);
+    defined("line_comment") || define("line_comment", 9);
+    defined("html_entity") || define("html_entity", 10);
+    defined("lc_escape") || define("lc_escape", 11);
+    defined("block_comment") || define("block_comment", 12);
+    defined("paren_begin") || define("paren_begin", 13);
+    defined("dash_begin") || define("dash_begin", 14);
+    defined("bt_literal") || define("bt_literal", 15);
+    defined("bt_escape") || define("bt_escape", 16);
+    defined("xml_tag_begin") || define("xml_tag_begin", 17);
+    defined("xml_tag") || define("xml_tag", 18);
+    defined("xml_pi") || define("xml_pi", 19);
+    defined("sch_normal") || define("sch_normal", 20);
+    defined("sch_stresc") || define("sch_stresc", 21);
+    defined("sch_idexpr") || define("sch_idexpr", 22);
+    defined("sch_numlit") || define("sch_numlit", 23);
+    defined("sch_chrlit") || define("sch_chrlit", 24);
+    defined("sch_strlit") || define("sch_strlit", 25);
 
     $initial_state["Scheme"] = sch_normal;
 
@@ -1061,9 +1078,8 @@ function syntax_highlight($text, $language)
         $text = substr($text, 1);
 
         $oldstate = $state;
-        $state = (array_key_exists($ch, $states[$language][$state]))?
-            $states[$language][$state][$ch] :
-            $states[$language][$state][0];
+        $stateRow = $states[$language][$state] ?? array();
+        $state = array_key_exists($ch, $stateRow) ? $stateRow[$ch] : ($stateRow[0] ?? $state);
 
         $span .= $ch;
 
@@ -1079,7 +1095,7 @@ function syntax_highlight($text, $language)
                 }
                 else
                 {
-                    $pf = $process[$language][$oldstate][0];
+                    $pf = $process[$language][$oldstate][0] ?? 'proc_void';
                     $output .= $pf($span, $language, $ch);
                 }
             }

@@ -82,7 +82,7 @@
 
 				// Column name
 				echo "<tr><td><input name=\"field\" size=\"16\" maxlength=\"{$data->_maxNameLen}\" value=\"",
-					htmlspecialchars($_REQUEST['field']), "\" /></td>\n";
+					htmlspecialchars($_REQUEST['field'] ?? ''), "\" /></td>\n";
 
 				// Column type
 				$escaped_predef_types = array(); // the JS escaped array elements
@@ -95,7 +95,7 @@
 					while (!$types->EOF) {
 						$typname = $types->fields['typname'];
 						$types_for_js[] = $typname;
-						echo "\t<option value=\"", htmlspecialchars($typname), "\"", ($typname == $_REQUEST['type']) ? ' selected="selected"' : '', ">",
+						echo "\t<option value=\"", htmlspecialchars($typname), "\"", ($typname == ($_REQUEST['type'] ?? '')) ? ' selected="selected"' : '', ">",
 							$misc->printVal($typname), "</option>\n";
 						$types->moveNext();
 					}
@@ -103,8 +103,8 @@
 
 					// Output array type selector
 					echo "<td><select name=\"array\">\n";
-					echo "\t<option value=\"\"", ($_REQUEST['array'] == '') ? ' selected="selected"' : '', "></option>\n";
-					echo "\t<option value=\"[]\"", ($_REQUEST['array'] == '[]') ? ' selected="selected"' : '', ">[ ]</option>\n";
+					echo "\t<option value=\"\"", (($_REQUEST['array'] ?? '') == '') ? ' selected="selected"' : '', "></option>\n";
+					echo "\t<option value=\"[]\"", (($_REQUEST['array'] ?? '') == '[]') ? ' selected="selected"' : '', ">[ ]</option>\n";
 					echo "</select></td>\n";
 					$predefined_size_types = array_intersect($data->predefined_size_types, $types_for_js);
 					foreach($predefined_size_types as $value) {
@@ -112,7 +112,7 @@
 					}
 
 					echo "<td><input name=\"length\" id=\"lengths\" size=\"8\" value=\"",
-						htmlspecialchars($_REQUEST['length']), "\" /></td>\n";
+						htmlspecialchars($_REQUEST['length'] ?? ''), "\" /></td>\n";
 				} else {
 					// Otherwise draw the read-only type name
 					echo "<td>", $misc->printVal($data->formatType($column->fields['type'], $column->fields['atttypmod'])), "</td>\n";
@@ -129,14 +129,14 @@
 				echo $misc->form;
 				echo "<input type=\"hidden\" name=\"table\" value=\"", htmlspecialchars($_REQUEST['table']), "\" />\n";
 				echo "<input type=\"hidden\" name=\"column\" value=\"", htmlspecialchars($_REQUEST['column']), "\" />\n";
-				echo "<input type=\"hidden\" name=\"olddefault\" value=\"", htmlspecialchars($_REQUEST['olddefault']), "\" />\n";
+				echo "<input type=\"hidden\" name=\"olddefault\" value=\"", htmlspecialchars($_REQUEST['olddefault'] ?? ''), "\" />\n";
 				if ($column->fields['attnotnull']) echo "<input type=\"hidden\" name=\"oldnotnull\" value=\"on\" />\n";
 				echo "<input type=\"hidden\" name=\"oldtype\" value=\"", htmlspecialchars($data->formatType($column->fields['type'], $column->fields['atttypmod'])), "\" />\n";
 				// Add hidden variables to suppress error notices if we don't support altering column type
 				if (!$data->hasAlterColumnType()) {
-					echo "<input type=\"hidden\" name=\"type\" value=\"", htmlspecialchars($_REQUEST['type']), "\" />\n";
-					echo "<input type=\"hidden\" name=\"length\" value=\"", htmlspecialchars($_REQUEST['length']), "\" />\n";
-					echo "<input type=\"hidden\" name=\"array\" value=\"", htmlspecialchars($_REQUEST['array']), "\" />\n";
+					echo "<input type=\"hidden\" name=\"type\" value=\"", htmlspecialchars($_REQUEST['type'] ?? ''), "\" />\n";
+					echo "<input type=\"hidden\" name=\"length\" value=\"", htmlspecialchars($_REQUEST['length'] ?? ''), "\" />\n";
+					echo "<input type=\"hidden\" name=\"array\" value=\"", htmlspecialchars($_REQUEST['array'] ?? ''), "\" />\n";
 				}
 				echo "<input type=\"submit\" value=\"{$lang['stralter']}\" />\n";
 				echo "<input type=\"submit\" name=\"cancel\" value=\"{$lang['strcancel']}\" /></p>\n";

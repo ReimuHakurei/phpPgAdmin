@@ -98,6 +98,7 @@
 			if (isset($_REQUEST['ma'])) {
 				foreach($_REQUEST['ma'] as $v) {
 					$a = safeUnserialize(htmlspecialchars_decode($v, ENT_QUOTES));
+					if (!is_array($a)) continue;
 					echo "<p>", sprintf($lang['strconfdropdatabase'], $misc->printVal($a['database'])), "</p>\n";
 					printf('<input type="hidden" name="dropdatabase[]" value="%s" />', htmlspecialchars($a['database']));
 				}
@@ -164,7 +165,7 @@
 		$templatedbs = $data->getDatabases(false);
 
 		// Fetch all tablespaces from the database
-		if ($data->hasTablespaces()) $tablespaces = $data->getTablespaces();
+		$tablespaces = $data->hasTablespaces() ? $data->getTablespaces() : null;
 
 		echo "<form action=\"all_db.php\" method=\"post\">\n";
 		echo "<table>\n";
@@ -223,7 +224,7 @@
 		}
 
 		// Tablespace (if there are any)
-		if ($data->hasTablespaces() && $tablespaces->recordCount() > 0) {
+		if ($tablespaces !== null && $tablespaces->recordCount() > 0) {
 			echo "\t<tr>\n\t\t<th class=\"data left\">{$lang['strtablespace']}</th>\n";
 			echo "\t\t<td class=\"data1\">\n\t\t\t<select name=\"formSpc\">\n";
 			// Always offer the default (empty) option

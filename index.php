@@ -15,7 +15,7 @@
 
 	$cols = $rtl ? '*,'.$conf['left_width'] : $conf['left_width'].',*';
 
-	if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['_originalPath'])) {
+	if (($_SERVER["REQUEST_METHOD"] ?? '') == "POST" && isset($_POST['_originalPath'])) {
 		$newPath = basename($_POST['_originalPath']);
 		$mainframe = '<frame src="' . $newPath . '" name="detail" id="detail" frameborder="0" />';
 	} else {
