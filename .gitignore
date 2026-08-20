@@ -1,2 +1,5 @@
 selenium/tests/config.inc.php
 tests/selenium/config.test.php
+composer.lock
+vendor/*
+psalm.xml
