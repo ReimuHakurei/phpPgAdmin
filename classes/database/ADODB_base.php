@@ -11,10 +11,10 @@ include_once('./libraries/adodb/adodb.inc.php');
 
 class ADODB_base {
 
-	var $conn;
+	public $conn;
 
 	// The backend platform.  Set to UNKNOWN by default.
-	var $platform = 'UNKNOWN';
+	public $platform = 'UNKNOWN';
 
 	/**
 	 * Base constructor

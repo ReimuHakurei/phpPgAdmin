@@ -10,8 +10,8 @@
 	class Reports {
 
 		// A database driver
-		var $driver;
-		var $conf;
+		public $driver;
+		public $conf;
 
 		/* Constructor */
 		function __construct(&$conf, &$status) {

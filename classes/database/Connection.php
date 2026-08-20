@@ -10,10 +10,10 @@ include_once('./classes/database/ADODB_base.php');
 
 class Connection {
 
-	var $conn;
+	public $conn;
 
 	// The backend platform.  Set to UNKNOWN by default.
-	var $platform = 'UNKNOWN';
+	public $platform = 'UNKNOWN';
 
 	/**
 	 * Creates a new connection.  Will actually make a database connection.

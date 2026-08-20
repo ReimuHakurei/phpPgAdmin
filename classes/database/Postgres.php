@@ -9,15 +9,15 @@
 include_once('./classes/database/ADODB_base.php');
 
 class Postgres extends ADODB_base {
-	var $major_version = 14;
+	public $major_version = 14;
 	// Max object name length
-	var $_maxNameLen = 63;
+	public $_maxNameLen = 63;
 	// Store the current schema
-	var $_schema;
+	public $_schema;
 	// Map of database encoding names to HTTP encoding names.  If a
 	// database encoding does not appear in this list, then its HTTP
 	// encoding name is the same as its database encoding name.
-	var $codemap = array(
+	public $codemap = array(
 		'BIG5' => 'BIG5',
 		'EUC_CN' => 'GB2312',
 		'EUC_JP' => 'EUC-JP',
@@ -53,28 +53,28 @@ class Postgres extends ADODB_base {
 		'WIN1256' => 'CP1256',
 		'WIN1258' => 'CP1258'
 	);
-	var $defaultprops = array('', '', '');
+	public $defaultprops = array('', '', '');
 	// Extra "magic" types.  BIGSERIAL was added in PostgreSQL 7.2.
-	var $extraTypes = array('SERIAL', 'BIGSERIAL');
+	public $extraTypes = array('SERIAL', 'BIGSERIAL');
 	// Foreign key stuff.  First element MUST be the default.
-	var $fkactions = array('NO ACTION', 'RESTRICT', 'CASCADE', 'SET NULL', 'SET DEFAULT');
-	var $fkdeferrable = array('NOT DEFERRABLE', 'DEFERRABLE');
-	var $fkinitial = array('INITIALLY IMMEDIATE', 'INITIALLY DEFERRED');
-	var $fkmatches = array('MATCH SIMPLE', 'MATCH FULL');
+	public $fkactions = array('NO ACTION', 'RESTRICT', 'CASCADE', 'SET NULL', 'SET DEFAULT');
+	public $fkdeferrable = array('NOT DEFERRABLE', 'DEFERRABLE');
+	public $fkinitial = array('INITIALLY IMMEDIATE', 'INITIALLY DEFERRED');
+	public $fkmatches = array('MATCH SIMPLE', 'MATCH FULL');
 	// Function properties
-	var $funcprops = array( array('', 'VOLATILE', 'IMMUTABLE', 'STABLE'),
+	public $funcprops = array( array('', 'VOLATILE', 'IMMUTABLE', 'STABLE'),
 							array('', 'CALLED ON NULL INPUT', 'RETURNS NULL ON NULL INPUT'),
 							array('', 'SECURITY INVOKER', 'SECURITY DEFINER'));
 	// Default help URL
-	var $help_base;
+	public $help_base;
 	// Help sub pages
-	var $help_page;
+	public $help_page;
 	// Name of id column
-	var $id = 'oid';
+	public $id = 'oid';
 	// Supported join operations for use with view wizard
-	var $joinOps = array('INNER JOIN' => 'INNER JOIN', 'LEFT JOIN' => 'LEFT JOIN', 'RIGHT JOIN' => 'RIGHT JOIN', 'FULL JOIN' => 'FULL JOIN');
+	public $joinOps = array('INNER JOIN' => 'INNER JOIN', 'LEFT JOIN' => 'LEFT JOIN', 'RIGHT JOIN' => 'RIGHT JOIN', 'FULL JOIN' => 'FULL JOIN');
 	// Map of internal language name to syntax highlighting name
-	var $langmap = array(
+	public $langmap = array(
 		'sql' => 'SQL',
 		'plpgsql' => 'SQL',
 		'php' => 'PHP',
@@ -101,10 +101,10 @@ class Postgres extends ADODB_base {
 		'plrubyu' => 'Ruby'
 	);
 	// Predefined size types
-	var $predefined_size_types = array('abstime','aclitem','bigserial','boolean','bytea','cid','cidr','circle','date','float4','float8','gtsvector','inet','int2','int4','int8','macaddr','money','oid','path','polygon','refcursor','regclass','regoper','regoperator','regproc','regprocedure','regtype','reltime','serial','smgr','text','tid','tinterval','tsquery','tsvector','varbit','void','xid');
+	public $predefined_size_types = array('abstime','aclitem','bigserial','boolean','bytea','cid','cidr','circle','date','float4','float8','gtsvector','inet','int2','int4','int8','macaddr','money','oid','path','polygon','refcursor','regclass','regoper','regoperator','regproc','regprocedure','regtype','reltime','serial','smgr','text','tid','tinterval','tsquery','tsvector','varbit','void','xid');
 	// List of all legal privileges that can be applied to different types
 	// of objects.
-	var $privlist = array(
+	public $privlist = array(
   		'table' => array('SELECT', 'INSERT', 'UPDATE', 'DELETE', 'REFERENCES', 'TRIGGER', 'ALL PRIVILEGES'),
   		'view' => array('SELECT', 'INSERT', 'UPDATE', 'DELETE', 'REFERENCES', 'TRIGGER', 'ALL PRIVILEGES'),
   		'sequence' => array('USAGE', 'SELECT', 'UPDATE', 'ALL PRIVILEGES'),
@@ -117,7 +117,7 @@ class Postgres extends ADODB_base {
 	);
 	// List of characters in acl lists and the privileges they
 	// refer to.
-	var $privmap = array(
+	public $privmap = array(
 		'r' => 'SELECT',
 		'w' => 'UPDATE',
 		'a' => 'INSERT',
@@ -133,9 +133,9 @@ class Postgres extends ADODB_base {
   		'c' => 'CONNECT'
 	);
 	// Rule action types
-	var $rule_events = array('SELECT', 'INSERT', 'UPDATE', 'DELETE');
+	public $rule_events = array('SELECT', 'INSERT', 'UPDATE', 'DELETE');
 	// Select operators
-	var $selectOps = array(
+	public $selectOps = array(
 		'=' => 'i', '!=' => 'i', '<' => 'i', '>' => 'i', '<=' => 'i', '>=' => 'i',
 		'<<' => 'i', '>>' => 'i', '<<=' => 'i', '>>=' => 'i',
 		'LIKE' => 'i', 'NOT LIKE' => 'i', 'ILIKE' => 'i', 'NOT ILIKE' => 'i', 'SIMILAR TO' => 'i',
@@ -146,26 +146,26 @@ class Postgres extends ADODB_base {
 		'@@ plainto_tsquery' => 't', '@@@ plainto_tsquery' => 't', '@> plainto_tsquery' => 't', '<@ plainto_tsquery' => 't'
 	);
 	// Array of allowed trigger events
-	var $triggerEvents= array(
+	public $triggerEvents= array(
 		'INSERT', 'UPDATE', 'DELETE', 'INSERT OR UPDATE', 'INSERT OR DELETE',
 		'DELETE OR UPDATE', 'INSERT OR DELETE OR UPDATE'
 	);
 	// When to execute the trigger
-	var $triggerExecTimes = array('BEFORE', 'AFTER');
+	public $triggerExecTimes = array('BEFORE', 'AFTER');
 	// How often to execute the trigger
-	var $triggerFrequency = array('ROW','STATEMENT');
+	public $triggerFrequency = array('ROW','STATEMENT');
 	// Array of allowed type alignments
-	var $typAligns = array('char', 'int2', 'int4', 'double');
+	public $typAligns = array('char', 'int2', 'int4', 'double');
 	// The default type alignment
-	var $typAlignDef = 'int4';
+	public $typAlignDef = 'int4';
 	// Default index type
-	var $typIndexDef = 'BTREE';
+	public $typIndexDef = 'BTREE';
 	// Array of allowed index types
-	var $typIndexes = array('BTREE', 'RTREE', 'GIST', 'GIN', 'HASH');
+	public $typIndexes = array('BTREE', 'RTREE', 'GIST', 'GIN', 'HASH');
 	// Array of allowed type storage attributes
-	var $typStorages = array('plain', 'external', 'extended', 'main');
+	public $typStorages = array('plain', 'external', 'extended', 'main');
 	// The default type storage
-	var $typStorageDef = 'plain';
+	public $typStorageDef = 'plain';
 
 	/**
 	 * Constructor

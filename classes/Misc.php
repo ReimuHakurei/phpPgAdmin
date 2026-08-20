@@ -7,9 +7,9 @@
 
 	class Misc {
 		// Tracking string to include in HREFs
-		var $href;
+		public $href;
 		// Tracking string to include in forms
-		var $form;
+		public $form;
 
 		/* Constructor */
 		function __construct() {
