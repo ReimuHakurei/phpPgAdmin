@@ -1,6 +1,27 @@
 phpPgAdmin History
 ------------------
 
+Unreleased
+--------------
+
+Bugs:
+* Privileges page crashed on PostgreSQL 17+ for any table with a MAINTAIN grant
+  (which is every table with an ACL, since the owner gets it by default)
+* Constraint tree for a table logged warnings on PostgreSQL 18, which lists
+  NOT NULL as constraints
+* Table properties page logged a warning when the table didn't exist
+
+Security:
+* Theme names from the request or the ppaTheme cookie must now be a plain
+  directory name
+
+Features:
+* Docker image (PHP 8.5, Apache, pg_dump 18) configured with environment variables
+* tests/run.sh: crawls the UI against a real PostgreSQL in Docker and fails on
+  PHP warnings or SQL errors
+* GitHub Actions for tests and for publishing the image to Docker Hub on release
+
+
 Version 7.14.8-mod
 --------------
 Released: August 12th, 2026
