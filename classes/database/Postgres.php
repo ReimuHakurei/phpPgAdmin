@@ -130,7 +130,8 @@ class Postgres extends ADODB_base {
   		'U' => 'USAGE',
   		'C' => 'CREATE',
   		'T' => 'TEMPORARY',
-  		'c' => 'CONNECT'
+  		'c' => 'CONNECT',
+		'm' => 'MAINTAIN' // PostgreSQL 17+
 	);
 	// Rule action types
 	public $rule_events = array('SELECT', 'INSERT', 'UPDATE', 'DELETE');

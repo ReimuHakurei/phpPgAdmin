@@ -115,20 +115,27 @@
 	if (!isset($conf['theme']))
 		$conf['theme'] = 'default';
 
+	// Theme names come from the request or a cookie and end up in a <link>
+	// tag, so only accept plain directory names.
+	$_valid_theme = function ($name) {
+		return is_string($name) && preg_match('/^[A-Za-z0-9_-]+$/', $name)
+			&& is_file("./themes/{$name}/global.css");
+	};
+
 	// 1. Check for the theme from a request var
-	if (isset($_REQUEST['theme']) && is_file("./themes/{$_REQUEST['theme']}/global.css")) {
+	if (isset($_REQUEST['theme']) && $_valid_theme($_REQUEST['theme'])) {
 		/* save the selected theme in cookie for a year */
 		setcookie('ppaTheme', $_REQUEST['theme'], time()+31536000);
 		$_theme = $_SESSION['ppaTheme'] = $conf['theme'] = $_REQUEST['theme'];
 	}
 
 	// 2. Check for theme session var
-	if (!isset($_theme) && isset($_SESSION['ppaTheme']) && is_file("./themes/{$_SESSION['ppaTheme']}/global.css")) {
+	if (!isset($_theme) && isset($_SESSION['ppaTheme']) && $_valid_theme($_SESSION['ppaTheme'])) {
 		$conf['theme']  = $_SESSION['ppaTheme'];
 	}
 
 	// 3. Check for theme in cookie var
-	if (!isset($_theme) && isset($_COOKIE['ppaTheme']) && is_file("./themes/{$_COOKIE['ppaTheme']}/global.css")) {
+	if (!isset($_theme) && isset($_COOKIE['ppaTheme']) && $_valid_theme($_COOKIE['ppaTheme'])) {
 		$conf['theme']  = $_COOKIE['ppaTheme'];
 	}
 
@@ -139,19 +146,19 @@
 		$_theme = '';
 
 		if ( (isset($info['theme']['default']))
-			and is_file("./themes/{$info['theme']['default']}/global.css")
+			and $_valid_theme($info['theme']['default'])
 		)
 			$_theme = $info['theme']['default'];
 
 		if ( isset($_REQUEST['database'])
 			and isset($info['theme']['db'][$_REQUEST['database']])
-			and is_file("./themes/{$info['theme']['db'][$_REQUEST['database']]}/global.css")
+			and $_valid_theme($info['theme']['db'][$_REQUEST['database']])
 		)
 			$_theme = $info['theme']['db'][$_REQUEST['database']];
 
 		if ( isset($info['username'])
 			and isset($info['theme']['user'][$info['username']])
-			and is_file("./themes/{$info['theme']['user'][$info['username']]}/global.css")
+			and $_valid_theme($info['theme']['user'][$info['username']])
 		)
 			$_theme = $info['theme']['user'][$info['username']];
 

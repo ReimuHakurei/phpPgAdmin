@@ -570,7 +570,10 @@
 					return 'ForeignKey';
 				case 'p':
 					return 'PrimaryKey';
-
+				case 'n': // NOT NULL, listed as a constraint since PostgreSQL 18
+					return 'CheckConstraint';
+				default:
+					return 'Constraints';
 			}
 		}
 

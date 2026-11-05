@@ -1,0 +1,32 @@
+# Used by tests/run.sh. PG_VERSION and PHP_VERSION pick what gets tested.
+name: ppa-test
+
+services:
+  db:
+    image: postgres:${PG_VERSION:-18}-alpine
+    environment:
+      POSTGRES_USER: ppa
+      POSTGRES_PASSWORD: ppa
+      POSTGRES_DB: ppa_test
+    volumes:
+      - ./fixtures.sql:/docker-entrypoint-initdb.d/fixtures.sql:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "ppa", "-d", "ppa_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  app:
+    image: ${PPA_IMAGE:-ppa:test}
+    build:
+      context: ..
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.5}
+    environment:
+      PPA_SERVERS: "Test=db:5432"
+      PPA_SHOW_ADVANCED: "true"
+    ports:
+      - "127.0.0.1:${PPA_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy

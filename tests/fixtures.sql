@@ -1,0 +1,81 @@
+-- One of most things phpPgAdmin can show, so the crawler has pages to visit.
+-- Keep it working on PostgreSQL 9.6, the oldest version tested in CI.
+
+CREATE SCHEMA shop;
+
+CREATE TYPE shop.order_status AS ENUM ('new', 'paid', 'shipped');
+CREATE TYPE shop.money_pair AS (amount numeric, currency char(3));
+CREATE DOMAIN shop.email AS text CHECK (VALUE ~ '@');
+
+CREATE TABLE shop.customer (
+    id serial PRIMARY KEY,
+    name text NOT NULL,
+    email shop.email UNIQUE,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+COMMENT ON TABLE shop.customer IS 'People who buy things';
+COMMENT ON COLUMN shop.customer.name IS 'Full name';
+
+CREATE TABLE shop.orders (
+    id bigserial PRIMARY KEY,
+    customer_id int NOT NULL REFERENCES shop.customer(id) ON DELETE CASCADE,
+    status shop.order_status NOT NULL DEFAULT 'new',
+    total numeric(12,2) CHECK (total >= 0),
+    note text,
+    data jsonb
+);
+CREATE INDEX orders_customer_idx ON shop.orders (customer_id);
+CREATE INDEX orders_status_idx ON shop.orders (status) WHERE status <> 'shipped';
+
+CREATE SEQUENCE shop.invoice_seq START 1000;
+
+CREATE VIEW shop.open_orders AS
+    SELECT o.id, c.name, o.total
+    FROM shop.orders o JOIN shop.customer c ON c.id = o.customer_id
+    WHERE o.status <> 'shipped';
+
+CREATE MATERIALIZED VIEW shop.order_totals AS
+    SELECT customer_id, sum(total) AS total FROM shop.orders GROUP BY customer_id;
+
+CREATE FUNCTION shop.touch() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    NEW.note := coalesce(NEW.note, '') || '.';
+    RETURN NEW;
+END $$;
+
+CREATE TRIGGER orders_touch BEFORE UPDATE ON shop.orders
+    FOR EACH ROW EXECUTE PROCEDURE shop.touch();
+
+CREATE FUNCTION shop.add(a int, b int) RETURNS int LANGUAGE sql IMMUTABLE AS 'SELECT a + b';
+
+CREATE AGGREGATE shop.my_sum (int) (SFUNC = shop.add, STYPE = int, INITCOND = '0');
+
+CREATE OPERATOR shop.=== (LEFTARG = int, RIGHTARG = int, PROCEDURE = shop.add);
+
+CREATE RULE orders_no_delete AS ON DELETE TO shop.orders
+    WHERE OLD.status = 'shipped' DO INSTEAD NOTHING;
+
+CREATE TEXT SEARCH CONFIGURATION shop.simple_en (COPY = pg_catalog.english);
+
+INSERT INTO shop.customer (name, email) VALUES
+    ('Ana', 'ana@example.com'),
+    ('Budi', 'budi@example.com'),
+    ('Chen <script>', 'chen@example.com');
+
+INSERT INTO shop.orders (customer_id, status, total, note, data) VALUES
+    (1, 'new', 10.50, NULL, '{"items": 1}'),
+    (1, 'paid', 99.00, 'gift', '{"items": 3}'),
+    (2, 'shipped', 5.00, 'it''s quoted', NULL);
+
+REFRESH MATERIALIZED VIEW shop.order_totals;
+
+CREATE TABLE public.plain (id int, val text);
+INSERT INTO public.plain SELECT g, md5(g::text) FROM generate_series(1, 100) g;
+
+CREATE ROLE reader LOGIN PASSWORD 'reader';
+CREATE ROLE staff;
+GRANT staff TO reader;
+GRANT USAGE ON SCHEMA shop TO staff;
+GRANT SELECT ON ALL TABLES IN SCHEMA shop TO staff;
+
+CREATE DATABASE ppa_other;
