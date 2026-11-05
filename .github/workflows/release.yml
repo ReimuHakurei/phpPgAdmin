@@ -1,0 +1,67 @@
+name: Release
+
+# Publishing a GitHub release (tag like v7.15.0) builds the image and pushes it
+# to Docker Hub as 7.15.0, 7.15 and latest. Pre-releases only get the full
+# version tag.
+#
+# Running it by hand from a tag rebuilds that version, which is how you pick up
+# security fixes in the base image without cutting a new release.
+#
+# Needs:
+#   vars.DOCKERHUB_USERNAME   Docker Hub user or org
+#   vars.DOCKERHUB_IMAGE      repository name, defaults to "phppgadmin"
+#   secrets.DOCKERHUB_TOKEN   access token with read/write scope
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+
+jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: docker.io/${{ vars.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_IMAGE || 'phppgadmin' }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+          labels: |
+            org.opencontainers.image.title=phpPgAdmin
+            org.opencontainers.image.description=Web-based administration tool for PostgreSQL
+
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          pull: true
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

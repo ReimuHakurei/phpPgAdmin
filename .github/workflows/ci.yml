@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lint:
+    name: Lint (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 7.4 is the oldest version composer.json allows, keep it here so
+        # nobody starts using syntax it can't parse.
+        php: ['7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: php -l
+        run: |
+          docker run --rm -v "$PWD":/app:ro -w /app php:${{ matrix.php }}-cli sh -ec '
+            find . -name "*.php" -not -path "./.git/*" -print0 \
+              | xargs -0 -n1 -P4 php -l > /tmp/lint.log 2>&1 || { grep -v "^No syntax errors" /tmp/lint.log; exit 1; }
+          '
+
+  smoke:
+    name: Smoke (PHP ${{ matrix.php }}, PostgreSQL ${{ matrix.pg }})
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental || false }}
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.5']
+        pg: ['9.6', '12', '14', '16', '17', '18']
+        include:
+          - php: '8.1'
+            pg: '18'
+          - php: '8.6-rc'
+            pg: '18'
+            experimental: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Run tests/run.sh
+        env:
+          PHP_VERSION: ${{ matrix.php }}
+          PG_VERSION: ${{ matrix.pg }}
+        run: tests/run.sh
