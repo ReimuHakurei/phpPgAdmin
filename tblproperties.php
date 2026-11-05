@@ -465,7 +465,7 @@
 		$ck = $data->getConstraintsWithFields($_REQUEST['table']);
 
 		// Show comment if any
-		if ($tdata->fields['relcomment'] !== null)
+		if (isset($tdata->fields['relcomment']))
 			echo '<p class="comment">', $misc->printVal($tdata->fields['relcomment']), "</p>\n";
 
 		$columns = array(

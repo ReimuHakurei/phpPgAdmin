@@ -2237,7 +2237,7 @@
 				if (file_exists($path.'.png')) return $path.'.png';
 				if (file_exists($path.'.gif')) return $path.'.gif';
 			}
-			else {
+			elseif (is_array($icon)) {
 				// Icon from plugins
 				$path = "plugins/{$icon[0]}/images/{$icon[1]}";
 				if (file_exists($path.'.png')) return $path.'.png';

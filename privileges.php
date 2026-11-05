@@ -175,7 +175,8 @@
 		else
 			$privileges = $data->getPrivileges($object, $_REQUEST['subject']);
 
-		if (sizeof($privileges) > 0) {
+		// getPrivileges() returns a negative number on error
+		if (is_array($privileges) && sizeof($privileges) > 0) {
 			echo "<table>\n";
 			if ($data->hasRoles())
 				echo "<tr><th class=\"data\">{$lang['strrole']}</th>";
