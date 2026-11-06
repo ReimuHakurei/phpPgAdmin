@@ -4,6 +4,28 @@ phpPgAdmin History
 Unreleased
 --------------
 
+Features:
+* Default theme: larger, clearer text. Sizes no longer shrink with nesting
+  (action buttons were ~9px), and it uses the system UI font
+* The version shown is this fork's release tag plus "-mod", e.g. "v1.2.0-mod".
+  Docker release images take it from the git tag; otherwise it's the version
+  in libraries/lib.inc.php
+
+
+Version v1.1.0-mod
+--------------
+Released: November 6th, 2026
+
+Features:
+* Servers can list their databases ($conf['servers'][n]['databases'], or
+  "host:port/db1+db2" in PPA_SERVERS) to get a separate login for each one,
+  checked against that database instead of the server's default database
+
+
+Version v1.0.0-mod
+--------------
+Released: November 6th, 2026
+
 Bugs:
 * Privileges page crashed on PostgreSQL 17+ for any table with a MAINTAIN grant
   (which is every table with an ACL, since the owner gets it by default)
@@ -16,9 +38,6 @@ Security:
   directory name
 
 Features:
-* Servers can list their databases ($conf['servers'][n]['databases'], or
-  "host:port/db1+db2" in PPA_SERVERS) to get a separate login for each one,
-  checked against that database instead of the server's default database
 * Docker image (PHP 8.5, Apache, pg_dump 18) configured with environment variables
 * tests/run.sh: crawls the UI against a real PostgreSQL in Docker and fails on
   PHP warnings or SQL errors

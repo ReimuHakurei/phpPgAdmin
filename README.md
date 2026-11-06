@@ -94,6 +94,9 @@ then.
   older client.
 - `conf/`, `classes/`, `lang/` and the ADOdb library return 403 over HTTP.
 - PHP errors go to the container log (`docker logs`), not the page.
+- Release images show their tag as the version, e.g. `v1.2.0-mod`. Local builds
+  can set it with `--build-arg PPA_RELEASE=v1.2.0`; without it they show the
+  version in `libraries/lib.inc.php`.
 
 Don't put this on the public internet. It's a login form that hands out
 database sessions and has a long history of XSS and CSRF reports. Keep it on
@@ -140,8 +143,11 @@ so don't point `crawl.py` at a database you care about.
 
 ## Releasing
 
-1. Update `$appVersion` in `libraries/lib.inc.php` and add a section to `HISTORY`.
-2. Tag it as `vX.Y.Z` and publish a GitHub release from that tag.
+1. Turn `Unreleased` in `HISTORY` into `Version vX.Y.Z-mod` with the date, and
+   set `$appVersion` in `libraries/lib.inc.php` to `vX.Y.Z-mod`. That's what
+   non-Docker installs and local builds show.
+2. Tag it as `vX.Y.Z` and publish a GitHub release from that tag. The image
+   shows the tag as the version, `vX.Y.Z-mod`.
 
 The release workflow runs the tests, then builds for amd64 and arm64 and
 pushes `X.Y.Z`, `X.Y` and `latest`. A pre-release (`v7.15.0-rc.1`) only gets

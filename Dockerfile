@@ -50,6 +50,11 @@ COPY docker/config.inc.php /var/www/html/conf/config.inc.php
 # Set to 1 when the app is served over HTTPS (directly or behind a proxy).
 ENV PHP_SESSION_COOKIE_SECURE=0
 
+# Release tag shown as the version, e.g. "v1.2.0-mod". The release workflow
+# passes the git tag; when empty the version in libraries/lib.inc.php is shown.
+ARG PPA_RELEASE=
+ENV PPA_RELEASE=${PPA_RELEASE}
+
 USER www-data
 EXPOSE 8080
 

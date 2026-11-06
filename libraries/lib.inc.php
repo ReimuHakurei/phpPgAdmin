@@ -15,8 +15,15 @@
 	// Application name
 	$appName = 'phpPgAdmin';
 
-	// Application version
-	$appVersion = '7.14.8-mod';
+	// Application version: this fork's release tag plus "-mod" (it is based on
+	// upstream 7.14.8-mod). Release images set PPA_RELEASE from the git tag at
+	// build time; without it the latest release below is shown.
+	$appVersion = 'v1.1.0-mod';
+	$appRelease = getenv('PPA_RELEASE');
+	if (is_string($appRelease) && preg_match('/^[A-Za-z0-9][A-Za-z0-9._+-]{0,39}$/', $appRelease)) {
+		$appVersion = "{$appRelease}-mod";
+	}
+	unset($appRelease);
 
 	// PostgreSQL and PHP minimum version
 	global $postgresqlMinVer;
