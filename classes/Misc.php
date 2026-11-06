@@ -2612,17 +2612,22 @@
 
 		/**
 		 * Save the given SQL script in the history
-		 * of the database and server.
+		 * of the database and server. Only the most recent 50 entries
+		 * per server and database are kept.
 		 * @param $script the SQL script to save.
 		 */
 		function saveScriptHistory($script) {
+			$max = 50;
 			list($usec, $sec) = explode(' ', microtime());
 			$time = ((float)$usec + (float)$sec);
-			$_SESSION['history'][$_REQUEST['server']][$_REQUEST['database']]["$time"] = array(
+			$history =& $_SESSION['history'][$_REQUEST['server']][$_REQUEST['database']];
+			$history["$time"] = array(
 				'query' => $script,
 				'paginate' => (!isset($_REQUEST['paginate'])? 'f':'t'),
 				'queryid' => $time,
 			);
+			if (count($history) > $max)
+				$history = array_slice($history, -$max, null, true);
 		}
 
 		/*
