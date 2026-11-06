@@ -23,7 +23,7 @@ services:
       args:
         PHP_VERSION: ${PHP_VERSION:-8.5}
     environment:
-      PPA_SERVERS: "Test=db:5432"
+      PPA_SERVERS: "Test=db:5432 Scoped=db:5432/ppa_other+ppa_test"
       PPA_SHOW_ADVANCED: "true"
     ports:
       - "127.0.0.1:${PPA_PORT:-8080}:8080"

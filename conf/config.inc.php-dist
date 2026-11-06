@@ -35,6 +35,11 @@
 	$conf['servers'][0]['pg_dump_path'] = '/usr/bin/pg_dump';
 	$conf['servers'][0]['pg_dumpall_path'] = '/usr/bin/pg_dumpall';
 
+	// Optional: give each of these databases its own login instead of one
+	// login for the whole server. They show up under the server in the tree,
+	// and a login for one of them can only use that database.
+	//$conf['servers'][0]['databases'] = array('orders', 'billing');
+
 	// Example for a second server (PostgreSQL for Windows)
 	//$conf['servers'][1]['desc'] = 'Test Server';
 	//$conf['servers'][1]['host'] = '127.0.0.1';

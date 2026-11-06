@@ -34,6 +34,7 @@ fi
 
 status=0
 python3 crawl.py "http://127.0.0.1:$PPA_PORT" "db:5432:allow" ppa ppa || status=1
+python3 dblogin.py "http://127.0.0.1:$PPA_PORT" scoped scoped || status=1
 
 # Anything PHP complained about ends up in the Apache error log (container stderr).
 compose logs --no-log-prefix app 2>&1 \

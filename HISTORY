@@ -16,6 +16,9 @@ Security:
   directory name
 
 Features:
+* Servers can list their databases ($conf['servers'][n]['databases'], or
+  "host:port/db1+db2" in PPA_SERVERS) to get a separate login for each one,
+  checked against that database instead of the server's default database
 * Docker image (PHP 8.5, Apache, pg_dump 18) configured with environment variables
 * tests/run.sh: crawls the UI against a real PostgreSQL in Docker and fails on
   PHP warnings or SQL errors

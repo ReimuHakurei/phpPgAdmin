@@ -27,6 +27,8 @@ if (!function_exists('ppa_env')) {
 	}
 
 	// "Production=db1.internal:5432, Staging=db2.internal, [::1]:5433"
+	// A "/db1+db2" suffix gives each of those databases its own login:
+	// "Shop=db3.internal:5432/orders+billing"
 	function ppa_parse_servers($list)
 	{
 		$servers = array();
@@ -35,6 +37,12 @@ if (!function_exists('ppa_env')) {
 			$desc = null;
 			if (strpos($entry, '=') !== false) {
 				list($desc, $entry) = explode('=', $entry, 2);
+			}
+
+			$databases = array();
+			if (strpos($entry, '/') !== false) {
+				list($entry, $dblist) = explode('/', $entry, 2);
+				$databases = preg_split('/\+/', $dblist, -1, PREG_SPLIT_NO_EMPTY);
 			}
 
 			$port = 5432;
@@ -48,11 +56,15 @@ if (!function_exists('ppa_env')) {
 				$host = $entry;
 			}
 
-			$servers[] = array(
+			$server = array(
 				'desc' => $desc !== null && $desc !== '' ? $desc : $host,
 				'host' => $host,
 				'port' => $port,
 			);
+			if ($databases) {
+				$server['databases'] = $databases;
+			}
+			$servers[] = $server;
 		}
 
 		return $servers;
