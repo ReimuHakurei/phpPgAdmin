@@ -12,7 +12,10 @@
 		var table = $('table#data');
 		if (!table.length || table.closest('#fkcontainer').length) return;
 
-		table.wrap('<div id="fkcontainer" class="fk" />');
+		// Wrap the scroll box rather than the table, so the referenced rows
+		// pop up over the page instead of inside the scrolling grid.
+		var box = table.closest('.data-scroll');
+		(box.length ? box : table).wrap('<div id="fkcontainer" class="fk" />');
 		$('#fkcontainer').append('<div id="root" />');
 
 		jQuery.ppa = {

@@ -83,6 +83,8 @@
 		// Only our own pages: "x.php" or the start page.
 		var file = u.pathname.substring(u.pathname.lastIndexOf('/') + 1);
 		if (file !== '' && !/\.php$/.test(file)) return false;
+		// Downloads (history.php?action=download and the like).
+		if (u.searchParams.get('action') === 'download') return false;
 		// A jump to an anchor on the current page.
 		if (u.hash && u.pathname === location.pathname && u.search === location.search) return false;
 		return true;

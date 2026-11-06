@@ -629,7 +629,12 @@
 
 				EOL;
 
-				if ($script) echo "{$script}\n";
+				if ($script) {
+					// Version our own scripts and stylesheets like the ones above.
+					$script = preg_replace_callback('/\b(src|href)="((?:js|libraries\/js|themes|plugins)\/[^"?]+\.(?:js|css)|[a-z_]+\.js)"/',
+						function ($m) { return $m[1] . '="' . htmlspecialchars($this->asset($m[2])) . '"'; }, $script);
+					echo "{$script}\n";
+				}
 
 				$plugins_head = array();
 				$_params = array('heads' => &$plugins_head);
@@ -2104,7 +2109,7 @@
 				}
 
 				if ($ma !== null) {
-					echo "<script src=\"multiactionform.js\" type=\"text/javascript\"></script>\n";
+					echo "<script src=\"", htmlspecialchars($this->asset('multiactionform.js')), "\"></script>\n";
 					echo "<form id=\"multi_form\" action=\"{$ma['url']}\" method=\"post\" enctype=\"multipart/form-data\">\n";
 					if (isset($ma['vars']))
 						foreach ($ma['vars'] as $k => $v)
@@ -2904,7 +2909,7 @@
 
 				$fksprops['code'] .= '<div id="fkbg"></div>';
 				$fksprops['code'] .= '<div id="fklist"></div>';
-				$fksprops['code'] .= '<script src="js/ac_insert_row.js" type="text/javascript"></script>';
+				$fksprops['code'] .= '<script src="' . htmlspecialchars($this->asset('js/ac_insert_row.js')) . '"></script>';
 			}
 
 			else /* we have no foreign keys on this table */

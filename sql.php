@@ -185,7 +185,7 @@
 	$sql_is_script = isset($_FILES['script']) && $_FILES['script']['size'] > 0;
 
 	$subject = isset($_REQUEST['subject'])? $_REQUEST['subject'] : '';
-	$misc->printHeader($lang['strqueryresults'], SqlEditor::head());
+	$misc->printHeader($lang['strqueryresults'], SqlEditor::head() . "<script src=\"js/grid.js\"></script>\n");
 	$misc->printBody();
 	$misc->printTrail('database');
 	$misc->printTitle($lang['strqueryresults']);
