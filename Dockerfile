@@ -30,6 +30,8 @@ RUN set -eux; \
 	rm -rf /var/lib/apt/lists/*; \
 	php -m | grep -qx pgsql; \
 	php -m | grep -qx mbstring; \
+	if ! php -m | grep -qx 'Zend OPcache'; then docker-php-ext-enable opcache; fi; \
+	php -m | grep -qx 'Zend OPcache'; \
 	pg_dump --version
 
 RUN set -eux; \
@@ -58,5 +60,6 @@ ENV PPA_RELEASE=${PPA_RELEASE}
 USER www-data
 EXPOSE 8080
 
+# A static file: no PHP bootstrap and no new session every 30 seconds.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
-	CMD curl -fsS -o /dev/null http://127.0.0.1:8080/intro.php || exit 1
+	CMD curl -fsS -o /dev/null http://127.0.0.1:8080/healthz || exit 1
