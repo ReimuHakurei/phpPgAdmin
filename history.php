@@ -1,7 +1,7 @@
 <?php
 
 	/**
-	 * Alternative SQL editing window
+	 * History of the SQL run on each database (the History link of the top bar)
 	 *
 	 * $Id: history.php,v 1.3 2008/01/10 19:37:07 xzilla Exp $
 	 */
@@ -11,19 +11,29 @@
 
 	$action = (isset($_REQUEST['action'])) ? $_REQUEST['action'] : '';
 
+	/**
+	 * Prints the page header, trail and title
+	 */
+	function _printPageStart() {
+		global $misc, $lang;
+
+		$misc->printHeader($lang['strhistory']);
+		$misc->printBody();
+		$misc->printTrail(isset($_REQUEST['database']) ? 'database' : 'server');
+		$misc->printTitle($lang['strhistory']);
+	}
+
 	function doDefault() {
 		global $misc, $lang;
 
-		$onchange = "onchange=\"location.href='history.php?server=' + encodeURI(server.options[server.selectedIndex].value) + '&amp;database=' + encodeURI(database.options[database.selectedIndex].value) + '&amp;'\"";
+		_printPageStart();
 
-		$misc->printHeader($lang['strhistory']);
-		
-		// Bring to the front always
-		echo "<body onload=\"window.focus();\">\n";
-	
-		echo "<form action=\"history.php\" method=\"post\">\n";
-		$misc->printConnection($onchange);
-		echo "</form><br />";
+		// Changing the server or database shows its history; changing the
+		// server forgets the database, it may not exist there.
+		echo "<form action=\"history.php\" method=\"get\" id=\"history-connection\">\n";
+		$misc->printConnection("onchange=\"if (this.name == 'server') { var db = this.form.elements.database; if (db) db.disabled = true; } if (this.form.requestSubmit) this.form.requestSubmit(); else this.form.submit();\"");
+		echo "<noscript><p><input type=\"submit\" value=\"", htmlspecialchars($lang['strchangeconnection']), "\" /></p></noscript>\n";
+		echo "</form>\n";
 	
 		if (!isset($_REQUEST['database'])) {
 			echo "<p>{$lang['strnodatabaseselected']}</p>\n";
@@ -33,7 +43,8 @@
 		if (isset($_SESSION['history'][$_REQUEST['server']][$_REQUEST['database']])) {
 			include_once('classes/ArrayRecordSet.php');
 						   
-			$history = new ArrayRecordSet($_SESSION['history'][$_REQUEST['server']][$_REQUEST['database']]);
+			// Most recent first
+			$history = new ArrayRecordSet(array_reverse($_SESSION['history'][$_REQUEST['server']][$_REQUEST['database']], true));
 			
 			$columns = array(
 				'query' => array(
@@ -62,8 +73,7 @@
 								'queryid' => field('queryid'),
 								'paginate' => field('paginate')
 							)
-						),
-						'target' => 'detail'
+						)
 					)
 				),
 				'remove' => array(
@@ -137,11 +147,8 @@
 		global $misc, $lang;
 
 		if ($confirm) {
-			$misc->printHeader($lang['strhistory']);
+			_printPageStart();
 
-        		// Bring to the front always
-	        	echo "<body onload=\"window.focus();\">\n";
-			
 			echo "<h3>{$lang['strdelhistory']}</h3>\n";
 			echo "<p>{$lang['strconfdelhistory']}</p>\n";
 
@@ -162,10 +169,7 @@
 		global $misc, $lang;
 
 		if ($confirm) {
-			$misc->printHeader($lang['strhistory']);
-
-        		// Bring to the front always
-	        	echo "<body onload=\"window.focus();\">\n";
+			_printPageStart();
 
 			echo "<h3>{$lang['strclearhistory']}</h3>\n";
 			echo "<p>{$lang['strconfclearhistory']}</p>\n";
@@ -218,9 +222,7 @@
 		default:
 			doDefault();
 	}
-																					
-	// Set the name of the window
-	$misc->setWindowName('history');
+
 	$misc->printFooter();
 	
 ?>

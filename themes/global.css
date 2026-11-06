@@ -619,5 +619,153 @@ nav.pagination .pagenav.gap {
 
 
 /* ---- SQL editor (sqledit.php, database.php SQL tab, js/sqleditor.js) ---- */
+/* js/sqleditor.js copies the background and text colour of the theme's
+ * textarea onto the editor and picks the "ppa" or "ppa-dark" CodeMirror theme
+ * from how dark that background is. Everything else here is translucent or
+ * currentColor so it works on any theme. */
+.CodeMirror.sql-editor-cm {
+	border: 1px solid rgba(128, 128, 128, 0.55);
+	font-family: var(--ppa-mono, ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace);
+	font-size: var(--ppa-size, 13px);
+	line-height: 1.4;
+	resize: vertical;
+	min-height: 5em;
+	margin-top: 0.25em;
+	margin-bottom: 0.25em;
+}
+.CodeMirror.sql-editor-cm.CodeMirror-focused {
+	border-color: rgba(70, 130, 220, 0.9);
+	box-shadow: 0 0 0 1px rgba(70, 130, 220, 0.45);
+}
+.sql-editor-cm .CodeMirror-gutters {
+	background: rgba(128, 128, 128, 0.08);
+	border-right: 1px solid rgba(128, 128, 128, 0.3);
+}
+.sql-editor-cm .CodeMirror-linenumber { color: inherit; opacity: 0.55; }
+.sql-editor-cm .CodeMirror-cursor { border-left-color: currentColor; }
+.sql-editor-cm .CodeMirror-selected { background: rgba(80, 140, 255, 0.22); }
+.sql-editor-cm.CodeMirror-focused .CodeMirror-selected { background: rgba(80, 140, 255, 0.35); }
+.sql-editor-cm .CodeMirror-line::selection,
+.sql-editor-cm .CodeMirror-line > span::selection,
+.sql-editor-cm .CodeMirror-line > span > span::selection { background: rgba(80, 140, 255, 0.35); }
+.sql-editor-cm .CodeMirror-placeholder { color: inherit; opacity: 0.5; }
+.sql-editor-cm div.CodeMirror span.CodeMirror-matchingbracket,
+.sql-editor-cm span.CodeMirror-matchingbracket {
+	color: inherit;
+	background: rgba(40, 180, 90, 0.3);
+	outline: 1px solid rgba(40, 180, 90, 0.7);
+}
+.sql-editor-cm span.CodeMirror-nonmatchingbracket { color: inherit; background: rgba(230, 40, 40, 0.35); }
+.sql-editor-cm .sql-editor-error-line { background: rgba(230, 40, 40, 0.16); }
+.sql-editor-cm .sql-editor-error-mark { text-decoration: underline wavy rgb(220, 40, 40); text-decoration-skip-ink: none; }
+
+/* Syntax colours for light backgrounds ... */
+.cm-s-ppa .cm-keyword { color: #7a2bb0; font-weight: 600; }
+.cm-s-ppa .cm-builtin, .cm-s-ppa .cm-type { color: #0b5cad; }
+.cm-s-ppa .cm-string, .cm-s-ppa .cm-string-2 { color: #a3381e; }
+.cm-s-ppa .cm-number, .cm-s-ppa .cm-atom { color: #0f7a5c; }
+.cm-s-ppa .cm-comment { color: #6b7280; font-style: italic; }
+.cm-s-ppa .cm-variable-2, .cm-s-ppa .cm-variable-3 { color: #8a5a00; }
+.cm-s-ppa .cm-operator, .cm-s-ppa .cm-bracket, .cm-s-ppa .cm-punctuation { color: inherit; }
+/* ... and for dark ones. */
+.cm-s-ppa-dark .cm-keyword { color: #d4a5ff; font-weight: 600; }
+.cm-s-ppa-dark .cm-builtin, .cm-s-ppa-dark .cm-type { color: #84c2ff; }
+.cm-s-ppa-dark .cm-string, .cm-s-ppa-dark .cm-string-2 { color: #f2b48a; }
+.cm-s-ppa-dark .cm-number, .cm-s-ppa-dark .cm-atom { color: #7fdcb8; }
+.cm-s-ppa-dark .cm-comment { color: #9ca3af; font-style: italic; }
+.cm-s-ppa-dark .cm-variable-2, .cm-s-ppa-dark .cm-variable-3 { color: #f0d080; }
+.cm-s-ppa-dark .cm-operator, .cm-s-ppa-dark .cm-bracket, .cm-s-ppa-dark .cm-punctuation { color: inherit; }
+
+/* Autocomplete popup (appended to <body>, classed with the editor theme) */
+.CodeMirror-hints.ppa, .CodeMirror-hints.ppa-dark {
+	font-family: var(--ppa-mono, ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace);
+	font-size: var(--ppa-size-sm, 12px);
+	max-height: 16em;
+	z-index: 1000;
+}
+.CodeMirror-hints.ppa-dark {
+	background: #2d2d2d;
+	border-color: #5a5a5a;
+	box-shadow: 2px 3px 8px rgba(0, 0, 0, 0.5);
+}
+.CodeMirror-hints.ppa-dark .CodeMirror-hint { color: #eee; }
+.CodeMirror-hints.ppa li.CodeMirror-hint-active,
+.CodeMirror-hints.ppa-dark li.CodeMirror-hint-active { background: #2f6fcf; color: #fff; }
+.CodeMirror-hints .CodeMirror-hint-table { font-weight: 600; }
+
+/* Toolbar: Execute / Explain / Explain analyze / Reset / Recent queries */
+.sql-editor-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.4em;
+	margin: 0.5em 0;
+}
+.sql-editor-toolbar input.sql-editor-execute { font-weight: bold; }
+.sql-editor-toolbar input.sql-editor-explain-analyze { border-left: 3px solid rgb(214, 140, 20); }
+.sql-editor-history { position: relative; }
+.sql-editor-history > summary {
+	cursor: pointer;
+	padding: 0.15em 0.5em;
+	border: 1px solid rgba(128, 128, 128, 0.55);
+	border-radius: 3px;
+	list-style: none;
+	user-select: none;
+}
+.sql-editor-history > summary::-webkit-details-marker { display: none; }
+.sql-editor-history > summary::after { content: " \25BE"; }
+.sql-editor-history-menu {
+	position: absolute;
+	z-index: 50;
+	left: 0;
+	top: 100%;
+	margin-top: 2px;
+	width: 36em;
+	max-width: 80vw;
+	max-height: 22em;
+	overflow: auto;
+	padding: 0.25em;
+	background: Canvas;
+	color: CanvasText;
+	border: 1px solid rgba(128, 128, 128, 0.6);
+	box-shadow: 2px 3px 10px rgba(0, 0, 0, 0.3);
+}
+.sql-editor-history-menu ul { list-style: none; margin: 0; padding: 0; }
+.sql-editor-history-menu p { margin: 0.3em; opacity: 0.75; }
+button.sql-editor-history-item {
+	display: block;
+	width: 100%;
+	text-align: left;
+	padding: 0.3em 0.4em;
+	border: 0;
+	border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+	background: transparent;
+	color: inherit;
+	font-family: var(--ppa-mono, ui-monospace, monospace);
+	font-size: var(--ppa-size-sm, 12px);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	cursor: pointer;
+}
+button.sql-editor-history-item:hover,
+button.sql-editor-history-item:focus { background: rgba(80, 140, 255, 0.25); }
+button.sql-editor-history-clear { margin: 0.4em 0.2em 0.1em; }
+
+/* sql.php: status line, error, notices and long values in the results */
+.sql-status { margin-top: 0.5em; margin-bottom: 0.5em; }
+.sql-status .sql-ok, .sql-status .sql-failed { font-weight: bold; }
+table.error.sql-error { border-left: 4px solid rgb(220, 40, 40); margin-top: 0.5em; margin-bottom: 0.5em; }
+table.error.sql-error pre.error { white-space: pre-wrap; margin: 0.3em 0 0; }
+p.sql-rows-capped {
+	padding: 0.35em 0.6em;
+	border-left: 4px solid rgb(214, 140, 20);
+	background: rgba(214, 140, 20, 0.14);
+}
+.sql-results td { white-space: nowrap; vertical-align: top; }
+.sql-results .sql-full { display: none; max-width: 60em; overflow-wrap: anywhere; }
+input.sql-expand:checked ~ .sql-results .sql-clipped { display: none; }
+input.sql-expand:checked ~ .sql-results .sql-full { display: block; }
+input.sql-expand:checked ~ .sql-results td { white-space: pre-wrap; }
 
 /* ---- end SQL editor ---- */

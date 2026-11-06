@@ -1,6 +1,7 @@
 <?php
 require_once('./classes/Plugin.php');
 require_once('./plugins/Report/classes/Reports.php');
+require_once('./classes/SqlEditor.php');
 
 class Report extends Plugin {
 
@@ -349,7 +350,7 @@ class Report extends Plugin {
 
 		$reportsdb = $this->get_reportsdb();
 
-		$misc->printHeader($this->lang['strreports']);
+		$misc->printHeader($this->lang['strreports'], SqlEditor::head());
 		$misc->printBody();
 		$misc->printTrail('server');
 		$misc->printTabs('server', 'report_plugin');
@@ -393,8 +394,9 @@ class Report extends Plugin {
 		echo "<td class=\"data1\"><textarea style=\"width:100%;\" rows=\"5\" cols=\"50\" name=\"descr\">",
 			htmlspecialchars($_POST['descr']), "</textarea></td></tr>\n";
 		echo "<tr><th class=\"data left required\">{$lang['strsql']}</th>\n";
-		echo "<td class=\"data1\"><textarea style=\"width:100%;\" rows=\"15\" cols=\"50\" name=\"report_sql\">",
-			htmlspecialchars($_POST['report_sql']), "</textarea></td></tr>\n";
+		echo "<td class=\"data1\">";
+		SqlEditor::printTextarea($_POST['report_sql'], array('name' => 'report_sql', 'rows' => 15, 'run' => false));
+		echo "</td></tr>\n";
 		echo "</table>\n";
 		echo "<label for=\"paginate\"><input type=\"checkbox\" id=\"paginate\" name=\"paginate\"", (isset($_POST['paginate']) ? ' checked="checked"' : ''), " />&nbsp;{$lang['strpaginate']}</label>\n";
 		echo "<p><input type=\"hidden\" name=\"action\" value=\"save_edit\" />\n";
@@ -529,7 +531,7 @@ class Report extends Plugin {
 		global $data, $reportsdb, $misc;
 		global $lang;
 
-		$misc->printHeader($this->lang['strreports']);
+		$misc->printHeader($this->lang['strreports'], SqlEditor::head());
 		$misc->printBody();
 		$misc->printTrail('server');
 		$misc->printTabs('server', 'report_plugin');
@@ -584,8 +586,9 @@ class Report extends Plugin {
 		echo "<td class=\"data1\"><textarea style=\"width:100%;\" rows=\"5\" cols=\"50\" name=\"descr\">",
 			htmlspecialchars($_REQUEST['descr']), "</textarea></td></tr>\n";
 		echo "<tr><th class=\"data left required\">{$lang['strsql']}</th>\n";
-		echo "<td class=\"data1\"><textarea style=\"width:100%;\" rows=\"15\" cols=\"50\" name=\"report_sql\">",
-			htmlspecialchars($_REQUEST['report_sql']), "</textarea></td></tr>\n";
+		echo "<td class=\"data1\">";
+		SqlEditor::printTextarea($_REQUEST['report_sql'], array('name' => 'report_sql', 'rows' => 15, 'run' => false));
+		echo "</td></tr>\n";
 		echo "</table>\n";
 		echo "<label for=\"paginate\"><input type=\"checkbox\" id=\"paginate\" name=\"paginate\"", (isset($_REQUEST['paginate']) ? ' checked="checked"' : ''), " />&nbsp;{$lang['strpaginate']}</label>\n";
 		echo "<p><input type=\"hidden\" name=\"action\" value=\"save_create\" />\n";

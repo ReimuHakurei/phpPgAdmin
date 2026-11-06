@@ -1,37 +1,57 @@
 <?php
 
 	/**
-	 * Alternative SQL editing window
+	 * SQL editor and object finder (the SQL and Find links of the top bar)
 	 *
 	 * $Id: sqledit.php,v 1.40 2008/01/10 19:37:07 xzilla Exp $
 	 */
 
 	// Include application functions
 	include_once('./libraries/lib.inc.php');
+	include_once('./classes/SqlEditor.php');
 
 	$action = (isset($_REQUEST['action'])) ? $_REQUEST['action'] : '';
 	if (!isset($msg)) $msg = '';
 
 	/**
-	 * Private function to display server and list of databases
+	 * Prints the page header, trail and title
+	 */
+	function _printPageStart($title, $script = null) {
+		global $misc;
+
+		$misc->printHeader($title, $script);
+		$misc->printBody();
+		$misc->printTrail(isset($_REQUEST['database']) ? 'database' : 'server');
+		$misc->printTitle($title);
+	}
+
+	/**
+	 * Prints the form that switches server and database: it reloads this
+	 * page for the new connection, so that the right encoding and search
+	 * path are used. Must be printed outside of any other form.
+	 */
+	function _printConnectionForm() {
+		global $action, $lang;
+
+		echo "<form id=\"sqledit-connection\" action=\"sqledit.php\" method=\"get\">\n";
+		echo "<input type=\"hidden\" name=\"action\" value=\"", htmlspecialchars($action == 'find' ? 'find' : 'sql'), "\" />\n";
+		echo "<noscript><p><input type=\"submit\" value=\"", htmlspecialchars($lang['strchangeconnection']), "\" /></p></noscript>\n";
+		echo "</form>\n";
+	}
+
+	/**
+	 * Prints the server and database selectors. They belong to the
+	 * connection form (see above) through their form attribute; the form they
+	 * are printed in gets the current connection as hidden fields.
 	 */
 	function _printConnection() {
-		global $data, $action, $misc;
-		
-		// The javascript action on the select box reloads the
-		// popup whenever the server or database is changed.
-		// This ensures that the correct page encoding is used.
-		$onchange = "onchange=\"location.href='sqledit.php?action=" . 
-				urlencode($action) . "&amp;server=' + encodeURI(server.options[server.selectedIndex].value) + '&amp;database=' + encodeURI(database.options[database.selectedIndex].value) + ";
-		
-		// The exact URL to reload to is different between SQL and Find mode, however.
-		if ($action == 'find') {
-			$onchange .= "'&amp;term=' + encodeURI(term.value) + '&amp;filter=' + encodeURI(filter.value) + '&amp;'\"";
-		} else {
-			$onchange .= "'&amp;query=' + encodeURI(query.value) + '&amp;search_path=' + encodeURI(search_path.value) + (paginate.checked ? '&amp;paginate=on' : '')  + '&amp;'\"";
-		}
-		
-		$misc->printConnection($onchange);
+		global $misc;
+
+		// Changing the server forgets the database, it may not exist there
+		$misc->printConnection("form=\"sqledit-connection\" onchange=\"if (this.name == 'server') { var db = this.form.elements.database; if (db) db.disabled = true; } if (this.form.requestSubmit) this.form.requestSubmit(); else this.form.submit();\"");
+		echo $misc->form;
+		if (!isset($_REQUEST['database']))
+			echo "<input type=\"hidden\" name=\"database\" value=\"\" />\n";
 	}
 	
 	/**
@@ -44,17 +64,13 @@
 		if (!isset($_REQUEST['term'])) $_REQUEST['term'] = '';
 		if (!isset($_REQUEST['filter'])) $_REQUEST['filter'] = '';
 		
-		$misc->printHeader($lang['strfind']);
-		
-		// Bring to the front always
-		echo "<body onload=\"window.focus();\">\n";
-		
-		$misc->printTabs($misc->getNavTabs('popup'), 'find');
-		
-		echo "<form action=\"database.php\" method=\"post\" target=\"detail\">\n";
+		_printPageStart($lang['strfind']);
+		_printConnectionForm();
+
+		echo "<form action=\"database.php\" method=\"post\" id=\"sqledit-find\">\n";
 		_printConnection();
-		echo "<p><input name=\"term\" value=\"", htmlspecialchars($_REQUEST['term']), 
-			"\" size=\"32\" maxlength=\"{$data->_maxNameLen}\" />\n";
+		echo "<p><input name=\"term\" value=\"", htmlspecialchars($_REQUEST['term']),
+			"\" size=\"32\" maxlength=\"{$data->_maxNameLen}\" autofocus=\"autofocus\" />\n";
 			
 		// Output list of filters.  This is complex due to all the 'has' and 'conf' feature possibilities
 		echo "<select name=\"filter\">\n";
@@ -83,9 +99,6 @@
 		echo "<input type=\"submit\" value=\"{$lang['strfind']}\" />\n";
 		echo "<input type=\"hidden\" name=\"action\" value=\"find\" /></p>\n";
 		echo "</form>\n";
-
-		// Default focus
-		$misc->setFocus('forms[0].term');
 	}
 
 	/**
@@ -97,45 +110,25 @@
 		
 		if (!isset($_SESSION['sqlquery'])) $_SESSION['sqlquery'] = '';
 		
-		$misc->printHeader($lang['strsql']);
-		
-		// Bring to the front always
-		echo "<body onload=\"window.focus();\">\n";
-		
-		$misc->printTabs($misc->getNavTabs('popup'), 'sql');
-		
-		echo "<form action=\"sql.php\" method=\"post\" enctype=\"multipart/form-data\" target=\"detail\">\n";
+		_printPageStart($lang['strsql'], SqlEditor::head());
+		_printConnectionForm();
+
+		echo "<form action=\"sql.php\" method=\"post\" enctype=\"multipart/form-data\" id=\"sql-editor-form\" class=\"sql-editor-form\">\n";
 		_printConnection();
 		echo "\n";
 		if (!isset($_REQUEST['search_path']))
 			$_REQUEST['search_path'] = implode(',',$data->getSearchPath());
-		
+
 		echo "<p><label>";
 		$misc->printHelp($lang['strsearchpath'], 'pg.schema.search_path');
 		echo ": <input type=\"text\" name=\"search_path\" size=\"50\" value=\"",
 			htmlspecialchars($_REQUEST['search_path']), "\" /></label></p>\n";
-		
-		echo "<textarea style=\"width:98%;\" rows=\"10\" cols=\"50\" name=\"query\">",
-			htmlspecialchars($_SESSION['sqlquery']), "</textarea>\n";
 
-		// Check that file uploads are enabled
-		if (ini_get('file_uploads')) {
-			// Don't show upload option if max size of uploads is zero
-			$max_size = $misc->inisizeToBytes(ini_get('upload_max_filesize'));
-			if (is_double($max_size) && $max_size > 0) {
-				echo "<p><input type=\"hidden\" name=\"MAX_FILE_SIZE\" value=\"{$max_size}\" />\n";
-				echo "<label for=\"script\">{$lang['struploadscript']}</label> <input id=\"script\" name=\"script\" type=\"file\" /></p>\n";
-			}
-		}
-
-		echo "<p><label for=\"paginate\"><input type=\"checkbox\" id=\"paginate\" name=\"paginate\"", (isset($_REQUEST['paginate']) ? ' checked="checked"' : ''), " />&nbsp;{$lang['strpaginate']}</label></p>\n";
-		
-		echo "<p><input type=\"submit\" name=\"execute\" accesskey=\"r\" value=\"{$lang['strexecute']}\" />\n";
-		echo "<input type=\"reset\" accesskey=\"q\" value=\"{$lang['strreset']}\" /></p>\n";
+		SqlEditor::printTextarea($_SESSION['sqlquery'], array('rows' => 12, 'autofocus' => true));
+		SqlEditor::printUpload();
+		SqlEditor::printPaginate(isset($_REQUEST['paginate']));
+		SqlEditor::printButtons();
 		echo "</form>\n";
-		
-		// Default focus
-		$misc->setFocus('forms[0].query');
 	}
 
 	switch ($action) {
@@ -147,10 +140,7 @@
 			doDefault();
 			break;
 	}
-	
-	// Set the name of the window
-	$misc->setWindowName('sqledit');
-	
+
 	$misc->printFooter();
 	
 ?>

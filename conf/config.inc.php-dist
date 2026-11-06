@@ -160,6 +160,10 @@
 	// link to count them exactly.
 	$conf['browse_exact_count_limit'] = 100000;
 
+	// Max rows to show on the SQL results page when not paginating.
+	// Larger results are cut off with a notice; use pagination or Download.
+	$conf['max_result_rows'] = 1000;
+
 	// Send XHTML strict headers?
 	$conf['use_xhtml_strict'] = false;
 

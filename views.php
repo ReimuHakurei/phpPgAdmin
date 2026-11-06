@@ -401,8 +401,9 @@
 		echo "\t<td class=\"data1\"><input name=\"formView\" size=\"32\" maxlength=\"{$data->_maxNameLen}\" value=\"", 
 			htmlspecialchars($_REQUEST['formView']), "\" /></td>\n\t</tr>\n";
 		echo "\t<tr>\n\t\t<th class=\"data left required\">{$lang['strdefinition']}</th>\n";
-		echo "\t<td class=\"data1\"><textarea style=\"width:100%;\" rows=\"10\" cols=\"50\" name=\"formDefinition\">", 
-			htmlspecialchars($_REQUEST['formDefinition']), "</textarea></td>\n\t</tr>\n";
+		echo "\t<td class=\"data1\">";
+		SqlEditor::printTextarea($_REQUEST['formDefinition'], array('name' => 'formDefinition', 'rows' => 10, 'run' => false));
+		echo "</td>\n\t</tr>\n";
 		echo "\t<tr>\n\t\t<th class=\"data left\">{$lang['strcomment']}</th>\n";
 		echo "\t\t<td class=\"data1\"><textarea name=\"formComment\" rows=\"3\" cols=\"32\">", 
 			htmlspecialchars($_REQUEST['formComment']), "</textarea></td>\n\t</tr>\n";
@@ -750,7 +751,8 @@
 	if ($action == 'tree') doTree();
 	if ($action == 'subtree') dosubTree();
 
-	$misc->printHeader($lang['strviews']);
+	include_once('./classes/SqlEditor.php');
+	$misc->printHeader($lang['strviews'], in_array($action, array('create', 'save_create')) ? SqlEditor::head() : null);
 	$misc->printBody();
 
 	switch ($action) {

@@ -47,8 +47,9 @@
 			echo "<form action=\"viewproperties.php\" method=\"post\">\n";
 			echo "<table style=\"width: 100%\">\n";
 			echo "\t<tr>\n\t\t<th class=\"data left required\">{$lang['strdefinition']}</th>\n";
-			echo "\t\t<td class=\"data1\"><textarea style=\"width: 100%;\" rows=\"20\" cols=\"50\" name=\"formDefinition\">", 
-				htmlspecialchars($_POST['formDefinition']), "</textarea></td>\n\t</tr>\n";
+			echo "\t\t<td class=\"data1\">";
+			SqlEditor::printTextarea($_POST['formDefinition'], array('name' => 'formDefinition', 'rows' => 20, 'run' => false));
+			echo "</td>\n\t</tr>\n";
 			echo "\t<tr>\n\t\t<th class=\"data left\">{$lang['strcomment']}</th>\n";
 			echo "\t\t<td class=\"data1\"><textarea rows=\"3\" cols=\"32\" name=\"formComment\">", 
 				htmlspecialchars($_POST['formComment'] ?? ''), "</textarea></td>\n\t</tr>\n";
@@ -519,7 +520,9 @@
 		$misc->printNavLinks($navlinks, 'viewproperties-viewproperties', get_defined_vars());
 	}
 
-	$misc->printHeader($lang['strviews'] . ' - ' . $_REQUEST['view']);
+	include_once('./classes/SqlEditor.php');
+	$misc->printHeader($lang['strviews'] . ' - ' . $_REQUEST['view'],
+		in_array($action, array('edit', 'save_edit')) ? SqlEditor::head() : null);
 	$misc->printBody();
 
 	switch ($action) {
