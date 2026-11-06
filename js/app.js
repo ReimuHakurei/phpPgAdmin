@@ -18,6 +18,14 @@
  *  - Links and forms with a target other than _self/_top (or "detail", the
  *    old frame name) are left to the browser, as are links with a download
  *    attribute or data-ppa-native, and forms posting to the export pages.
+ *
+ * Dialogs: links with data-ppa-dialog="modal" or "panel", and links to the
+ * drop/delete/empty confirmation pages, open that page in a dialog instead
+ * (a centred modal, or a panel sliding in from the side) over the current
+ * page. Its form is submitted from the dialog; if the answer is the same
+ * form again (e.g. an error while saving) it stays in the dialog, otherwise
+ * the dialog closes and the answer replaces the page underneath. The pages
+ * themselves are unchanged and still work on their own.
  */
 (function () {
 	'use strict';
@@ -100,7 +108,9 @@
 		if (!href || href.charAt(0) === '#' || /^javascript:/i.test(href)) return;
 		if (!handles(a.href, a.getAttribute('target'))) return;
 		e.preventDefault();
-		visit(a.href);
+		var kind = dialogKind(a);
+		if (kind) openDialog(a.href, kind);
+		else visit(a.href);
 	});
 
 	window.addEventListener('submit', function (e) {
@@ -108,7 +118,11 @@
 		var form = e.target;
 		if (!form || form.nodeName !== 'FORM' || form.hasAttribute('data-ppa-native')) return;
 		var submitter = e.submitter || null;
-		var action = (submitter && submitter.hasAttribute('formaction')) ? submitter.formAction : form.action;
+		// Not form.action: nearly every form here has an <input name="action">,
+		// which the browser returns for form.action instead of the URL.
+		var action = (submitter && submitter.hasAttribute('formaction'))
+			? submitter.formAction
+			: new URL(form.getAttribute('action') || location.href, location.href).href;
 		var method = ((submitter && submitter.getAttribute('formmethod')) || form.getAttribute('method') || 'get').toLowerCase();
 		var target = (submitter && submitter.getAttribute('formtarget')) || form.getAttribute('target');
 		if (!handles(action, target)) return;
@@ -122,6 +136,11 @@
 			if (submitter && submitter.name) data.append(submitter.name, submitter.value);
 		}
 		e.preventDefault();
+
+		if (form.closest('.ppa-dialog')) {
+			submitDialog(form, submitter, action, method, data);
+			return;
+		}
 
 		if (method === 'get') {
 			var u = new URL(action, location.href);
@@ -162,6 +181,7 @@
 
 	function visit(url, opts) {
 		opts = opts || {};
+		closeDialog(true);
 		var method = opts.method || 'GET';
 		if (request) request.abort();
 		var ctrl = request = (window.AbortController ? new AbortController() : null);
@@ -361,6 +381,190 @@
 	});
 
 	/* ---------------------------------------------------------------- */
+	/* Dialogs                                                          */
+	/* ---------------------------------------------------------------- */
+
+	// Confirmation pages that open as a modal without being marked.
+	var DIALOG_ACTIONS = /^(confirm_drop|confirm_drop_[a-z]+|confirm_empty|confdelrow|confdelhistory|confclearhistory|confdelautovac)$/;
+	// Buttons that only go back: in a dialog they just close it.
+	var CLOSE_BUTTONS = /^(cancel|no)$/;
+
+	var dialog = null;
+
+	function dialogKind(a) {
+		var kind = a.getAttribute('data-ppa-dialog');
+		if (kind === 'modal' || kind === 'panel') return kind;
+		if (kind !== null) return null;   // data-ppa-dialog="" opts out
+		var action;
+		try { action = new URL(a.href).searchParams.get('action'); } catch (e) { return null; }
+		return action && DIALOG_ACTIONS.test(action) ? 'modal' : null;
+	}
+
+	function shellText(name, fallback) {
+		var app = document.getElementById('ppa-app');
+		return (app && app.getAttribute('data-' + name)) || fallback;
+	}
+
+	// The page's content without what only makes sense on a full page.
+	function dialogContent(doc) {
+		var content = doc.getElementById('ppa-main') || doc.body;
+		content.querySelectorAll('.topbar, .trail, nav.tabs, .bottom_link, .alert-banner').forEach(function (n) {
+			n.parentNode.removeChild(n);
+		});
+		return content;
+	}
+
+	function openDialog(url, kind) {
+		closeDialog(true);
+		progress(true);
+		return fetch(url, { credentials: 'same-origin', headers: { 'X-PPA-Partial': '1' } })
+			.then(function (res) {
+				if (!/text\/html/i.test(res.headers.get('Content-Type') || '')) throw new Error('not a page');
+				return res.text().then(function (html) { return { html: html, url: res.url || url }; });
+			})
+			.then(function (r) {
+				progress(false);
+				var doc = new DOMParser().parseFromString(r.html, 'text/html');
+				syncHead(doc);
+
+				var d = document.createElement('dialog');
+				d.className = 'ppa-dialog ppa-dialog-' + kind;
+				d.innerHTML = '<div class="ppa-dialog-head"><button type="button" class="ppa-dialog-close"></button></div>' +
+					'<div class="ppa-dialog-body"></div>';
+				var close = d.querySelector('.ppa-dialog-close');
+				close.setAttribute('aria-label', shellText('close', 'Close'));
+				close.title = shellText('close', 'Close');
+				close.textContent = '×';
+				document.body.appendChild(d);
+				dialog = { el: d, kind: kind, url: r.url, dirty: false, scroll: window.scrollY };
+
+				d.addEventListener('cancel', function (e) {   // Esc
+					e.preventDefault();
+					closeDialog(false);
+				});
+				close.addEventListener('click', function () { closeDialog(false); });
+				// Clicking the dimmed backdrop of a modal closes it too.
+				d.addEventListener('mousedown', function (e) {
+					if (e.target === d && kind === 'modal') closeDialog(false);
+				});
+				d.addEventListener('input', function () { if (dialog) dialog.dirty = true; });
+				d.addEventListener('change', function () { if (dialog) dialog.dirty = true; });
+
+				fillDialog(doc);
+				d.showModal();
+				focusDialog();
+			})
+			.catch(function () {
+				progress(false);
+				visit(url);   // show it as a page instead
+			});
+	}
+
+	function fillDialog(doc) {
+		var d = dialog.el;
+		var body = d.querySelector('.ppa-dialog-body');
+		var content = dialogContent(doc);
+		while (body.firstChild) body.removeChild(body.firstChild);
+		var nodes = Array.prototype.slice.call(content.childNodes);
+		for (var i = 0; i < nodes.length; i++) body.appendChild(document.importNode(nodes[i], true));
+
+		// The page title becomes the dialog's title.
+		var h = body.querySelector('h2');
+		var head = d.querySelector('.ppa-dialog-head');
+		var old = head.querySelector('h2');
+		if (old) head.removeChild(old);
+		if (h) {
+			h.id = 'ppa-dialog-title';
+			head.insertBefore(h, head.firstChild);
+			d.setAttribute('aria-labelledby', 'ppa-dialog-title');
+		}
+		body.scrollTop = 0;
+		return runScripts(headScripts(doc).concat(Array.prototype.slice.call(body.querySelectorAll('script')))).then(function () {
+			fire('ppa:load', { url: dialog ? dialog.url : '', dialog: true });
+		});
+	}
+
+	// Only once the dialog is open: nothing in a closed dialog takes focus,
+	// and showModal() would otherwise focus the first button (Yes/Drop).
+	function focusDialog() {
+		if (!dialog) return;
+		var body = dialog.el.querySelector('.ppa-dialog-body');
+		// Confirmations focus Cancel (markDangerButtons); forms their first field.
+		markDangerButtons(body);
+		if (body.contains(document.activeElement)) return;
+		var field = body.querySelector('input:not([type=hidden]):not([type=submit]):not([type=checkbox]), textarea, select');
+		(field || body.querySelector('input[type=submit], button') || dialog.el).focus({ preventScroll: true });
+	}
+
+	function closeDialog(force) {
+		if (!dialog) return true;
+		if (!force && dialog.dirty && !window.confirm(shellText('discard', 'Discard your changes?'))) return false;
+		var d = dialog.el;
+		dialog = null;
+		if (d.open) d.close();
+		if (d.parentNode) d.parentNode.removeChild(d);
+		return true;
+	}
+	ppa.closeDialog = closeDialog;
+
+	function hiddenAction(form) {
+		var f = form.querySelector('input[type=hidden][name=action]');
+		return f ? f.value : '';
+	}
+
+	function submitDialog(form, submitter, action, method, data) {
+		if (submitter && CLOSE_BUTTONS.test(submitter.name || '')) {
+			closeDialog(true);
+			return;
+		}
+		var sent = hiddenAction(form);
+		var path = new URL(action, location.href).pathname;
+		var url = action, body = data;
+		if (method === 'get') {
+			var u = new URL(action, location.href);
+			var params = new URLSearchParams();
+			data.forEach(function (v, k) { if (typeof v === 'string') params.append(k, v); });
+			u.search = params.toString();
+			url = u.href;
+			body = undefined;
+		}
+		var buttons = form.querySelectorAll('input[type=submit], button[type=submit]');
+		buttons.forEach(function (b) { b.disabled = true; });
+		progress(true);
+
+		fetch(url, { method: method === 'get' ? 'GET' : 'POST', body: body, credentials: 'same-origin', headers: { 'X-PPA-Partial': '1' } })
+			.then(function (res) { return res.text().then(function (html) { return { html: html, url: res.url || url }; }); })
+			.then(function (r) {
+				progress(false);
+				if (!dialog) return;
+				var doc = new DOMParser().parseFromString(r.html, 'text/html');
+				var main = doc.getElementById('ppa-main') || doc.body;
+				// The same form came back (an error while saving): stay here.
+				var again = sent && Array.prototype.some.call(main.querySelectorAll('form'), function (f) {
+					return hiddenAction(f) === sent && new URL(f.getAttribute('action') || r.url, r.url).pathname === path;
+				});
+				if (again) {
+					fillDialog(doc).then(focusDialog);
+					return;
+				}
+				// Done: the answer (usually the list with a message) replaces
+				// the page underneath, which keeps its address and scroll.
+				var scroll = dialog.scroll;
+				closeDialog(true);
+				show(r.html, location.href, { method: 'GET', push: false, scroll: scroll });
+			})
+			.catch(function () {
+				progress(false);
+				buttons.forEach(function (b) { b.disabled = false; });
+				var p = document.createElement('p');
+				p.className = 'message error';
+				p.setAttribute('role', 'alert');
+				p.textContent = shellText('load-error', 'The page could not be loaded.');
+				if (dialog) dialog.el.querySelector('.ppa-dialog-body').insertBefore(p, dialog.el.querySelector('.ppa-dialog-body').firstChild);
+			});
+	}
+
+	/* ---------------------------------------------------------------- */
 	/* Sidebar: tree refresh, mobile toggle, resizing, Ctrl+K           */
 	/* ---------------------------------------------------------------- */
 
@@ -449,7 +653,7 @@
 	function markDangerButtons(root) {
 		var forms = root.querySelectorAll('form');
 		for (var i = 0; i < forms.length; i++) {
-			var cancel = forms[i].querySelector('input[type="submit"][name="cancel"], button[name="cancel"]');
+			var cancel = forms[i].querySelector('input[type="submit"][name="cancel"], button[name="cancel"], input[type="submit"][name="no"]');
 			if (!cancel) continue;
 			var buttons = forms[i].querySelectorAll('input[type="submit"], button[type="submit"]');
 			var marked = false;
@@ -463,7 +667,8 @@
 		}
 	}
 
-	document.addEventListener('ppa:load', function () {
+	document.addEventListener('ppa:load', function (e) {
+		if (e.detail && e.detail.dialog) return;   // the dialog does its own
 		var m = main();
 		if (m) markDangerButtons(m);
 	});

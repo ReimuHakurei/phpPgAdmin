@@ -147,6 +147,33 @@ async function runSql(q) {
 check(await runSql('SELECT 1') === 0, 'SELECT does not reload the tree');
 check(await runSql('CREATE TABLE public.ppa_tmp_reload (id int); DROP TABLE public.ppa_tmp_reload;') > 0, 'CREATE/DROP reloads the tree');
 
+// Ordinary forms (they have a hidden "action" field) submit in the page.
+await page.goto(BASE + 'schemas.php?server=db%3A5432%3Aallow&database=ppa_test&subject=database&action=create', { waitUntil: 'networkidle0' });
+await page.evaluate(() => { window.__marker = 3; });
+await page.type('input[name=formName]', 'ppa_formtest');
+await page.click('input[type=submit][name=create]'); await idle();
+check(await page.evaluate(() => window.__marker === 3), 'a form with a hidden action field submits in the page');
+check((await mainText()).includes('ppa_formtest'), 'and its result is shown (schema created)');
+
+// File upload through a form, in the page.
+await page.evaluate(async () => {
+	await fetch('sql.php', { method: 'POST', body: new URLSearchParams({ server: 'db:5432:allow', database: 'ppa_test', query: 'DROP TABLE IF EXISTS public.imp_test; CREATE TABLE public.imp_test (id int, name text)' }) });
+});
+const csvFile = path.join(os.tmpdir(), 'ppa-import-test.csv');
+fs.writeFileSync(csvFile, 'id,name\n1,one\n2,two\n');
+await page.goto(BASE + 'tblproperties.php?server=db%3A5432%3Aallow&database=ppa_test&schema=public&subject=table&table=imp_test&action=import', { waitUntil: 'networkidle0' });
+await page.evaluate(() => { window.__marker = 4; });
+const fileInput = await page.$('input[type=file][name=source]');
+await fileInput.uploadFile(csvFile);
+await page.select('select[name=format]', 'csv');
+await page.click('form[enctype="multipart/form-data"] input[type=submit]'); await idle();
+check(await page.evaluate(() => window.__marker === 4), 'file upload form submits in the page');
+await page.goto(BASE + 'display.php?server=db%3A5432%3Aallow&database=ppa_test&schema=public&subject=table&table=imp_test', { waitUntil: 'networkidle0' });
+check(/two/.test(await mainText()), 'and the uploaded rows were imported');
+await page.evaluate(async () => {
+	await fetch('sql.php', { method: 'POST', body: new URLSearchParams({ server: 'db:5432:allow', database: 'ppa_test', query: 'DROP TABLE IF EXISTS public.imp_test; DROP SCHEMA IF EXISTS ppa_formtest' }) });
+});
+
 // Processes page polls; leaving it stops the polling.
 await page.goto(BASE + 'database.php?server=db%3A5432%3Aallow&database=ppa_test&subject=database&action=processes', { waitUntil: 'networkidle2' });
 await sleep(4000);

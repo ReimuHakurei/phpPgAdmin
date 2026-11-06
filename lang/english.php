@@ -849,6 +849,8 @@
 	$lang['strsections'] = 'Sections';
 	$lang['strbreadcrumb'] = 'Location';
 	$lang['strtools'] = 'Tools';
+	$lang['strclose'] = 'Close';
+	$lang['strdiscardchanges'] = 'Discard your changes?';
 	$lang['sessionsecuritywarning'] = 'You are running phpPgAdmin with session security disabled. This is a potential security risk!';
 
 	// Autovacuum

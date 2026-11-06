@@ -701,7 +701,8 @@
 						$width = (int) ($conf['left_width'] ?? 200);
 						if ($width < 120) $width = 200;
 						echo "<div id=\"ppa-app\" style=\"--ppa-sidebar-width: {$width}px\" data-load-error=\"",
-							htmlspecialchars($lang['strpageloaderror']), "\">\n";
+							htmlspecialchars($lang['strpageloaderror']), "\" data-close=\"", htmlspecialchars($lang['strclose']),
+							"\" data-discard=\"", htmlspecialchars($lang['strdiscardchanges']), "\">\n";
 						if (!$this->isPartialRequest()) $this->printSidebar();
 						echo "<main id=\"ppa-main\" tabindex=\"-1\">\n";
 						$this->shellOpen = true;

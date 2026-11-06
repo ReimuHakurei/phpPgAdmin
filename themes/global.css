@@ -370,6 +370,137 @@ button:focus-visible {
 	outline-offset: 2px;
 }
 
+/* Dialogs (js/app.js): confirmations as a centred modal, row editing as a
+ * panel from the side. They take the page's own colours. */
+dialog.ppa-dialog {
+	box-sizing: border-box;
+	padding: 0;
+	border: 1px solid rgba(128, 128, 128, 0.45);
+	border-radius: 6px;
+	background-color: inherit;
+	color: inherit;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+	max-height: 85vh;
+	overflow: hidden;
+}
+dialog.ppa-dialog[open] {
+	display: flex;
+	flex-direction: column;
+}
+dialog.ppa-dialog::backdrop {
+	background: rgba(0, 0, 0, 0.4);
+}
+dialog.ppa-dialog-modal {
+	width: min(560px, calc(100vw - 32px));
+	animation: ppa-dialog-in 0.15s ease-out;
+}
+dialog.ppa-dialog-panel {
+	width: min(720px, 94vw);
+	height: 100vh;
+	max-height: 100vh;
+	margin: 0 0 0 auto;
+	border-radius: 0;
+	border-width: 0 0 0 1px;
+	animation: ppa-panel-in 0.2s ease-out;
+}
+[dir="rtl"] dialog.ppa-dialog-panel {
+	margin: 0 auto 0 0;
+	border-width: 0 1px 0 0;
+	animation-name: ppa-panel-in-rtl;
+}
+.ppa-dialog-head {
+	flex: none;
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	padding: 10px 12px 0;
+}
+.ppa-dialog-head h2 {
+	flex: 1;
+	margin: 0;
+}
+.ppa-dialog-close {
+	flex: none;
+	margin-inline-start: auto;
+	width: 30px;
+	height: 30px;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	background: none;
+	color: inherit;
+	font-size: 22px;
+	line-height: 1;
+	cursor: pointer;
+}
+.ppa-dialog-close:hover {
+	border-color: rgba(128, 128, 128, 0.5);
+}
+.ppa-dialog-body {
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+	padding: 8px 14px 14px;
+}
+/* The edit form fits the panel: value fields take the room that's left
+ * instead of their fixed size/cols. */
+.ppa-dialog-panel .ppa-dialog-body > form > table {
+	width: 100%;
+}
+.ppa-dialog-panel .ppa-dialog-body > form > table td:last-child {
+	width: 100%;
+}
+.ppa-dialog-panel .ppa-dialog-body td:last-child textarea,
+.ppa-dialog-panel .ppa-dialog-body td:last-child input[type="text"],
+.ppa-dialog-panel .ppa-dialog-body td:last-child input:not([type]) {
+	width: 100%;
+	min-width: 10em;
+	box-sizing: border-box;
+}
+@keyframes ppa-dialog-in {
+	from { opacity: 0; transform: translateY(8px) scale(0.98); }
+}
+@keyframes ppa-panel-in {
+	from { transform: translateX(40px); opacity: 0; }
+}
+@keyframes ppa-panel-in-rtl {
+	from { transform: translateX(-40px); opacity: 0; }
+}
+@media (max-width: 760px) {
+	/* Edit form on a phone: name, type, format and null on one line, the
+	 * value full width below it. */
+	.ppa-dialog-panel .ppa-dialog-body > form > table,
+	.ppa-dialog-panel .ppa-dialog-body > form > table > tbody {
+		display: block;
+	}
+	.ppa-dialog-panel .ppa-dialog-body > form > table tr {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto auto auto;
+		align-items: center;
+		gap: 4px;
+		padding: 4px 0;
+	}
+	.ppa-dialog-panel .ppa-dialog-body > form > table tr:first-child {
+		display: none;   /* the column headings */
+	}
+	.ppa-dialog-panel .ppa-dialog-body > form > table td:last-child {
+		grid-column: 1 / -1;
+		width: auto;
+	}
+	dialog.ppa-dialog-panel,
+	dialog.ppa-dialog-modal {
+		width: 100vw;
+		max-width: 100vw;
+		height: 100%;
+		max-height: 100%;
+		margin: 0;
+		border-radius: 0;
+		border-width: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	dialog.ppa-dialog { animation: none; }
+}
+
 /* Small screens: the sidebar slides in over the page. */
 @media (max-width: 760px) {
 	#ppa-app {

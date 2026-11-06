@@ -40,7 +40,7 @@ python3 dblogin.py "http://127.0.0.1:$PPA_PORT" scoped scoped || status=1
 # Headless Chrome checks of the JavaScript side (needs Node and Chrome; run
 # "npm ci --prefix tests/browser" once). CHROME points at the browser binary.
 if [ "${BROWSER:-0}" = 1 ]; then
-	for t in shell.mjs editor.js grid.js; do
+	for t in shell.mjs editor.js grid.js dialog.mjs; do
 		echo "== browser/$t"
 		node "browser/$t" "http://127.0.0.1:$PPA_PORT/" || status=1
 	done

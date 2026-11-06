@@ -20,6 +20,9 @@ Features:
 * Browsing: page size selector, a filter box per column, sticky column
   headers, NULL and empty strings look different, double-click copies a
   cell, "Rows 31-60 of 1,234" instead of the row count of the page
+* Editing a row opens a side panel over the grid, deleting a row and the
+  drop/empty confirmations open a dialog. Saving keeps your page, filters
+  and scroll position; a failed save stays in the panel with the error
 * Tables bigger than browse_exact_count_limit (PPA_BROWSE_EXACT_COUNT_LIMIT,
   default 100000 rows) are browsed with the planner's row estimate instead of
   a COUNT(*) on every page; query results check for a next page instead of
@@ -58,6 +61,8 @@ Bugs:
   max_result_rows with a notice
 * Reloading the SQL results page showed "could not find the query!!"
 * Locks/processes auto-refresh kept polling after leaving the page
+* Forms with a hidden "action" field (nearly all of them) did a full page
+  load instead of loading in place
 
 
 Version v1.1.0-mod

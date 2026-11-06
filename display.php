@@ -174,7 +174,7 @@
 						if (($_REQUEST['action'] ?? '') == 'confeditrow' && $rs->fields[$attrs->fields['attname']] === null) {
 							$_REQUEST['nulls'][$attrs->fields['attname']] = 'on';
 						}
-						echo "<label><span><input type=\"checkbox\" name=\"nulls[{$attrs->fields['attname']}]\"",
+						echo "<label><span><input type=\"checkbox\" title=\"{$lang['strnull']}\" aria-label=\"{$lang['strnull']}\" name=\"nulls[{$attrs->fields['attname']}]\"",
 							isset($_REQUEST['nulls'][$attrs->fields['attname']]) ? ' checked="checked"' : '', " /></span></label></td>\n";
 						$elements++;
 					}
@@ -830,7 +830,9 @@
 								'strings' => $_REQUEST['strings'],
 								'page' => $_REQUEST['page'],
 							), $_gets)
-						)
+						),
+						// Opens as a side panel over the grid (js/app.js)
+						'data-ppa-dialog' => 'panel',
 					)
 				),
 				'delete' => array (
@@ -843,7 +845,8 @@
 								'strings' => $_REQUEST['strings'],
 								'page' => $_REQUEST['page'],
 							), $_gets)
-						)
+						),
+						'data-ppa-dialog' => 'modal',
 					)
 				),
 			);

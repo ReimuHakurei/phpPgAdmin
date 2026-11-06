@@ -36,7 +36,10 @@ kept it alive with PHP 8 fixes, and this repo builds on that. What's added here:
   (`=value` for an exact match), and the page size can be changed. Big tables
   show an estimated row count ("about 1.2M rows") instead of counting every
   row; there's a link to count exactly. Double-click a cell to copy its full
-  value.
+  value. Edit opens the row in a panel next to the grid, Delete asks in a
+  small dialog; either way you stay on the same page, filters and scroll
+  position. Drop/empty confirmations elsewhere open as dialogs too.
+  Ctrl/Cmd+click opens the full page instead.
 
 ## Running it
 
