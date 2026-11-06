@@ -692,6 +692,13 @@ nav.pagination .pagenav.gap {
 .CodeMirror-hints.ppa li.CodeMirror-hint-active,
 .CodeMirror-hints.ppa-dark li.CodeMirror-hint-active { background: #2f6fcf; color: #fff; }
 .CodeMirror-hints .CodeMirror-hint-table { font-weight: 600; }
+.CodeMirror-hints .CodeMirror-hint-schema { font-weight: 600; font-style: italic; }
+.CodeMirror-hints .ppa-hint-note {
+	margin-inline-start: 1.5em;
+	font-weight: normal;
+	font-style: normal;
+	opacity: 0.65;
+}
 
 /* Toolbar: Execute / Explain / Explain analyze / Reset / Recent queries */
 .sql-editor-toolbar {

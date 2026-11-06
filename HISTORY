@@ -13,8 +13,8 @@ Features:
   keyboard navigation, resizable
 * SQL editor (CodeMirror) on the SQL tab, the SQL page and view definitions:
   syntax highlighting, Ctrl+Enter to run, run the selection only, Explain and
-  Explain analyze buttons, keywords and table/column names suggested as
-  you type, recent queries
+  Explain analyze buttons, keywords and schema/table/column names
+  suggested as you type, recent queries
   kept in the browser. Results show under the editor, errors highlight the
   failing line
 * Browsing: page size selector, a filter box per column, sticky column

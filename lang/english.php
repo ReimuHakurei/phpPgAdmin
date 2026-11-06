@@ -396,6 +396,8 @@
 	$lang['strdatabasedroppedbad'] = 'Database drop failed.';
 	$lang['strentersql'] = 'Enter the SQL to execute below:';
 	$lang['strsqlexecuted'] = 'SQL executed.';
+	$lang['strhintschema'] = 'schema';
+	$lang['strhintinschema'] = 'in %s';
 	$lang['strsqlfailed'] = 'SQL failed.';
 	$lang['strexplain'] = 'Explain';
 	$lang['strexplainanalyze'] = 'Explain analyze (runs it)';

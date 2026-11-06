@@ -143,11 +143,18 @@ async function run(page, key = 'Control') {
 	hints = await page.$$eval('.CodeMirror-hint', (a) => a.map((e) => e.textContent));
 	ok(hints.includes('plain.val'), 'autocomplete columns after "plain.": ' + hints.join(', '));
 	await page.keyboard.press('Escape');
+	// Bare name of a table outside the search path: offered schema-qualified
 	await cmSet(page, 'SELECT * FROM ord');
 	await page.keyboard.down('Control'); await page.keyboard.press('Space'); await page.keyboard.up('Control');
 	await page.waitForSelector('.CodeMirror-hints', { timeout: 3000 }).catch(() => null);
 	hints = await page.$$eval('.CodeMirror-hint', (a) => a.map((e) => e.textContent));
-	ok(!hints.includes('orders'), 'no unqualified name for a table outside the search path');
+	ok(hints.includes('ordersin shop') && !hints.includes('orders'), 'table outside the search path offered with its schema: ' + hints.slice(0, 4).join(', '));
+	await page.keyboard.press('Escape');
+	await cmSet(page, 'SELECT * FROM custo');
+	await page.keyboard.down('Control'); await page.keyboard.press('Space'); await page.keyboard.up('Control');
+	await page.waitForSelector('.CodeMirror-hints', { timeout: 3000 }).catch(() => null);
+	await page.keyboard.press('Enter');
+	ok(await cmValue(page) === 'SELECT * FROM shop.customer', 'picking it inserts schema.table: ' + JSON.stringify(await cmValue(page)));
 	await page.keyboard.press('Escape');
 	// Ctrl+Space keywords + tables
 	await cmSet(page, 'SEL');
@@ -184,6 +191,23 @@ async function run(page, key = 'Control') {
 	ok((await hintsShown()).length === 0, 'no suggestions inside a comment');
 	await cmSet(page, 'SELECT x');
 	ok((await hintsShown()).length === 0, 'one letter is not enough');
+
+	// Schema names: suggested while typing; picking one lists its tables
+	await cmSet(page, 'SELECT * FROM ');
+	await page.keyboard.type('sh');
+	hints = await hintsShown();
+	ok(hints[0] === 'shopschema', 'schema suggested first: ' + hints.slice(0, 4).join(', '));
+	await page.keyboard.press('Enter');
+	await new Promise((r) => setTimeout(r, 300));
+	ok(await cmValue(page) === 'SELECT * FROM shop.', 'picking a schema adds the dot: ' + JSON.stringify(await cmValue(page)));
+	hints = await hintsShown();
+	ok(hints.includes('shop.orders') && hints.includes('shop.customer'), 'and lists its tables: ' + hints.slice(0, 4).join(', '));
+	await page.keyboard.press('Escape');
+	await cmSet(page, 'SELECT * FROM ');
+	await page.keyboard.type('pub');
+	hints = await hintsShown();
+	ok(hints.includes('publicschema'), 'schema in the search path suggested too: ' + hints.slice(0, 4).join(', '));
+	await page.keyboard.press('Escape');
 
 	// Error highlighting
 	await cmSet(page, 'SELECT *\nFROM shop.orders\nWHERE nope = 1');

@@ -13,6 +13,7 @@
 		// Autocompletion data is capped so huge catalogs don't bloat pages.
 		const HINT_MAX_TABLES = 500;
 		const HINT_MAX_COLUMNS = 1500;
+		const HINT_MAX_SCHEMAS = 200;
 
 		private static $hintCounter = 0;
 
@@ -46,6 +47,8 @@
 		 *        selection - 'fromLine:fromCh:toLine:toCh' to select after load
 		 */
 		static function printTextarea($value, $opts = array()) {
+			global $lang;
+
 			$name = isset($opts['name']) ? $opts['name'] : 'query';
 			$rows = isset($opts['rows']) ? (int) $opts['rows'] : 12;
 
@@ -67,7 +70,9 @@
 				$hint = self::hintData();
 				if ($hint !== null) {
 					$hintId = 'ppa-sqlhint-' . (++self::$hintCounter);
-					$attrs .= " data-sql-hint=\"{$hintId}\"";
+					$attrs .= " data-sql-hint=\"{$hintId}\""
+						. " data-hint-schema=\"" . htmlspecialchars($lang['strhintschema']) . "\""
+						. " data-hint-in-schema=\"" . htmlspecialchars($lang['strhintinschema']) . "\"";
 				}
 			}
 
@@ -136,9 +141,12 @@
 		 * Table, view and column names for autocompletion: those of the
 		 * schemas in the search path first, then, if there is room, those of
 		 * other non-system schemas (which only complete schema-qualified).
-		 * Bounded by HINT_MAX_TABLES/HINT_MAX_COLUMNS. Errors are swallowed:
-		 * autocompletion is optional.
-		 * @return array of array(schema, name, array(column, ...), in search path 1/0), or null
+		 * Also the schema names: those in the search path, then the other
+		 * non-system ones. Bounded by HINT_MAX_TABLES/HINT_MAX_COLUMNS/
+		 * HINT_MAX_SCHEMAS. Errors are swallowed: autocompletion is optional.
+		 * @return array('schemas' => array(name, ...),
+		 *               'tables' => array of array(schema, name, array(column, ...), in search path 1/0)),
+		 *         or null
 		 */
 		static function hintData() {
 			global $data;
@@ -166,13 +174,14 @@
 			if (!$rs) return null;
 
 			$tables = array();
+			$schemas = self::hintSchemas($conn);
 			$order = array();
 			while (($row = pg_fetch_row($rs)) !== false) {
 				$tables[(int) $row[0]] = array($row[1], $row[2], array(), $row[3] === null ? 0 : 1);
 				$order[] = '(' . (int) $row[0] . ',' . count($order) . ')';
 			}
 			pg_free_result($rs);
-			if (!$tables) return array();
+			if (!$tables) return array('schemas' => $schemas, 'tables' => array());
 
 			// Columns of the first tables first, if they don't all fit
 			$sql = "SELECT a.attrelid, a.attname
@@ -188,7 +197,25 @@
 				pg_free_result($rs);
 			}
 
-			return array_values($tables);
+			return array('schemas' => $schemas, 'tables' => array_values($tables));
+		}
+
+		/**
+		 * Schema names for autocompletion, search path first. Empty schemas
+		 * are included: you may well be about to create something in one.
+		 */
+		private static function hintSchemas($conn) {
+			$sql = "SELECT nspname FROM pg_catalog.pg_namespace
+				WHERE nspname = ANY (pg_catalog.current_schemas(false))
+					OR (nspname !~ '^pg_' AND nspname <> 'information_schema')
+				ORDER BY nspname = ANY (pg_catalog.current_schemas(false)) DESC, nspname
+				LIMIT " . self::HINT_MAX_SCHEMAS;
+			$rs = @pg_query($conn, $sql);
+			if (!$rs) return array();
+			$schemas = array();
+			while (($row = pg_fetch_row($rs)) !== false) $schemas[] = $row[0];
+			pg_free_result($rs);
+			return $schemas;
 		}
 
 		/**

@@ -10,7 +10,8 @@
  * Textarea attributes read here:
  *   data-sql-run        Ctrl+Enter submits the form, selection and history work
  *   data-sql-hint       id of a <script type="application/json"> with
- *                       [[schema, table, [column, ...], inSearchPath], ...]
+ *                       {"schemas": [name, ...], "tables":
+ *                       [[schema, table, [column, ...], inSearchPath], ...]}
  *                       for autocompletion
  *   data-error-line/col where the last error was (1-based, in the executed SQL)
  *   data-selection      "fromLine:fromCh:toLine:toCh" to select after loading
@@ -108,31 +109,99 @@
 		return (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255 < 0.45;
 	}
 
-	function hintTables(textarea) {
-		var tables = Object.create(null);
+	/*
+	 * Names for autocompletion, from the JSON the page prints:
+	 *  tables    for CodeMirror's SQL hint: "schema.table" for every table,
+	 *            plus the bare name for tables in the search path
+	 *  schemas   schema names, search path first
+	 *  elsewhere [schema, table] of tables outside the search path, which
+	 *            are offered as "schema.table" when you type their bare name
+	 */
+	function readHint(textarea) {
+		var hint = { tables: Object.create(null), schemas: [], elsewhere: [] };
 		var id = textarea.getAttribute('data-sql-hint');
 		var el = id && document.getElementById(id);
-		if (!el) return tables;
-		var rows;
-		try { rows = JSON.parse(el.textContent); } catch (e) { return tables; }
-		if (!Array.isArray(rows)) return tables;
+		if (!el) return hint;
+		var json;
+		try { json = JSON.parse(el.textContent); } catch (e) { return hint; }
+		// Older pages sent only the list of tables.
+		var rows = Array.isArray(json) ? json : (json && json.tables);
+		if (json && Array.isArray(json.schemas)) hint.schemas = json.schemas.filter(function (n) { return typeof n === 'string'; });
+		if (!Array.isArray(rows)) return hint;
 		rows.forEach(function (row) {
 			if (!Array.isArray(row) || row.length < 2) return;
 			var cols = Array.isArray(row[2]) ? row[2] : [];
-			tables[row[0] + '.' + row[1]] = cols;
+			hint.tables[row[0] + '.' + row[1]] = cols;
 			// Unqualified names only for schemas in the search path. Rows come
 			// in search path order, so the first one wins like in PostgreSQL.
-			if (row[3] && !(row[1] in tables)) tables[row[1]] = cols;
+			if (row[3]) {
+				if (!(row[1] in hint.tables)) hint.tables[row[1]] = cols;
+			} else {
+				hint.elsewhere.push([row[0], row[1]]);
+			}
 		});
-		return tables;
+		return hint;
 	}
 
-	// CodeMirror's SQL completion. When the list pops up on its own while
-	// typing, it stays closed once the word typed so far is itself one of
-	// the suggestions, so Enter after a finished word starts a new line
+	// Picking a schema types "schema." and lists its tables right away.
+	function pickSchema(cm, data, completion) {
+		cm.replaceRange(completion.text + '.', completion.from || data.from, completion.to || data.to, 'complete');
+		setTimeout(function () { cm.showHint({ completeSingle: false }); }, 0);
+	}
+
+	// A grey note after the name in the list ("schema", "in shop").
+	function renderWithNote(el, self, item) {
+		el.appendChild(document.createTextNode(item.label));
+		var note = document.createElement('span');
+		note.className = 'ppa-hint-note';
+		note.textContent = item.note;
+		el.appendChild(note);
+	}
+
+	function startsWith(name, search) {
+		return name.toLowerCase().lastIndexOf(search.toLowerCase(), 0) === 0;
+	}
+
+	// CodeMirror's SQL completion, plus schema names and the tables of
+	// schemas outside the search path. When the list pops up on its own
+	// while typing, it stays closed once the word typed so far is itself one
+	// of the suggestions, so Enter after a finished word starts a new line
 	// instead of swapping it for a longer name. Ctrl+Space shows them all.
 	function sqlHint(cm, options) {
 		var result = window.CodeMirror.hint.sql(cm, options);
+		var hint = cm.ppaHint;
+		if (result && hint) {
+			var search = cm.getRange(result.from, result.to);
+			// Only for a plain word: after "x." CodeMirror's own completion
+			// already lists the tables of a schema or the columns of a table.
+			if (/^[A-Za-z_][\w$]*$/.test(search) || search === '') {
+				var have = Object.create(null);
+				result.list.forEach(function (item) {
+					// A keyword (PUBLIC) mustn't hide the schema of that name.
+					if (/CodeMirror-hint-keyword/.test(item.className || '')) return;
+					have[String(typeof item === 'string' ? item : item.text).toLowerCase()] = 1;
+				});
+				var schemas = [], extra = [];
+				hint.schemas.forEach(function (name) {
+					if (startsWith(name, search) && !have[name.toLowerCase()]) {
+						schemas.push({ text: name, label: name, note: options.schemaNote || 'schema',
+							className: 'CodeMirror-hint-schema', hint: pickSchema, render: renderWithNote });
+					}
+				});
+				hint.elsewhere.forEach(function (t) {
+					var text = t[0] + '.' + t[1];
+					if (search !== '' && startsWith(t[1], search) && !have[text.toLowerCase()]) {
+						extra.push({ text: text, label: t[1], note: (options.inSchemaNote || 'in %s').replace('%s', t[0]),
+							className: 'CodeMirror-hint-table', render: renderWithNote });
+					}
+				});
+				// Schemas first, other tables before the keywords.
+				var at = 0;
+				while (at < result.list.length && !/CodeMirror-hint-keyword/.test(result.list[at].className || '')) at++;
+				Array.prototype.splice.apply(result.list, [at, 0].concat(extra));
+				Array.prototype.splice.apply(result.list, [0, 0].concat(schemas));
+			}
+		}
 		if (!result || !result.list || !result.list.length) return null;
 		if (options && options.auto) {
 			var typed = cm.getRange(result.from, result.to).toLowerCase();
@@ -183,6 +252,7 @@
 		var runnable = textarea.hasAttribute('data-sql-run');
 		var rows = parseInt(textarea.getAttribute('rows'), 10) || 10;
 
+		var hint = readHint(textarea);
 		var keys = {
 			'Ctrl-Space': 'autocomplete',
 			'Tab': insertSpaces,
@@ -202,8 +272,13 @@
 			tabSize: 4,
 			indentWithTabs: false,
 			extraKeys: keys,
-			hintOptions: { tables: hintTables(textarea), completeSingle: false, hint: sqlHint }
+			hintOptions: {
+				tables: hint.tables, completeSingle: false, hint: sqlHint,
+				schemaNote: textarea.getAttribute('data-hint-schema') || 'schema',
+				inSchemaNote: textarea.getAttribute('data-hint-in-schema') || 'in %s'
+			}
 		});
+		cm.ppaHint = hint;
 		var wrapper = cm.getWrapperElement();
 		wrapper.className += ' sql-editor-cm';
 		// Use the theme's field colours, whatever the theme.

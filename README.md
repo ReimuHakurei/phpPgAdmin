@@ -25,9 +25,11 @@ kept it alive with PHP 8 fixes, and this repo builds on that. What's added here:
   resized by dragging its edge (double-click resets it); on a phone it slides
   in from the ☰ button.
 - In the SQL editor, **Ctrl+Enter** (Cmd+Enter on a Mac) runs the query, or
-  only the selected text if there is a selection. Keywords, tables and
-  columns are suggested as you type (and after `schema.` or `table.`);
-  **Ctrl+Space** shows suggestions any time. "Explain analyze" really runs the statement. The
+  only the selected text if there is a selection. Keywords, schemas, tables and
+  columns are suggested as you type (and after `schema.` or `table.`).
+  Picking a schema lists its tables; tables outside the search path are
+  offered by their bare name and inserted as `schema.table`. **Ctrl+Space**
+  shows suggestions any time. "Explain analyze" really runs the statement. The
   last 50 queries per database are kept in your browser under "Recent
   queries".
 - When browsing a table, the row above the data filters each column
