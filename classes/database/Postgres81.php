@@ -62,7 +62,7 @@ class Postgres81 extends Postgres82 {
 	 * Returns all databases available on the server
 	 * @return A list of databases, sorted alphabetically
 	 */
-	function getDatabases($currentdatabase = NULL) {
+	function getDatabases($currentdatabase = NULL, $withSize = false) {
 		global $conf, $misc;
 		
 		$server_info = $misc->getServerInfo();
@@ -86,10 +86,12 @@ class Postgres81 extends Postgres82 {
 		else
 			$where = ' AND pdb.datallowconn';
 
+		$dbsize = $withSize ? 'pg_catalog.pg_database_size(pdb.oid)' : 'NULL';
+
 		$sql = "SELECT pdb.datname AS datname, pr.rolname AS datowner, pg_encoding_to_char(encoding) AS datencoding,
                                (SELECT description FROM pg_catalog.pg_description pd WHERE pdb.oid=pd.objoid) AS datcomment,
                                (SELECT spcname FROM pg_catalog.pg_tablespace pt WHERE pt.oid=pdb.dattablespace) AS tablespace,
-							   pg_catalog.pg_database_size(pdb.oid) as dbsize 
+							   {$dbsize} as dbsize 
                         FROM pg_catalog.pg_database pdb LEFT JOIN pg_catalog.pg_roles pr ON (pdb.datdba = pr.oid)  
 						WHERE true 
 			{$where}

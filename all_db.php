@@ -351,7 +351,7 @@
 		$misc->printTabs('server','databases');
 		$misc->printMsg($msg);
 
-		$databases = $data->getDatabases();
+		$databases = $data->getDatabases(null, true);
 
 		$columns = array(
 			'database' => array(

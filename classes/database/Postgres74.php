@@ -68,7 +68,7 @@ class Postgres74 extends Postgres80 {
 	 * Return all database available on the server
 	 * @return A list of databases, sorted alphabetically
 	 */
-	function getDatabases($currentdatabase = NULL) {
+	function getDatabases($currentdatabase = NULL, $withSize = false) {
 		global $conf, $misc;
 
 		$server_info = $misc->getServerInfo();
