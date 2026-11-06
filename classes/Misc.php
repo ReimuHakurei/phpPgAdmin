@@ -252,7 +252,7 @@
 			// Shortcircuit for a NULL value
 			if (is_null($str))
 				return isset($params['null'])
-						? ($params['null'] === true ? '<i>NULL</i>' : $params['null'])
+						? ($params['null'] === true ? '<span class="null">NULL</span>' : $params['null'])
 						: '';
 
 			if (isset($params['map']) && isset($params['map'][$str])) $str = $params['map'][$str];
@@ -264,9 +264,6 @@
 				if (mb_strlen($str, 'UTF-8') > $maxlen + mb_strlen($ellipsis)) {
 					$full_str = $ellipsis . mb_substr($str, $maxlen-1, $maxlen*8, 'UTF-8');
 					$str = mb_substr($str, 0, $maxlen-1, 'UTF-8') . $ellipsis;
-				} elseif (strlen($str) > 19 and substr($type, 0, 9) == 'timestamp') {
-					$full_str = substr($str, 19, $maxlen*8);
-					$str = substr($str, 0, 19);
 				}
 			}
 

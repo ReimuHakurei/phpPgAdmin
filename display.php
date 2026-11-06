@@ -22,6 +22,91 @@
 	$action = (isset($_REQUEST['action'])) ? $_REQUEST['action'] : '';
 
 	/**
+	 * Rows per page: the page_size parameter if it is one of the offered sizes
+	 * (remembered for the session), else the remembered one, else max_rows.
+	 * @return array(page size, list of offered sizes)
+	 */
+	function getBrowsePageSize() {
+		global $conf;
+
+		$default = (isset($conf['max_rows']) && (int)$conf['max_rows'] > 0) ? (int)$conf['max_rows'] : 30;
+		$sizes = array(25, 50, 100, 250, 500);
+		if (!in_array($default, $sizes, true)) {
+			$sizes[] = $default;
+			sort($sizes);
+		}
+
+		if (isset($_REQUEST['page_size']) && is_string($_REQUEST['page_size'])
+				&& ctype_digit($_REQUEST['page_size']) && in_array((int)$_REQUEST['page_size'], $sizes, true)) {
+			$_SESSION['ppaPageSize'] = (int)$_REQUEST['page_size'];
+		}
+
+		if (isset($_SESSION['ppaPageSize']) && in_array($_SESSION['ppaPageSize'], $sizes, true))
+			return array($_SESSION['ppaPageSize'], $sizes);
+		return array($default, $sizes);
+	}
+
+	/**
+	 * Quick filters from the request: filter[column name] => text
+	 */
+	function getBrowseFilters() {
+		$filters = array();
+		if (isset($_REQUEST['filter']) && is_array($_REQUEST['filter'])) {
+			foreach ($_REQUEST['filter'] as $column => $value) {
+				if (!is_string($value) || trim($value) === '') continue;
+				$filters[(string)$column] = $value;
+			}
+		}
+		return $filters;
+	}
+
+	/**
+	 * Prints hidden form fields for scalar request parameters
+	 * @param $fields name => value
+	 * @param $skip names to leave out; a name ending in '[' leaves out that array
+	 */
+	function printHiddenFields($fields, $skip = array()) {
+		foreach ($fields as $name => $value) {
+			if ($value === null || is_array($value)) continue;
+			foreach ($skip as $s) {
+				if ($name === $s || (substr($s, -1) == '[' && strncmp($name, $s, strlen($s)) == 0)) continue 2;
+			}
+			echo "<input type=\"hidden\" name=\"", htmlspecialchars($name), "\" value=\"", htmlspecialchars($value), "\" />\n";
+		}
+	}
+
+	/**
+	 * Hidden fields that keep the browsing state (stored query, page size and
+	 * filters) through the edit and delete row forms.
+	 */
+	function printBrowseStateFields() {
+		$fields = array();
+		foreach (array('qt', 'page_size') as $name) {
+			if (isset($_REQUEST[$name]) && is_string($_REQUEST[$name])) $fields[$name] = $_REQUEST[$name];
+		}
+		foreach (getBrowseFilters() as $column => $value) {
+			$fields["filter[{$column}]"] = $value;
+		}
+		printHiddenFields($fields);
+	}
+
+	/**
+	 * Rounds a row estimate for display: 950, 12K, 1.2M
+	 */
+	function formatApproxCount($n) {
+		$n = (float)$n;
+		if ($n >= 1e12) { $n /= 1e12; $suffix = 'T'; }
+		elseif ($n >= 1e9) { $n /= 1e9; $suffix = 'B'; }
+		elseif ($n >= 1e6) { $n /= 1e6; $suffix = 'M'; }
+		elseif ($n >= 1e3) { $n /= 1e3; $suffix = 'K'; }
+		else return number_format($n);
+
+		$s = number_format($n, $n < 10 ? 1 : 0);
+		if (substr($s, -2) === '.0') $s = substr($s, 0, -2);
+		return $s . $suffix;
+	}
+
+	/**
 	 * Show confirmation of edit and perform actual update
 	 */
 	function doEditRow($confirm, $msg = '') {
@@ -149,6 +234,7 @@
 			echo "<input type=\"hidden\" name=\"sortdir\" value=\"", htmlspecialchars($_REQUEST['sortdir']), "\" />\n";
 			echo "<input type=\"hidden\" name=\"strings\" value=\"", htmlspecialchars($_REQUEST['strings']), "\" />\n";
 			echo "<input type=\"hidden\" name=\"key\" value=\"", htmlspecialchars(urlencode(serialize($key))), "\" />\n";
+			printBrowseStateFields();
 			echo "<p>";
 			if (!$error) echo "<input type=\"submit\" name=\"save\" accesskey=\"r\" value=\"{$lang['strsave']}\" />\n";
 			echo "<input type=\"submit\" name=\"cancel\" value=\"{$lang['strcancel']}\" />\n";
@@ -235,6 +321,7 @@
 			echo "<input type=\"hidden\" name=\"sortdir\" value=\"", htmlspecialchars($_REQUEST['sortdir']), "\" />\n";
 			echo "<input type=\"hidden\" name=\"strings\" value=\"", htmlspecialchars($_REQUEST['strings']), "\" />\n";
 			echo "<input type=\"hidden\" name=\"key\" value=\"", htmlspecialchars(urlencode(serialize($_REQUEST['key']))), "\" />\n";
+			printBrowseStateFields();
 			echo "</form>\n";
 		}
 		else {
@@ -292,64 +379,123 @@
 		return $fkey_information;
 	}
 
+	/* Columns of a record set, as shown in the grid.  Works on an empty
+	 * record set too, so the header and filters still show without rows.
+	 * @return array of array('key' => key in $rs->fields, 'index' => column
+	 *         number from 0, 'name' => column name, 'type' => type name)
+	 * */
+	function getGridColumns(&$rs, $withOid) {
+		global $data, $conf;
+		$columns = array();
+
+		if (is_array($rs->fields) && count($rs->fields) > 0) {
+			$j = 0;
+			foreach ($rs->fields as $k => $v) {
+				if (($k === $data->id) && ( !($withOid && $conf['show_oids']) )) {
+					$j++;
+					continue;
+				}
+				$finfo = $rs->fetchField($j);
+				$columns[] = array('key' => $k, 'index' => $j, 'name' => $finfo->name, 'type' => $finfo->type);
+				$j++;
+			}
+		}
+		else {
+			for ($j = 0, $n = $rs->FieldCount(); $j < $n; $j++) {
+				$finfo = $rs->fetchField($j);
+				if (($finfo->name === $data->id) && ( !($withOid && $conf['show_oids']) )) continue;
+				$columns[] = array('key' => $finfo->name, 'index' => $j, 'name' => $finfo->name, 'type' => $finfo->type);
+			}
+		}
+
+		return $columns;
+	}
+
 	/* Print table header cells
 	 * @param $args - associative array for sort link parameters
 	 * */
 	function printTableHeaderCells(&$rs, $args, $withOid) {
-		global $misc, $data, $conf;
-		$j = 0;
+		global $misc;
 
-		foreach ($rs->fields as $k => $v) {
-
-			if (($k === $data->id) && ( !($withOid && $conf['show_oids']) )) {
-				$j++;
-				continue;
-			}
-			$finfo = $rs->fetchField($j);
+		foreach (getGridColumns($rs, $withOid) as $column) {
+			$j = $column['index'];
 
 			if ($args === false) {
-				echo "<th class=\"data\">", $misc->printVal($finfo->name), "</th>\n";
+				echo "<th class=\"data\">", $misc->printVal($column['name']), "</th>\n";
 			}
 			else {
+				$sorted = ($_REQUEST['sortkey'] == ($j + 1));
 				$args['page'] = $_REQUEST['page'];
 				$args['sortkey'] = $j + 1;
 				// Sort direction opposite to current direction, unless it's currently ''
 				$args['sortdir'] = (
 					$_REQUEST['sortdir'] == 'asc'
-					and $_REQUEST['sortkey'] == ($j + 1)
+					and $sorted
 				) ? 'desc' : 'asc';
 
-				$sortLink = http_build_query($args);
+				$sortLink = http_build_query($args, '', '&amp;');
 
-				echo "<th class=\"data\"><a href=\"display.php?{$sortLink}\">"
-					, $misc->printVal($finfo->name);
-				if($_REQUEST['sortkey'] == ($j + 1)) {
+				$ariaSort = '';
+				if ($sorted)
+					$ariaSort = ($_REQUEST['sortdir'] == 'asc') ? ' aria-sort="ascending"' : ' aria-sort="descending"';
+
+				echo "<th class=\"data\" scope=\"col\"{$ariaSort}><a href=\"display.php?{$sortLink}\">"
+					, $misc->printVal($column['name']);
+				if ($sorted) {
 					if($_REQUEST['sortdir'] == 'asc')
 						echo '<img src="'. $misc->icon('RaiseArgument') .'" alt="asc">';
 					else	echo '<img src="'. $misc->icon('LowerArgument') .'" alt="desc">';
 				}
 				echo "</a></th>\n";
 			}
-			$j++;
 		}
+	}
 
-		reset($rs->fields);
+	/* Print the quick filter cells, one text box per column
+	 * @param $columns - from getGridColumns()
+	 * @param $filters - column name => current filter text
+	 * @param $form - id of the form the text boxes belong to
+	 * */
+	function printTableFilterCells($columns, $filters, $form) {
+		global $lang;
+
+		$placeholder = htmlspecialchars($lang['strfilter']);
+		$help = htmlspecialchars($lang['strfilterhelp']);
+		foreach ($columns as $column) {
+			$name = $column['name'];
+			$value = isset($filters[$name]) ? $filters[$name] : '';
+			echo "<th class=\"data grid-filter-cell\"><input type=\"search\" form=\"{$form}\" name=\"",
+				htmlspecialchars("filter[{$name}]"), "\" value=\"", htmlspecialchars($value),
+				"\" placeholder=\"{$placeholder}\" title=\"{$help}\" aria-label=\"",
+				htmlspecialchars(sprintf($lang['strfiltercolumn'], $name)), "\" /></th>\n";
+		}
 	}
 
 	/* Print data-row cells */
 	function printTableRowCells(&$rs, &$fkey_information, $withOid) {
-		global $data, $misc, $conf;
+		global $data, $misc, $conf, $lang;
 		$j = 0;
 
 		if (!isset($_REQUEST['strings'])) $_REQUEST['strings'] = 'collapsed';
+		$clip = ($_REQUEST['strings'] == 'collapsed');
 
 		foreach ($rs->fields as $k => $v) {
 			$finfo = $rs->fetchField($j++);
 
 			if (($k === $data->id) && ( !($withOid && $conf['show_oids']) )) continue;
-			elseif ($v !== null && $v == '') echo "<td>&nbsp;</td>";
+			elseif ($v !== null && $v == '') echo "<td><span class=\"empty\">", htmlspecialchars($lang['strgridempty']), "</span></td>";
 			else {
-				echo "<td style=\"white-space:nowrap;\">";
+				/* A clipped value keeps its full text for copying it (js/grid.js),
+				 * unless it is too big to repeat in the page. */
+				$attrs = '';
+				if ($clip && $v !== null && strlen($v) > $conf['max_chars']) {
+					$text = ($finfo->type == 'bytea') ? $data->escapeBytea($v) : $v;
+					if (strlen($text) <= 65536)
+						$attrs = ' data-full="' . htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"';
+					else
+						$attrs = ' data-clipped="1"';
+				}
+				echo "<td style=\"white-space:nowrap;\"{$attrs}>";
 
 				if (($v !== null) && isset($fkey_information['byfield'][$k])) {
 					foreach ($fkey_information['byfield'][$k] as $conid) {
@@ -370,9 +516,9 @@
 						echo "</a>";
 						echo "</div>";
 					}
-					echo $misc->printVal($v, $finfo->type, array('null' => true, 'clip' => ($_REQUEST['strings']=='collapsed'), 'class' => 'fk_value'));
+					echo $misc->printVal($v, $finfo->type, array('null' => true, 'clip' => $clip, 'class' => 'fk_value'));
 				} else {
-					echo $misc->printVal($v, $finfo->type, array('null' => true, 'clip' => ($_REQUEST['strings']=='collapsed')));
+					echo $misc->printVal($v, $finfo->type, array('null' => true, 'clip' => $clip));
 				}
 				echo "</td>";
 			}
@@ -394,8 +540,9 @@
 
 		$max_pages = 1;
 		// Retrieve page from query.  $max_pages is returned by reference.
+		// One row is all we show, no need to count them.
 		$rs = $data->browseQuery('SELECT', $_REQUEST['table'], $_REQUEST['query'],
-			null, null, 1, 1, $max_pages);
+			null, null, 1, 1, $max_pages, null, array('count' => 'none'));
 
 		echo "<a href=\"\" style=\"display:table-cell;\" class=\"fk_delete\"><img alt=\"[delete]\" src=\"". $misc->icon('Delete') ."\" /></a>\n";
 		echo "<div style=\"display:table-cell;\">";
@@ -430,8 +577,9 @@
 
 		$save_history = false;
 		// If current page is not set, default to first page
-		if (!isset($_REQUEST['page']))
+		if (!isset($_REQUEST['page']) || !is_numeric($_REQUEST['page']) || (int)$_REQUEST['page'] < 1)
 			$_REQUEST['page'] = 1;
+		$_REQUEST['page'] = (int)$_REQUEST['page'];
 		if (!isset($_REQUEST['nohistory']))
 			$save_history = true;
 
@@ -447,18 +595,40 @@
 		$misc->printTabs($subject,'browse');
 
 		/* This code is used when browsing FK in pure-xHTML (without js) */
+		$fkey_query = null;
 		if (isset($_REQUEST['fkey'])) {
 			$ops = array();
 			foreach($_REQUEST['fkey'] as $x => $y) {
 				$ops[$x] = '=';
 			}
-			$query = $data->getSelectSQL($_REQUEST['table'], array(), $_REQUEST['fkey'], $ops);
-			$_REQUEST['query'] = $query;
+			$fkey_query = $data->getSelectSQL($_REQUEST['table'], array(), $_REQUEST['fkey'], $ops);
+			$_REQUEST['query'] = $fkey_query;
+		}
+
+		/* Find the query to browse: a query posted by a form (sql.php, the query
+		 * box below, the edit row form), else the one stored under the qt token
+		 * of the link that brought us here, else one given in the URL.  Results
+		 * pages only fall back to the session's current query when there is
+		 * nothing else: it is shared by all the browser tabs. */
+		$query_sql = null;
+		if ($fkey_query !== null) {
+			$query_sql = $fkey_query;
+		}
+		elseif (isset($_POST['query']) && is_string($_POST['query']) && trim($_POST['query']) !== '') {
+			$query_sql = $_POST['query'];
+		}
+		elseif (isset($_REQUEST['qt']) && ($stored = $misc->getStoredQuery($_REQUEST['qt'])) !== null) {
+			$query_sql = $stored;
+		}
+		elseif (isset($_REQUEST['query']) && is_string($_REQUEST['query']) && trim($_REQUEST['query']) !== '') {
+			$query_sql = $_REQUEST['query'];
+		}
+		elseif (!isset($object) && isset($_SESSION['sqlquery']) && trim($_SESSION['sqlquery']) !== '') {
+			$query_sql = $_SESSION['sqlquery'];
 		}
 
 		if (isset($object)) {
-			if (isset($_REQUEST['query'])) {
-				$_SESSION['sqlquery'] = $_REQUEST['query'];
+			if ($query_sql !== null) {
 				$misc->printTitle($lang['strselect']);
 				$type = 'SELECT';
 			}
@@ -467,12 +637,11 @@
 			}
 		} else {
 			$misc->printTitle($lang['strqueryresults']);
-			/* We come either from sql.php, which has already set $_SESSION['sqlquery'],
-			 * or from the query form below, which posts back an edited query. */
-			if (isset($_POST['query']))
-				$_SESSION['sqlquery'] = $_POST['query'];
 			$type = 'QUERY';
 		}
+
+		// Remember the query under a token for the links of this page
+		$qt = ($query_sql !== null) ? $misc->storeQuery($query_sql) : null;
 
 		$misc->printMsg($msg);
 
@@ -484,6 +653,10 @@
 
 		// If 'strings' is not set, default to collapsed
 		if (!isset($_REQUEST['strings'])) $_REQUEST['strings'] = 'collapsed';
+
+		list($page_size, $page_sizes) = getBrowsePageSize();
+		$filters = getBrowseFilters();
+		$count_mode = (isset($_REQUEST['count']) && $_REQUEST['count'] === 'exact') ? 'exact' : 'auto';
 
 		// Fetch unique row identifier, if this is a table browse request.
 		if (isset($object))
@@ -500,29 +673,29 @@
 
 		$fkey_information =& getFKInfo();
 
-		// Retrieve page from query.  $max_pages is returned by reference.
+		/* Retrieve page from query.  $max_pages and $info are returned by
+		 * reference.  A page past the end comes back as the last page. */
 		$max_pages = null;
-		$rs = $data->browseQuery($type,
-			isset($object) ? $object : null,
-			isset($_SESSION['sqlquery']) ? $_SESSION['sqlquery'] : null,
-			$_REQUEST['sortkey'] ?? null, $_REQUEST['sortdir'] ?? null, $_REQUEST['page'] ?? null,
-			$conf['max_rows'], $max_pages,
-			isset($fkey_information['pkey']) ? $fkey_information['pkey'] : null);
-
-		/* The requested page can be past the end of the result set, eg. when a new
-		 * query is submitted while browsing a later page of the previous one.  Fall
-		 * back to the last page instead of reporting no data at all. */
-		if ($rs === -3 && $max_pages >= 1
-				&& is_numeric($_REQUEST['page']) && $_REQUEST['page'] > $max_pages) {
-
-			$_REQUEST['page'] = (int)$max_pages;
+		$info = array('total' => null, 'total_type' => 'unknown', 'has_next' => false,
+			'page' => $_REQUEST['page'], 'rows' => 0, 'filters' => array());
+		if ($type == 'TABLE' || $query_sql !== null) {
 			$rs = $data->browseQuery($type,
 				isset($object) ? $object : null,
-				isset($_SESSION['sqlquery']) ? $_SESSION['sqlquery'] : null,
+				$query_sql,
 				$_REQUEST['sortkey'], $_REQUEST['sortdir'], $_REQUEST['page'],
-				$conf['max_rows'], $max_pages,
-				isset($fkey_information['pkey']) ? $fkey_information['pkey'] : null);
+				$page_size, $max_pages,
+				isset($fkey_information['pkey']) ? $fkey_information['pkey'] : null,
+				array(
+					'count' => $count_mode,
+					'exact_limit' => isset($conf['browse_exact_count_limit']) ? (int)$conf['browse_exact_count_limit'] : 100000,
+					'filters' => $filters,
+				),
+				$info);
 		}
+		else {
+			$rs = -4;
+		}
+		if (is_object($rs)) $_REQUEST['page'] = $info['page'];
 
 		// Build strings for GETs in array
 		$_gets = array(
@@ -533,8 +706,12 @@
 		if (isset($_REQUEST['schema'])) $_gets['schema'] = $_REQUEST['schema'];
 		if (isset($object)) $_gets[$subject] = $object;
 		if (isset($subject)) $_gets['subject'] = $subject;
-		if (isset($_REQUEST['query'])) $_gets['query'] = $_REQUEST['query'];
-		if (isset($_REQUEST['count'])) $_gets['count'] = $_REQUEST['count'];
+		/* Results of a query are found through the qt token: the query itself
+		 * would make the links huge.  A table's SELECT keeps it, in case the
+		 * token was dropped from the session. */
+		if ($type == 'SELECT') $_gets['query'] = $query_sql;
+		if ($qt !== null) $_gets['qt'] = $qt;
+		if ($count_mode == 'exact') $_gets['count'] = 'exact';
 		if (isset($_REQUEST['return'])) $_gets['return'] = $_REQUEST['return'];
 		if (isset($_REQUEST['search_path'])) $_gets['search_path'] = $_REQUEST['search_path'];
 		if (isset($_REQUEST['table'])) $_gets['table'] = $_REQUEST['table'];
@@ -542,26 +719,25 @@
 		if (isset($_REQUEST['sortdir'])) $_gets['sortdir'] = $_REQUEST['sortdir'];
 		if (isset($_REQUEST['nohistory'])) $_gets['nohistory'] = $_REQUEST['nohistory'];
 		$_gets['strings'] = $_REQUEST['strings'];
+		$_gets['page_size'] = $page_size;
+		// Keep the filters that apply to this result
+		$active_filters = is_object($rs) ? $info['filters'] : $filters;
+		foreach ($active_filters as $column => $value) {
+			$_gets["filter[{$column}]"] = $value;
+		}
 
-		if ($save_history && is_object($rs) && ($type == 'QUERY')) //{
-			$misc->saveScriptHistory($_SESSION['sqlquery']);
+		if ($save_history && is_object($rs) && ($type == 'QUERY'))
+			$misc->saveScriptHistory($query_sql);
 
 		/* The query form must carry the current context (server, database, schema,
 		 * ...) in its own fields: display.php can be reached through a POST with an
 		 * empty query string, eg. right after saving an edited row. */
-		echo '<form method="post" action="display.php">';
-		foreach ($_gets as $_k => $_v) {
-			if ($_k == 'query') continue;
-			echo "<input type=\"hidden\" name=\"", htmlspecialchars($_k), "\" value=\"", htmlspecialchars($_v), "\" />\n";
-		}
+		echo "<form method=\"post\" action=\"display.php\" class=\"sql-query-form\">\n";
+		printHiddenFields($_gets, array('query', 'qt'));
 		echo "<input type=\"hidden\" name=\"page\" value=\"", htmlspecialchars($_REQUEST['page']), "\" />\n";
-		echo '<textarea width="90%" name="query" rows="5" cols="100" resizable="true">';
-		/* Show the query that was actually executed.  For SELECT and QUERY types that
-		 * is the session copy, since a GET link may only carry a truncated one. */
-		if ($type != 'TABLE' && isset($_SESSION['sqlquery'])) {
-			$query = $_SESSION['sqlquery'];
-		} elseif (isset($_REQUEST['query'])) {
-			$query = $_REQUEST['query'];
+		/* Show the query that was actually executed. */
+		if ($query_sql !== null) {
+			$query = $query_sql;
 		} else {
 			$query = "SELECT * FROM ".$data->escapeIdentifier($_REQUEST['schema'] ?? '');
 			if (($_REQUEST['subject'] ?? '') == 'view') {
@@ -570,15 +746,66 @@
 				$query = "{$query}.".$data->escapeIdentifier($_REQUEST['table'] ?? '').";";
 			}
 		}
-		//$query = isset($_REQUEST['query'])? $_REQUEST['query'] : "select * from {$_REQUEST['schema']}.{$_REQUEST['table']};";
+		echo "<label for=\"ppa-sql-query\">", htmlspecialchars($lang['strsqlquery']), "</label><br />\n";
+		echo "<textarea id=\"ppa-sql-query\" name=\"query\" rows=\"5\" cols=\"100\" class=\"sql-query\">";
 		echo htmlspecialchars($query);
-		echo '</textarea><br><input type="submit"/></form>';
+		echo "</textarea>\n";
+		echo "<div><input type=\"submit\" value=\"", htmlspecialchars($lang['strexecute']), "\" /></div>\n";
+		echo "</form>\n";
 
-		if (is_object($rs) && $rs->recordCount() > 0) {
+		if (is_object($rs) && $rs->FieldCount() > 0) {
+			$rows = $info['rows'];
+
+			/* "Rows 31-60 of 1,234", "of about 1.2M", or just "Rows 31-60" when
+			 * the total is unknown */
+			$first_row = ($info['page'] - 1) * $page_size + 1;
+			$last_row = $first_row + $rows - 1;
+			if ($rows == 0)
+				$count_text = $lang['strnodata'];
+			elseif ($info['total_type'] == 'exact')
+				$count_text = sprintf($lang['strrowsrange'], number_format($first_row), number_format($last_row), number_format($info['total']));
+			elseif ($info['total_type'] == 'estimate')
+				$count_text = sprintf($lang['strrowsrangeabout'], number_format($first_row), number_format($last_row), formatApproxCount($info['total']));
+			else
+				$count_text = sprintf($lang['strrowsrangeunknown'], number_format($first_row), number_format($last_row));
+
+			$count_link = '';
+			if ($info['total_type'] != 'exact' && $rows > 0) {
+				$count_link = " <a class=\"grid-count-exact\" href=\"display.php?"
+					. http_build_query(array_merge($_gets, array('count' => 'exact', 'page' => $info['page'])), '', '&amp;') . "\">"
+					. htmlspecialchars($info['total_type'] == 'estimate' ? $lang['strcountexactly'] : $lang['strcountrows'])
+					. "</a>";
+			}
+
+			$pages_opts = array('has_next' => $info['has_next'], 'estimated' => ($info['total_type'] == 'estimate'));
+
+			/* Page size and quick filters: one GET form, the filter boxes in the
+			 * grid's header belong to it through their form attribute. */
+			$grid_form = 'ppa-grid-form';
+			echo "<div class=\"grid-toolbar\">\n";
+			echo "<p class=\"grid-count\">", htmlspecialchars($count_text), $count_link, "</p>\n";
+			echo "<form method=\"get\" action=\"display.php\" id=\"{$grid_form}\" class=\"grid-form\">\n";
+			printHiddenFields($_gets, array('page_size', 'page', 'filter['));
+			echo "<input type=\"hidden\" name=\"page\" value=\"1\" />\n";
+			echo "<label>", htmlspecialchars($lang['strrowsperpage']), " <select name=\"page_size\" class=\"grid-page-size\">\n";
+			foreach ($page_sizes as $size) {
+				echo "<option value=\"{$size}\"", ($size == $page_size) ? ' selected="selected"' : '', ">{$size}</option>\n";
+			}
+			echo "</select></label>\n";
+			echo "<input type=\"submit\" value=\"", htmlspecialchars($lang['strapplyfilters']), "\" title=\"", htmlspecialchars($lang['strfilterhelp']), "\" />\n";
+			if (count($active_filters) > 0) {
+				$clear = $_gets;
+				foreach (array_keys($active_filters) as $column) unset($clear["filter[{$column}]"]);
+				$clear['page'] = 1;
+				echo "<a class=\"grid-clear-filters\" href=\"display.php?", http_build_query($clear, '', '&amp;'), "\">",
+					htmlspecialchars($lang['strclearfilters']), "</a>\n";
+			}
+			echo "</form>\n";
+			if ($rows > 0) echo "<p class=\"grid-hint\">", htmlspecialchars($lang['strcopycell']), "</p>\n";
+			echo "</div>\n";
+
 			// Show page navigation
-			$misc->printPages($_REQUEST['page'], $max_pages, $_gets);
-
-			echo "<table id=\"data\">\n<tr>";
+			$misc->printPages($info['page'], $max_pages, $_gets, 20, $pages_opts);
 
 			// Check that the key is actually in the result set.  This can occur for select
 			// operations where the key fields aren't part of the select.  XXX:  We should
@@ -586,7 +813,7 @@
 			foreach ($key as $v) {
 				// If a key column is not found in the record set, then we
 				// can't use the key.
-				if (!in_array($v, array_keys($rs->fields))) {
+				if ($rows == 0 || !in_array($v, array_keys($rs->fields))) {
 					$key = array();
 					break;
 				}
@@ -638,9 +865,18 @@
 			$delete_params = isset($actions['actionbuttons']['delete'])?
 				$actions['actionbuttons']['delete']:array();
 
+			/* The grid scrolls inside its own box, so that the header row can
+			 * stick to its top.  js/display.js wraps table#data for the FK popups. */
+			echo "<div class=\"data-scroll\">\n";
+			echo "<table id=\"data\" class=\"data-grid\" data-msg-copied=\"", htmlspecialchars($lang['strcopied']),
+				"\" data-msg-copied-part=\"", htmlspecialchars($lang['strcopiedpart']),
+				"\" data-msg-copy-failed=\"", htmlspecialchars($lang['strcopyfailed']), "\">\n";
+			echo "<thead>\n<tr>";
+
 			// Display edit and delete actions if we have a key
 			$colspan = count($buttons);
-			if ($colspan > 0 and count($key) > 0)
+			$with_actions = ($colspan > 0 and count($key) > 0);
+			if ($with_actions)
 				echo "<th colspan=\"{$colspan}\" class=\"data\">{$lang['stractions']}</th>\n";
 
 			/* we show OIDs only if we are in TABLE or SELECT type browsing */
@@ -648,13 +884,20 @@
 
 			echo "</tr>\n";
 
+			// Quick filter row
+			echo "<tr class=\"grid-filter\">";
+			if ($with_actions)
+				echo "<th colspan=\"{$colspan}\" class=\"data\"></th>\n";
+			printTableFilterCells(getGridColumns($rs, isset($object)), $active_filters, $grid_form);
+			echo "</tr>\n</thead>\n<tbody>\n";
+
 			$i = 0;
-			reset($rs->fields);
-			while (!$rs->EOF) {
+			// The record set can hold one row more than the page, to tell whether there is a next page
+			while (!$rs->EOF && $i < $rows) {
 				$id = (($i % 2) == 0 ? '1' : '2');
 				echo "<tr class=\"data{$id}\">\n";
 				// Display edit and delete links if we have a key
-				if ($colspan > 0 and count($key) > 0) {
+				if ($with_actions) {
 					$keys_array = array();
 					$has_nulls = false;
 					foreach ($key as $v) {
@@ -710,11 +953,16 @@
 				$rs->moveNext();
 				$i++;
 			}
-			echo "</table>\n";
+			echo "</tbody>\n</table>\n</div>\n";
 
-			echo "<p>", $rs->recordCount(), " {$lang['strrows']}</p>\n";
-			// Show page navigation
-			$misc->printPages($_REQUEST['page'], $max_pages, $_gets);
+			if ($rows == 0) {
+				echo "<p>{$lang['strnodata']}</p>\n";
+			}
+			else {
+				echo "<p class=\"grid-count\">", htmlspecialchars($count_text), $count_link, "</p>\n";
+				// Show page navigation
+				$misc->printPages($info['page'], $max_pages, $_gets, 20, $pages_opts);
+			}
 		}
 		else echo "<p>{$lang['strnodata']}</p>\n";
 
@@ -792,7 +1040,7 @@
 			);
 
 		// Create view and download
-		if (isset($_REQUEST['query']) && isset($rs) && is_object($rs) && $rs->recordCount() > 0) {
+		if ($query_sql !== null && isset($rs) && is_object($rs) && $info['rows'] > 0) {
 
 
 			// Report views don't set a schema, so we need to disable create view in that case
@@ -804,7 +1052,7 @@
 							'url' => 'views.php',
 							'urlvars' => array_merge($fields, array(
 								'action' => 'create',
-								'formDefinition' => $_REQUEST['query']
+								'formDefinition' => $query_sql
 							))
 						)
 					),
@@ -812,7 +1060,8 @@
 				);
 			}
 
-			$urlvars = array();
+			// Export this query, not the session's current one (another tab may have changed it)
+			$urlvars = array('query' => $query_sql);
 			if (isset($_REQUEST['search_path']))
 				$urlvars['search_path'] = $_REQUEST['search_path'];
 
@@ -868,6 +1117,7 @@
 	}
 
 	$scripts = "<script src=\"js/display.js\" type=\"text/javascript\"></script>";
+	$scripts .= "<script src=\"js/grid.js\" type=\"text/javascript\"></script>";
 
 	$scripts .= "<script type=\"text/javascript\">\n";
 	$scripts .= "var Display = {\n";
@@ -876,26 +1126,17 @@
 	$scripts .= "</script>\n";
 
 	// Set the title based on the subject of the request
+	$title = $lang['strqueryresults'];
 	if (isset($_REQUEST['subject']) && isset($_REQUEST[$_REQUEST['subject']])) {
 		if ($_REQUEST['subject'] == 'table') {
-			$misc->printHeader(
-				$lang['strtables'].': '.$_REQUEST[$_REQUEST['subject']],
-				$scripts
-			);
+			$title = $lang['strtables'].': '.$_REQUEST[$_REQUEST['subject']];
 		} else if ($_REQUEST['subject'] == 'view') {
-			$misc->printHeader(
-				$lang['strviews'].': '.$_REQUEST[$_REQUEST['subject']],
-				$scripts
-			);
+			$title = $lang['strviews'].': '.$_REQUEST[$_REQUEST['subject']];
 		} else if ($_REQUEST['subject'] == 'column') {
-			$misc->printHeader(
-				$lang['strcolumn'].': '.$_REQUEST[$_REQUEST['subject']],
-				$scripts
-			);
+			$title = $lang['strcolumn'].': '.$_REQUEST[$_REQUEST['subject']];
 		}
-	} else {
-		$misc->printHeader($lang['strqueryresults']);
 	}
+	$misc->printHeader($title, $scripts);
 
 	$misc->printBody();
 
