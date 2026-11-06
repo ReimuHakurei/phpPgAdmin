@@ -587,29 +587,13 @@
 		$misc->printTrail('database');
 		$misc->printTabs('database','sql');
 		echo "<p>{$lang['strentersql']}</p>\n";
-		echo "<form action=\"sql.php\" method=\"post\" enctype=\"multipart/form-data\">\n";
-		echo "<p>{$lang['strsql']}<br />\n";
-		echo "<textarea style=\"width:100%;\" rows=\"20\" cols=\"50\" name=\"query\">",
-			htmlspecialchars($_SESSION['sqlquery']), "</textarea></p>\n";
-
-		// Check that file uploads are enabled
-		if (ini_get('file_uploads')) {
-			// Don't show upload option if max size of uploads is zero
-			$max_size = $misc->inisizeToBytes(ini_get('upload_max_filesize'));
-			if (is_double($max_size) && $max_size > 0) {
-				echo "<p><input type=\"hidden\" name=\"MAX_FILE_SIZE\" value=\"{$max_size}\" />\n";
-				echo "<label for=\"script\">{$lang['struploadscript']}</label> <input id=\"script\" name=\"script\" type=\"file\" /></p>\n";
-			}
-		}
-
-		echo "<p><input type=\"checkbox\" id=\"paginate\" name=\"paginate\"", (isset($_REQUEST['paginate']) ? ' checked="checked"' : ''), " /><label for=\"paginate\">{$lang['strpaginate']}</label></p>\n";
-		echo "<p><input type=\"submit\" name=\"execute\" accesskey=\"r\" value=\"{$lang['strexecute']}\" />\n";
+		echo "<form action=\"sql.php\" method=\"post\" enctype=\"multipart/form-data\" id=\"sql-editor-form\" class=\"sql-editor-form\">\n";
 		echo $misc->form;
-		echo "<input type=\"reset\" accesskey=\"q\" value=\"{$lang['strreset']}\" /></p>\n";
+		SqlEditor::printTextarea($_SESSION['sqlquery'], array('rows' => 16, 'autofocus' => true));
+		SqlEditor::printUpload();
+		SqlEditor::printPaginate(isset($_REQUEST['paginate']));
+		SqlEditor::printButtons();
 		echo "</form>\n";
-
-		// Default focus
-		$misc->setFocus('forms[0].query');
 	}
 
 	function doTree() {
@@ -648,6 +632,10 @@
 	if ($action == 'refresh_processes') currentProcesses(true);
 
 	/* normal flow */
+	include_once('./classes/SqlEditor.php');
+	if ($action == 'sql' || $action == '')
+		$scripts .= SqlEditor::head();
+
 	if ($action == 'locks' or $action == 'processes') {
 		$scripts .= "<script src=\"js/database.js\" type=\"text/javascript\"></script>";
 
