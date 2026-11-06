@@ -155,6 +155,11 @@
 	// Max chars of each field to display by default in browse mode
 	$conf['max_chars'] = 50;
 
+	// Browsing a table counts its rows exactly only when the planner estimates
+	// it has at most this many rows.  Bigger tables show "about N rows" and a
+	// link to count them exactly.
+	$conf['browse_exact_count_limit'] = 100000;
+
 	// Send XHTML strict headers?
 	$conf['use_xhtml_strict'] = false;
 

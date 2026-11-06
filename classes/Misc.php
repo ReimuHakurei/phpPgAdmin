@@ -252,7 +252,7 @@
 			// Shortcircuit for a NULL value
 			if (is_null($str))
 				return isset($params['null'])
-						? ($params['null'] === true ? '<i>NULL</i>' : $params['null'])
+						? ($params['null'] === true ? '<span class="null">NULL</span>' : $params['null'])
 						: '';
 
 			if (isset($params['map']) && isset($params['map'][$str])) $str = $params['map'][$str];
@@ -264,9 +264,6 @@
 				if (mb_strlen($str, 'UTF-8') > $maxlen + mb_strlen($ellipsis)) {
 					$full_str = $ellipsis . mb_substr($str, $maxlen-1, $maxlen*8, 'UTF-8');
 					$str = mb_substr($str, 0, $maxlen-1, 'UTF-8') . $ellipsis;
-				} elseif (strlen($str) > 19 and substr($type, 0, 9) == 'timestamp') {
-					$full_str = substr($str, 19, $maxlen*8);
-					$str = substr($str, 0, 19);
 				}
 			}
 
@@ -1778,60 +1775,122 @@
 		/**
 		 * Do multi-page navigation.  Displays the prev, next and page options.
 		 * @param $page - the page currently viewed
-		 * @param $pages - the maximum number of pages
+		 * @param $pages - the maximum number of pages, an estimate if $opts['estimated'],
+		 *                 or null when the number of pages is unknown
 		 * @param $gets -  the parameters to include in the link to the wanted page
 		 * @param $max_width - the number of pages to make available at any one time (default = 20)
+		 * @param $opts - 'has_next' => whether there is a page after this one (defaults to
+		 *                $page < $pages), 'estimated' => true if $pages is an estimate,
+		 *                'label' => accessible name of the navigation
 		 */
-		function printPages($page, $pages, $gets, $max_width = 20) {
+		function printPages($page, $pages, $gets, $max_width = 20, $opts = array()) {
 			global $lang;
 
 			$window = 10;
 
-			if ($page < 0 || $page > $pages) return;
-			if ($pages < 0) return;
-			if ($max_width <= 0) return;
+			if (!is_numeric($page) || $max_width <= 0) return;
+			$page = (int)$page;
+			if ($page < 1) return;
+
+			// Only a known, exact number of pages gives a "Last" link
+			$known = ($pages !== null && empty($opts['estimated']));
+			if ($pages !== null) {
+				$pages = (int)$pages;
+				if ($pages < 0) return;
+				if ($known && $page > $pages) return;
+			}
+			$has_next = isset($opts['has_next']) ? (bool)$opts['has_next'] : ($pages !== null && $page < $pages);
+
+			// The last page number we can list
+			if ($known) $last = $pages;
+			elseif (!$has_next) $last = $page;
+			elseif ($pages !== null) $last = max($pages, $page + 1);
+			else $last = $page + 1;
+
+			if ($last <= 1) return;
 
 			unset ($gets['page']);
-			$url = http_build_query($gets);
+			$url = 'display.php?' . http_build_query($gets, '', '&amp;');
+			if (count($gets) > 0) $url .= '&amp;';
+			$url .= 'page=';
 
-			if ($pages > 1) {
-				echo "<p style=\"text-align: center\">\n";
-				if ($page != 1) {
-					echo "<a class=\"pagenav\" href=\"?{$url}&amp;page=1\">{$lang['strfirst']}</a>\n";
-					$temp = $page - 1;
-					echo "<a class=\"pagenav\" href=\"?{$url}&amp;page={$temp}\">{$lang['strprev']}</a>\n";
-				}
-
-				if ($page <= $window) {
-					$min_page = 1;
-					$max_page = min(2 * $window, $pages);
-				}
-				elseif ($page > $window && $pages >= $page + $window) {
-					$min_page = ($page - $window) + 1;
-					$max_page = $page + $window;
-				}
-				else {
-					$min_page = ($page - (2 * $window - ($pages - $page))) + 1;
-					$max_page = $pages;
-				}
-
-				// Make sure min_page is always at least 1
-				// and max_page is never greater than $pages
-				$min_page = max($min_page, 1);
-				$max_page = min($max_page, $pages);
-
-				for ($i = $min_page; $i <= $max_page; $i++) {
-					#if ($i != $page) echo "<a class=\"pagenav\" href=\"?{$url}&amp;page={$i}\">$i</a>\n";
-					if ($i != $page) echo "<a class=\"pagenav\" href=\"display.php?{$url}&amp;page={$i}\">$i</a>\n";
-					else echo "$i\n";
-				}
-				if ($page != $pages) {
-					$temp = $page + 1;
-					echo "<a class=\"pagenav\" href=\"display.php?{$url}&amp;page={$temp}\">{$lang['strnext']}</a>\n";
-					echo "<a class=\"pagenav\" href=\"display.php?{$url}&amp;page={$pages}\">{$lang['strlast']}</a>\n";
-				}
-				echo "</p>\n";
+			$label = isset($opts['label']) ? $opts['label'] : $lang['strpagination'];
+			echo "<nav class=\"pagination\" aria-label=\"", htmlspecialchars($label), "\">\n";
+			if ($page != 1) {
+				echo "<a class=\"pagenav\" href=\"{$url}1\">", htmlspecialchars($lang['strfirst']), "</a>\n";
+				$temp = $page - 1;
+				echo "<a class=\"pagenav\" rel=\"prev\" href=\"{$url}{$temp}\">", htmlspecialchars($lang['strprev']), "</a>\n";
 			}
+
+			if ($page <= $window) {
+				$min_page = 1;
+				$max_page = min(2 * $window, $last);
+			}
+			elseif ($page > $window && $last >= $page + $window) {
+				$min_page = ($page - $window) + 1;
+				$max_page = $page + $window;
+			}
+			else {
+				$min_page = ($page - (2 * $window - ($last - $page))) + 1;
+				$max_page = $last;
+			}
+
+			// Make sure min_page is always at least 1
+			// and max_page is never greater than $last
+			$min_page = max($min_page, 1);
+			$max_page = min($max_page, $last);
+
+			for ($i = $min_page; $i <= $max_page; $i++) {
+				if ($i != $page) echo "<a class=\"pagenav\" href=\"{$url}{$i}\">{$i}</a>\n";
+				else echo "<span class=\"pagenav current\" aria-current=\"page\">{$i}</span>\n";
+			}
+			// More pages than we can tell
+			if (!$known && $has_next && $max_page >= $last) echo "<span class=\"pagenav gap\">&hellip;</span>\n";
+
+			if ($has_next) {
+				$temp = $page + 1;
+				echo "<a class=\"pagenav\" rel=\"next\" href=\"{$url}{$temp}\">", htmlspecialchars($lang['strnext']), "</a>\n";
+				if ($known)
+					echo "<a class=\"pagenav\" href=\"{$url}{$pages}\">", htmlspecialchars($lang['strlast']), "</a>\n";
+			}
+			echo "</nav>\n";
+		}
+
+		/**
+		 * Remembers a query in the session, so that pages and links can refer to it
+		 * by a short token instead of sharing the single "current query": two browser
+		 * tabs can then page through different results.  Also sets it as the current
+		 * query ($_SESSION['sqlquery']) for the code that still reads that.
+		 * @param $sql The SQL query
+		 * @return string The token (16 hex digits)
+		 */
+		function storeQuery($sql) {
+			$sql = (string)$sql;
+			$token = substr(sha1($sql), 0, 16);
+
+			if (!isset($_SESSION['ppaQueries']) || !is_array($_SESSION['ppaQueries']))
+				$_SESSION['ppaQueries'] = array();
+
+			// Move it to the end, the most recently used, and keep the 20 latest
+			unset($_SESSION['ppaQueries'][$token]);
+			$_SESSION['ppaQueries'][$token] = $sql;
+			if (count($_SESSION['ppaQueries']) > 20)
+				$_SESSION['ppaQueries'] = array_slice($_SESSION['ppaQueries'], -20, null, true);
+
+			$_SESSION['sqlquery'] = $sql;
+
+			return $token;
+		}
+
+		/**
+		 * Returns a query remembered with storeQuery()
+		 * @param $token The token storeQuery() returned
+		 * @return string|null The query, or null if the token is unknown
+		 */
+		function getStoredQuery($token) {
+			if (!is_string($token) || !preg_match('/^[0-9a-f]{16}$/', $token)) return null;
+			if (!isset($_SESSION['ppaQueries'][$token])) return null;
+			return $_SESSION['ppaQueries'][$token];
 		}
 
 		/**

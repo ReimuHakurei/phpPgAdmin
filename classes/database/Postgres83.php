@@ -324,6 +324,16 @@ class Postgres83 extends Postgres84 {
 		return 0;
 	}
 
+	// Table functions
+
+	/**
+	 * No row estimate before 8.4 (it needs WITH RECURSIVE): browsing always
+	 * counts the rows exactly, as it used to.
+	 */
+	function getTableRowEstimate($table) {
+		return null;
+	}
+
 	// Function functions
 
 	/**

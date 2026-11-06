@@ -67,18 +67,32 @@
 
 	// We need to store the query in a session for editing purposes
 	// We avoid GPC vars to avoid truncating long queries
+	$_sqlquery = null;
 	if (isset($_REQUEST['subject']) && $_REQUEST['subject'] == 'history') {
 		// Or maybe we came from the history popup
-		$_SESSION['sqlquery'] = $_SESSION['history'][$_REQUEST['server']][$_REQUEST['database']][$_GET['queryid']]['query'];
+		if (isset($_GET['queryid'], $_SESSION['history'][$_REQUEST['server']][$_REQUEST['database']][$_GET['queryid']]['query']))
+			$_sqlquery = $_SESSION['history'][$_REQUEST['server']][$_REQUEST['database']][$_GET['queryid']]['query'];
 	}
-	elseif (isset($_POST['query'])) {
+	elseif (isset($_POST['query']) && is_string($_POST['query'])) {
 		// Or maybe we came from an sql form
-		$_SESSION['sqlquery'] = $_POST['query'];
+		$_sqlquery = $_POST['query'];
 	}
-	else {
-		echo "could not find the query!!";
+
+	if ($_sqlquery === null) {
+		/* Nothing to run, eg. the browser reloaded or went back to this page
+		 * with a GET: go to the SQL editor instead. */
+		$_params = array('action' => 'sql');
+		if (isset($_REQUEST['server'])) $_params['server'] = $_REQUEST['server'];
+		if (isset($_REQUEST['database'])) $_params['database'] = $_REQUEST['database'];
+		header('Location: sqledit.php?' . http_build_query($_params, '', '&'));
+		exit;
 	}
-	
+
+	/* Remember it under a token as well: display.php pages through it with
+	 * qt=<token> in its links, so each browser tab keeps its own query.  This
+	 * also sets $_SESSION['sqlquery'], which other pages still read. */
+	$_REQUEST['qt'] = $misc->storeQuery($_sqlquery);
+
 	// Pagination maybe set by a get link that has it as FALSE,
 	// if that's the case, unset the variable.
 

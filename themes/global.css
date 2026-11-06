@@ -436,6 +436,185 @@ button:focus-visible {
 
 /* ---- Data grid: browse/query results (display.php, sql.php, js/grid.js) ---- */
 
+/* Themes set the colours of th.data and tr.data1/data2; everything here
+ * uses currentColor or translucent colours so it suits light and dark themes. */
+
+/* The grid scrolls in its own box so that the header can stick to its top */
+.data-scroll {
+	box-sizing: border-box;
+	width: fit-content;
+	max-width: 100%;
+	max-height: 70vh;
+	overflow: auto;
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+	border: 1px solid rgba(128, 128, 128, 0.35);
+}
+.data-scroll > table.data-grid,
+.data-scroll > #fkcontainer > table.data-grid {
+	margin: 0;
+}
+/* The header (column names and the filter row) stays visible while scrolling */
+table.data-grid > thead {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+}
+/* Header rows outside a thead stick on their own */
+table.data-grid > tbody:first-child > tr:first-child > th {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+}
+/* Themes give th.data its background; this only fills in where one doesn't,
+ * so rows never show through a stuck header (:where() keeps it overridable) */
+:where(table.data-grid) th {
+	background-color: Canvas;
+}
+table.data-grid th.data {
+	text-align: left;
+	white-space: nowrap;
+	vertical-align: bottom;
+}
+table.data-grid th.data > a img {
+	vertical-align: middle;
+	margin-left: 2px;
+}
+table.data-grid > tbody > tr > td {
+	vertical-align: top;
+}
+
+/* Quick filter row */
+table.data-grid tr.grid-filter > th {
+	padding-top: 2px;
+	padding-bottom: 4px;
+	font-weight: normal;
+}
+table.data-grid tr.grid-filter input {
+	box-sizing: border-box;
+	width: 100%;
+	min-width: 5em;
+	padding: 2px 4px;
+	font: inherit;
+	font-size: 0.9em;
+	color: inherit;
+	background: rgba(128, 128, 128, 0.12);
+	border: 1px solid rgba(128, 128, 128, 0.5);
+	border-radius: 3px;
+}
+table.data-grid tr.grid-filter input:focus {
+	outline: 2px solid rgba(80, 140, 230, 0.7);
+	outline-offset: -1px;
+}
+table.data-grid tr.grid-filter input::placeholder {
+	color: inherit;
+	opacity: 0.45;
+}
+
+/* NULL and empty string, told apart from each other and from text */
+span.null,
+span.empty {
+	font-size: 0.8em;
+	font-style: italic;
+	opacity: 0.6;
+	letter-spacing: 0.03em;
+}
+span.null {
+	font-variant: small-caps;
+	padding: 0 0.4em;
+	border: 1px solid currentColor;
+	border-radius: 0.7em;
+}
+span.empty {
+	padding: 0 0.3em;
+	border: 1px dashed currentColor;
+	border-radius: 2px;
+}
+
+/* Toolbar above the grid: row count, rows per page, filter buttons */
+.grid-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.4em 1.5em;
+	margin-top: 0.75em;
+	margin-bottom: 0.25em;
+}
+.grid-toolbar p {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+.grid-form {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5em;
+	margin: 0;
+}
+p.grid-count {
+	font-variant-numeric: tabular-nums;
+}
+a.grid-count-exact,
+a.grid-clear-filters {
+	margin-left: 0.5em;
+}
+p.grid-hint {
+	font-size: 0.85em;
+	opacity: 0.65;
+}
+
+/* Page navigation */
+nav.pagination {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	gap: 0.25em;
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+nav.pagination .pagenav {
+	display: inline-block;
+	min-width: 1.6em;
+	padding: 0.15em 0.45em;
+	text-align: center;
+	border: 1px solid transparent;
+	border-radius: 3px;
+}
+nav.pagination a.pagenav:hover {
+	border-color: rgba(128, 128, 128, 0.5);
+}
+nav.pagination .pagenav.current {
+	font-weight: bold;
+	border-color: currentColor;
+}
+nav.pagination .pagenav.gap {
+	opacity: 0.6;
+}
+
+/* "Copied" message after double-clicking a cell */
+.grid-toast {
+	position: fixed;
+	left: 50%;
+	bottom: 2em;
+	z-index: 1000;
+	transform: translateX(-50%);
+	padding: 0.4em 1em;
+	border-radius: 4px;
+	color: #fff;
+	background: rgba(30, 30, 30, 0.9);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.15s;
+}
+.grid-toast.grid-toast-show {
+	opacity: 1;
+}
+.grid-toast.grid-toast-error {
+	background: rgba(160, 30, 30, 0.95);
+}
+
 /* ---- end data grid ---- */
 
 

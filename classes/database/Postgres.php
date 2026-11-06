@@ -7901,6 +7901,18 @@ class Postgres extends ADODB_base {
 
 	/**
 	 * Returns a recordset of all columns in a query.  Supports paging.
+	 *
+	 * Counting every row of a big relation on each page view is what makes
+	 * browsing slow, so how the total is found depends on $opts['count']:
+	 *   'exact' (default) - always run SELECT COUNT(*), as before.
+	 *   'auto'  - TABLE: use the planner's estimate when it is above
+	 *             $opts['exact_limit'] rows, count exactly below it.  Other
+	 *             types: don't count, fetch one extra row to see whether a
+	 *             next page exists.
+	 *   'none'  - never count up front.
+	 * A page past the end is moved to the last page (counting the rows once
+	 * if they were not counted yet).
+	 *
 	 * @param $type Either 'QUERY' if it is an SQL query, or 'TABLE' if it is a table identifier,
 	 *              or 'SELECT" if it's a select query
 	 * @param $table The base table of the query.  NULL for no table.
@@ -7909,7 +7921,17 @@ class Postgres extends ADODB_base {
 	 * @param $sortdir The direction in which to sort the specified column ('asc' or 'desc')
 	 * @param $page The page of the relation to retrieve
 	 * @param $page_size The number of rows per page
-	 * @param &$max_pages (return-by-ref) The max number of pages in the relation
+	 * @param &$max_pages (return-by-ref) The max number of pages in the relation, an
+	 *              estimate if the total is estimated, null if it is unknown
+	 * @param $sort_pkey (optional) Primary key column, used as the tie breaker when sorting a table
+	 * @param $opts (optional) 'count' => 'exact'|'auto'|'none', 'exact_limit' => int,
+	 *              'filters' => array(column name => value): keep rows whose column, cast to
+	 *              text, contains the value (case insensitive), or equals it if the value
+	 *              starts with '='.  Unknown or ambiguous column names are ignored.
+	 * @param &$info (optional, return-by-ref) 'total' => int|null, 'total_type' =>
+	 *              'exact'|'estimate'|'unknown', 'has_next' => bool, 'page' => the page
+	 *              actually returned, 'rows' => rows of the page (the recordset can hold
+	 *              one more), 'filters' => the filters that were applied
 	 * @return A recordset on success
 	 * @return -1 transaction error
 	 * @return -2 counting error
@@ -7917,9 +7939,19 @@ class Postgres extends ADODB_base {
 	 * @return -4 unknown type
 	 * @return -5 failed setting transaction read only
 	 */
-	function browseQuery($type, $table, $query, $sortkey, $sortdir, $page, $page_size, &$max_pages, $sort_pkey = null) {
+	function browseQuery($type, $table, $query, $sortkey, $sortdir, $page, $page_size, &$max_pages, $sort_pkey = null, $opts = array(), &$info = null) {
+		$info = array('total' => null, 'total_type' => 'unknown', 'has_next' => false,
+			'page' => $page, 'rows' => 0, 'filters' => array());
+
 		// Check that we're not going to divide by zero
 		if (!is_numeric($page_size) || $page_size != (int)$page_size || $page_size <= 0) return -3;
+		$page_size = (int)$page_size;
+		if (!is_numeric($page) || $page != (int)$page || $page < 1) return -3;
+		$page = (int)$page;
+
+		$count_mode = isset($opts['count']) ? $opts['count'] : 'exact';
+		$exact_limit = isset($opts['exact_limit']) ? (int)$opts['exact_limit'] : 100000;
+		$filters = (isset($opts['filters']) && is_array($opts['filters'])) ? $opts['filters'] : array();
 
 		// If $type is TABLE, then generate the query
 		switch ($type) {
@@ -7940,9 +7972,6 @@ class Postgres extends ADODB_base {
 				return -4;
 		}
 
-		// Generate count query
-		$count = "SELECT COUNT(*) AS total FROM ($query) AS sub";
-
 		// Open a transaction
 		$status = $this->beginTransaction();
 		if ($status != 0) return -1;
@@ -7957,27 +7986,94 @@ class Postgres extends ADODB_base {
 			}
 		}
 
+		// Quick filters.  Only filter on columns the query really returns, and only
+		// once: a duplicated name can't be told apart in the WHERE clause.
+		$where = array();
+		if (count($filters) > 0) {
+			$probe = $this->selectSet("SELECT * FROM ({$query}) AS sub LIMIT 0");
+			if (!is_object($probe)) {
+				$this->rollbackTransaction();
+				return -2;
+			}
+			$names = array();
+			for ($i = 0, $n = $probe->FieldCount(); $i < $n; $i++) {
+				$field = $probe->FetchField($i);
+				$names[$field->name] = isset($names[$field->name]) ? $names[$field->name] + 1 : 1;
+			}
+			foreach ($filters as $column => $value) {
+				$column = (string)$column;
+				$value = (string)$value;
+				if (!isset($names[$column]) || $names[$column] != 1 || trim($value) === '') continue;
+				$info['filters'][$column] = $value;
+				$f_column = $column;
+				$this->fieldClean($f_column);
+				if (substr($value, 0, 1) === '=') {
+					$literal = substr($value, 1);
+					$this->clean($literal);
+					$where[] = "\"{$f_column}\"::text = '{$literal}'";
+				}
+				else {
+					// Escape LIKE wildcards: the value is matched literally
+					$literal = str_replace(array('\\', '%', '_'), array('\\\\', '\\%', '\\_'), $value);
+					$this->clean($literal);
+					$where[] = "\"{$f_column}\"::text ILIKE '%{$literal}%'";
+				}
+			}
+		}
+		$where = count($where) > 0 ? ' WHERE ' . implode(' AND ', $where) : '';
+		$base = "SELECT * FROM ({$query}) AS sub{$where}";
 
-		// Count the number of rows
-		$total = $this->browseQueryCount($query, $count);
-		if ($total < 0) {
-			$this->rollbackTransaction();
-			return -2;
+		// Generate count query
+		$count = "SELECT COUNT(*) AS total FROM ({$query}) AS sub{$where}";
+
+		$do_count = false;
+		if ($count_mode == 'exact') {
+			$do_count = true;
+		}
+		elseif ($count_mode == 'auto' && $type == 'TABLE') {
+			$estimate = $this->getTableRowEstimate($table);
+			if ($estimate === null) {
+				// Can't tell how big it is (eg. old server): count, as we always did
+				$do_count = true;
+			}
+			elseif ($estimate['estimable']) {
+				$rows = $estimate['rows'];
+				// Pages nobody has analyzed yet: guess about 100 bytes per row
+				$unknown_rows = $estimate['unknown_bytes'] / 100;
+				if ($rows > $exact_limit) {
+					if ($where === '') {
+						$info['total'] = (int)round($rows);
+						$info['total_type'] = 'estimate';
+					}
+				}
+				elseif ($rows + $unknown_rows <= $exact_limit) {
+					$do_count = true;
+				}
+			}
+			// Views, foreign tables and big tables nobody analyzed: leave the total unknown
 		}
 
-		// Calculate max pages
-		$max_pages = ceil($total / $page_size);
-
-		// Check that page is less than or equal to max pages
-		if (!is_numeric($page) || $page != (int)$page || $page > $max_pages || $page < 1) {
-			$this->rollbackTransaction();
-			return -3;
+		if ($do_count) {
+			$total = $this->browseQueryCount($base, $count);
+			if (!is_numeric($total) || $total < 0) {
+				$this->rollbackTransaction();
+				return -2;
+			}
+			$info['total'] = (int)$total;
+			$info['total_type'] = 'exact';
 		}
 
-		// Set fetch mode to NUM so that duplicate field names are properly returned
-		// for non-table queries.  Since the SELECT feature only allows selecting one
-		// table, duplicate fields shouldn't appear.
-		if ($type == 'QUERY') $this->conn->setFetchMode(ADODB_FETCH_NUM);
+		if ($info['total_type'] == 'exact') {
+			// Calculate max pages, and move a page past the end to the last one
+			$max_pages = (int)ceil($info['total'] / $page_size);
+			if ($page > $max_pages) $page = max(1, $max_pages);
+		}
+		elseif ($info['total_type'] == 'estimate') {
+			$max_pages = max(1, (int)ceil($info['total'] / $page_size));
+		}
+		else {
+			$max_pages = null;
+		}
 
 		// Figure out ORDER BY.  Sort key is always the column number (based from one)
 		// of the column to order by.  Only need to do this for non-TABLE queries
@@ -7993,13 +8089,50 @@ class Postgres extends ADODB_base {
 			$orderby = '';
 		}
 
+		// Without an exact total, fetch one row more than a page to know whether
+		// there is a next page.
+		$limit = ($info['total_type'] == 'exact') ? $page_size : $page_size + 1;
+
+		// Set fetch mode to NUM so that duplicate field names are properly returned
+		// for non-table queries.  Since the SELECT feature only allows selecting one
+		// table, duplicate fields shouldn't appear.
+		if ($type == 'QUERY') $this->conn->setFetchMode(ADODB_FETCH_NUM);
+
 		// Actually retrieve the rows, with offset and limit
-		$rs = $this->selectSet("SELECT * FROM ({$query}) AS sub {$orderby} LIMIT {$page_size} OFFSET " . ($page - 1) * $page_size);
+		$rs = $this->selectSet("{$base}{$orderby} LIMIT {$limit} OFFSET " . ($page - 1) * $page_size);
+
+		// Past the end of a result we did not count: count it now and show the last page
+		if (is_object($rs) && $rs->recordCount() == 0 && $page > 1 && $info['total_type'] != 'exact') {
+			$mode = $this->conn->setFetchMode(ADODB_FETCH_ASSOC);
+			$total = $this->browseQueryCount($base, $count);
+			$this->conn->setFetchMode($mode);
+			if (!is_numeric($total) || $total < 0) {
+				$this->rollbackTransaction();
+				return -2;
+			}
+			$info['total'] = (int)$total;
+			$info['total_type'] = 'exact';
+			$max_pages = (int)ceil($info['total'] / $page_size);
+			if ($max_pages >= 1) {
+				$page = $max_pages;
+				$rs = $this->selectSet("{$base}{$orderby} LIMIT {$page_size} OFFSET " . ($page - 1) * $page_size);
+			}
+		}
+
+		if (!is_object($rs)) {
+			$this->rollbackTransaction();
+			return -1;
+		}
+
 		$status = $this->endTransaction();
 		if ($status != 0) {
 			$this->rollbackTransaction();
 			return -1;
 		}
+
+		$info['page'] = $page;
+		$info['rows'] = min($rs->recordCount(), $page_size);
+		$info['has_next'] = ($info['total_type'] == 'exact') ? ($page < $max_pages) : ($rs->recordCount() > $page_size);
 
 		return $rs;
 	}
@@ -8014,6 +8147,58 @@ class Postgres extends ADODB_base {
 	 */
 	function browseQueryCount($query, $count) {
 		return $this->selectField($count, 'total');
+	}
+
+	/**
+	 * Estimates the number of rows of a table from the planner statistics,
+	 * without reading the table.  Inheritance children and partitions are
+	 * included, like a plain SELECT on the table does.
+	 * @param $table The table (or view...) name, in the current schema
+	 * @return array('estimable' => bool, false for views, foreign tables and the like,
+	 *               'rows' => estimated rows of the analyzed part,
+	 *               'unknown_bytes' => size of the part that was never analyzed)
+	 * @return null if the relation can't be found or the estimate failed
+	 */
+	function getTableRowEstimate($table) {
+		$c_schema = $this->_schema;
+		$this->clean($c_schema);
+		$this->clean($table);
+
+		/* reltuples is -1 (PostgreSQL 14+), or 0 with relpages 0 (older), when the
+		 * table was never vacuumed or analyzed.  Otherwise scale it to the current
+		 * size of the table, like the planner does. */
+		$sql = "
+			WITH RECURSIVE rels AS (
+				SELECT c.oid, c.relkind, c.reltuples, c.relpages, 0 AS depth
+				FROM pg_catalog.pg_class c
+					JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+				WHERE c.relname = '{$table}' AND n.nspname = '{$c_schema}'
+				UNION ALL
+				SELECT c.oid, c.relkind, c.reltuples, c.relpages, r.depth + 1
+				FROM rels r
+					JOIN pg_catalog.pg_inherits i ON i.inhparent = r.oid
+					JOIN pg_catalog.pg_class c ON c.oid = i.inhrelid
+				WHERE r.relkind IN ('r', 'p')
+			)
+			SELECT
+				bool_or(depth = 0 AND relkind IN ('r', 'p', 'm')) AS estimable,
+				sum(CASE WHEN relkind IN ('r', 'm') AND relpages > 0 AND reltuples >= 0
+					THEN reltuples::float8 / relpages
+						* (pg_catalog.pg_relation_size(oid) / pg_catalog.current_setting('block_size')::float8)
+					ELSE 0 END) AS est_rows,
+				sum(CASE WHEN relkind IN ('r', 'm') AND (relpages = 0 OR reltuples < 0)
+					THEN pg_catalog.pg_relation_size(oid)::float8
+					ELSE 0 END) AS unknown_bytes
+			FROM rels";
+
+		$rs = $this->selectSet($sql);
+		if (!is_object($rs) || $rs->recordCount() != 1 || $rs->fields['estimable'] === null) return null;
+
+		return array(
+			'estimable' => $this->phpBool($rs->fields['estimable']),
+			'rows' => (float)$rs->fields['est_rows'],
+			'unknown_bytes' => (float)$rs->fields['unknown_bytes'],
+		);
 	}
 
 	/**
