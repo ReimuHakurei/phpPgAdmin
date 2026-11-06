@@ -493,6 +493,34 @@
 				}
 			}
 
+			// Session settings travel in the connection's startup packet (via
+			// libpq's environment variables, so the host:port handling stays as
+			// it is) instead of costing a SET statement each after connecting.
+			// We work on UTF-8 only encoding.
+			$startup = array('PGCLIENTENCODING' => 'UTF8');
+			$options = array('DateStyle=ISO');
+			// bytea_output only exists from 9.0 on, and the version is only
+			// known once we have connected to this server before.
+			$bytea_at_startup = isset($server_info['pgVersion'])
+				&& version_compare($server_info['pgVersion'], '9.0', '>=');
+			if ($bytea_at_startup)
+				$options[] = 'bytea_output=escape';
+			if (isset($conf['statement_timeout']) && $conf['statement_timeout'] !== '') {
+				$_timeout = preg_replace('/\s+/', '', (string) $conf['statement_timeout']);
+				if (preg_match('/^[0-9]+(ms|s|min|h|d)?$/', $_timeout))
+					$options[] = "statement_timeout={$_timeout}";
+				else
+					trigger_error("Ignoring invalid \$conf['statement_timeout']", E_USER_WARNING);
+			}
+			$_prev_options = getenv('PGOPTIONS');
+			$startup['PGOPTIONS'] = trim(($_prev_options === false ? '' : $_prev_options) . ' -c ' . implode(' -c ', $options));
+
+			$_saved_env = array();
+			foreach ($startup as $_name => $_value) {
+				$_saved_env[$_name] = getenv($_name);
+				putenv("{$_name}={$_value}");
+			}
+
 			// Create the connection object and make the connection
 			$_connection = new Connection(
 				$server_info['host'],
@@ -503,6 +531,10 @@
 				$database
 			);
 
+			// Don't hand these to child processes (pg_dump).
+			foreach ($_saved_env as $_name => $_value)
+				putenv($_value === false ? $_name : "{$_name}={$_value}");
+
 			// Get the name of the database driver we need to use.
 			// The description of the server is returned in $platform.
 			$_type = $_connection->getDriver($platform);
@@ -511,7 +543,8 @@
 				exit;
 			}
 			$this->setServerInfo('platform', $platform, $server_id);
-			$this->setServerInfo('pgVersion', $_connection->conn->ServerInfo()['version'], $server_id);
+			// Without the detailed info: that would cost a "select version()".
+			$this->setServerInfo('pgVersion', $_connection->conn->ServerInfo(false)['version'], $server_id);
 
 			// Create a database wrapper class for easy manipulation of the
 			// connection.
@@ -519,10 +552,12 @@
 			$data = new $_type($_connection->conn);
 			$data->platform = $_connection->platform;
 
-			/* we work on UTF-8 only encoding */
-			$data->execute("SET client_encoding TO 'UTF-8'");
+			// Only needed when the startup settings above didn't apply.
+			if (pg_parameter_status($_connection->conn->_connectionID, 'client_encoding') !== 'UTF8') {
+				$data->execute("SET client_encoding TO 'UTF-8'");
+			}
 
-			if ($data->hasByteaHexDefault()) {
+			if ($data->hasByteaHexDefault() && !$bytea_at_startup) {
 				$data->execute("SET bytea_output TO escape");
 			}
 

@@ -7,6 +7,7 @@
 	 */
 
 	include_once('./libraries/decorator.inc.php');
+	include_once('./libraries/session.inc.php');
 	include_once('./lang/translations.php');
 
 	// Report everything.
@@ -233,6 +234,11 @@
 		$_SESSION['webdbLanguage'] = $_language;
 	}
 
+	// The bootstrap's own session work is done. Release the session lock so
+	// a slow page doesn't block the user's other requests; later changes to
+	// $_SESSION are still saved at the end of the request.
+	ppa_session_release();
+
 	// Check for config file version mismatch
 	if (!isset($conf['version']) || $conf['base_version'] > $conf['version']) {
 		echo $lang['strbadconfig'];
@@ -266,9 +272,15 @@
 	    }
 		$_server_info = $misc->getServerInfo();
 
-		/* starting with PostgreSQL 9.0, we can set the application name */
-		if(isset($_server_info['pgVersion']) && version_compare($_server_info['pgVersion'], '9', '>='))
+		/* starting with PostgreSQL 9.0, we can set the application name.
+		 * Before the first connection the version isn't known yet: assume a
+		 * current server (libpq retries without it if the server rejects it). */
+		if (!isset($_server_info['pgVersion']) || version_compare($_server_info['pgVersion'], '9', '>='))
 			putenv("PGAPPNAME={$appName}_{$appVersion}");
+
+		// Don't hang on a server that doesn't answer.
+		if (getenv('PGCONNECT_TIMEOUT') === false)
+			putenv('PGCONNECT_TIMEOUT=10');
 
 		// A per-database login only gets that one database. Server-wide pages
 		// and other databases send you back to it instead.

@@ -118,7 +118,7 @@
 			if (isset($_REQUEST['table']))
 				$rs = $data->dumpRelation($_REQUEST['table'] ?? '', $oids);
 			else
-				$rs = $data->conn->Execute($_REQUEST['query'] ?? '');
+				$rs = $data->dumpQuery($_REQUEST['query'] ?? '');
 
 			if ($format == 'copy') {
 				$data->fieldClean($_REQUEST['table']);

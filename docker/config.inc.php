@@ -97,6 +97,8 @@ $conf['max_chars'] = (int) ppa_env('PPA_MAX_CHARS', 50);
 $conf['use_xhtml_strict'] = false;
 $conf['help_base'] = 'https://www.postgresql.org/docs/%s/';
 $conf['ajax_refresh'] = (int) ppa_env('PPA_AJAX_REFRESH', 3);
+// e.g. "30s" or "5min"; unset means no limit.
+$conf['statement_timeout'] = ppa_env('PPA_STATEMENT_TIMEOUT', '');
 $conf['plugins'] = preg_split('/[\s,]+/', ppa_env('PPA_PLUGINS', ''), -1, PREG_SPLIT_NO_EMPTY);
 
 $conf['version'] = 19;

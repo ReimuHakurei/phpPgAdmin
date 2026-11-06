@@ -451,10 +451,12 @@ class Postgres extends ADODB_base {
 	/**
 	 * Return all database available on the server
 	 * @param $currentdatabase database name that should be on top of the resultset
+	 * @param $withSize compute dbsize (pg_database_size() reads every database's
+	 *        files, so only ask for it when the size is shown)
 	 *
 	 * @return A list of databases, sorted alphabetically
 	 */
-	function getDatabases($currentdatabase = NULL) {
+	function getDatabases($currentdatabase = NULL, $withSize = false) {
 		global $conf, $misc;
 
 		$server_info = $misc->getServerInfo();
@@ -478,14 +480,19 @@ class Postgres extends ADODB_base {
 		else
 			$where = ' AND pdb.datallowconn';
 
+		if ($withSize)
+			$dbsize = "CASE WHEN pg_catalog.has_database_privilege(current_user, pdb.oid, 'CONNECT')
+					THEN pg_catalog.pg_database_size(pdb.oid)
+					ELSE -1 -- set this magic value, which we will convert to no access later
+				END";
+		else
+			$dbsize = 'NULL';
+
 		$sql = "
 			SELECT pdb.datname AS datname, pr.rolname AS datowner, pg_encoding_to_char(encoding) AS datencoding,
 				(SELECT description FROM pg_catalog.pg_shdescription pd WHERE pdb.oid=pd.objoid AND pd.classoid='pg_database'::regclass) AS datcomment,
 				(SELECT spcname FROM pg_catalog.pg_tablespace pt WHERE pt.oid=pdb.dattablespace) AS tablespace,
-				CASE WHEN pg_catalog.has_database_privilege(current_user, pdb.oid, 'CONNECT')
-					THEN pg_catalog.pg_database_size(pdb.oid)
-					ELSE -1 -- set this magic value, which we will convert to no access later
-				END as dbsize, pdb.datcollate, pdb.datctype
+				{$dbsize} as dbsize, pdb.datcollate, pdb.datctype
 			FROM pg_catalog.pg_database pdb
 				LEFT JOIN pg_catalog.pg_roles pr ON (pdb.datdba = pr.oid)
 			WHERE true
@@ -889,11 +896,20 @@ class Postgres extends ADODB_base {
 	 * @return 0 success
 	 */
 	function setSchema($schema) {
-		// Get the current schema search path, including 'pg_catalog'.
-		$search_path = $this->getSearchPath();
-		// Prepend $schema to search path
-		array_unshift($search_path, $schema);
-		$status = $this->setSearchPath($search_path);
+		// Prepend $schema to the current search path in a single statement,
+		// instead of reading the path first and setting it after. An empty
+		// name leaves the path alone, as it always did.
+		if ($schema === '' || $schema === null) {
+			$this->_schema = $schema;
+			return 0;
+		}
+		$c_schema = $schema;
+		$this->clean($c_schema);
+		$sql = "SELECT pg_catalog.set_config('search_path',
+			CASE WHEN pg_catalog.current_setting('search_path') = '' THEN pg_catalog.quote_ident('{$c_schema}')
+			ELSE pg_catalog.quote_ident('{$c_schema}') || ', ' || pg_catalog.current_setting('search_path') END,
+			false)";
+		$status = $this->execute($sql);
 		if ($status == 0) {
 			$this->_schema = $schema;
 			return 0;
@@ -2375,10 +2391,10 @@ class Postgres extends ADODB_base {
 
 	/**
 	 * Returns a recordset of all columns in a relation.  Used for data export.
-	 * @@ Note: Really needs to use a cursor
+	 * The rows come from a server-side cursor, so call beginDump() first.
 	 * @param $relation The name of a relation
-	 * @return A recordset on success
-	 * @return -1 Failed to set datestyle
+	 * @return A recordset (DumpCursor) on success
+	 * @return An error number on failure
 	 */
 	function dumpRelation($relation, $oids) {
 		$this->fieldClean($relation);
@@ -2387,7 +2403,61 @@ class Postgres extends ADODB_base {
 		if ($oids) $oid_str = $this->id . ', ';
 		else $oid_str = '';
 
-		return $this->selectSet("SELECT {$oid_str}* FROM \"{$relation}\"");
+		// Cursors need a transaction. beginDump() starts one, but e.g.
+		// getTableDefPrefix() rolls it back when it gives up.
+		$own = $this->beginDumpCursorTransaction();
+		$status = $this->execute("DECLARE ppa_dump NO SCROLL CURSOR FOR SELECT {$oid_str}* FROM \"{$relation}\"");
+		if ($status != 0) {
+			if ($own) $this->conn->Execute('ROLLBACK');
+			return $status;
+		}
+
+		include_once('./classes/database/DumpCursor.php');
+		return new DumpCursor($this->conn, 'ppa_dump', 1000, $own);
+	}
+
+	/**
+	 * Start a transaction for a dump cursor unless one is open already.
+	 * @return true if a transaction was started, which the cursor then commits
+	 */
+	function beginDumpCursorTransaction() {
+		if (pg_transaction_status($this->conn->_connectionID) !== PGSQL_TRANSACTION_IDLE)
+			return false;
+		$this->conn->Execute('BEGIN');
+		return true;
+	}
+
+	/**
+	 * Returns a recordset of the results of a query.  Used for data export.
+	 * A single SELECT (or VALUES, TABLE, WITH) is read through a server-side
+	 * cursor, so call beginDump() first. Anything else is run as it is.
+	 * @param $query The query
+	 * @return A recordset on success, false on failure
+	 */
+	function dumpQuery($query) {
+		$single = rtrim($query, " \t\r\n;");
+		if ($this->major_version >= 8.0
+			&& preg_match('/^\s*\(*\s*(select|values|table|with)\b/i', $single)
+			&& strpos($single, ';') === false
+		) {
+			// The query may not be allowed in a cursor (e.g. a data-modifying
+			// WITH): try it quietly and fall back to running it directly.
+			$own = $this->beginDumpCursorTransaction();
+			$this->conn->Execute('SAVEPOINT ppa_dump');
+			$raise = $this->conn->raiseErrorFn;
+			$this->conn->raiseErrorFn = false;
+			$declared = $this->conn->Execute("DECLARE ppa_dump NO SCROLL CURSOR FOR {$single}");
+			$this->conn->raiseErrorFn = $raise;
+
+			if ($declared) {
+				$this->conn->Execute('RELEASE SAVEPOINT ppa_dump');
+				include_once('./classes/database/DumpCursor.php');
+				return new DumpCursor($this->conn, 'ppa_dump', 1000, $own);
+			}
+			$this->conn->Execute($own ? 'ROLLBACK' : 'ROLLBACK TO SAVEPOINT ppa_dump');
+		}
+
+		return $this->conn->Execute($query);
 	}
 
 	/**

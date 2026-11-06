@@ -79,6 +79,8 @@ or with an empty password. Create a normal login role for yourself, or set
 | `PPA_AJAX_REFRESH` | `3` | Seconds between refreshes on the locks and processes pages. `0` turns it off. |
 | `PPA_AUTOCOMPLETE` | `default on` | `default on`, `default off` or `disable`. |
 | `PPA_PLUGINS` | | Comma-separated, e.g. `Report`. |
+| `PPA_STATEMENT_TIMEOUT` | | Cancel statements that run longer than this, e.g. `30s` or `5min` (PostgreSQL's `statement_timeout`, also applies to the SQL editor). Unset means no limit. |
+| `PGCONNECT_TIMEOUT` | `10` | Seconds to wait for a server to accept a connection. |
 | `PHP_SESSION_COOKIE_SECURE` | `0` | Set to `1` when the site is served over HTTPS. |
 
 If you need something the variables can't do (server groups, a different
@@ -94,6 +96,10 @@ then.
   older client.
 - `conf/`, `classes/`, `lang/` and the ADOdb library return 403 over HTTP.
 - PHP errors go to the container log (`docker logs`), not the page.
+- OPcache doesn't check files for changes. If you mount your own
+  `config.inc.php`, restart the container after editing it.
+- `/healthz` is a static file for health checks; the image's `HEALTHCHECK`
+  uses it.
 - Release images show their tag as the version, e.g. `v1.2.0-mod`. Local builds
   can set it with `--build-arg PPA_RELEASE=v1.2.0`; without it they show the
   version in `libraries/lib.inc.php`.
