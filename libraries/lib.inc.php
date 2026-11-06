@@ -7,6 +7,7 @@
 	 */
 
 	include_once('./libraries/decorator.inc.php');
+	include_once('./libraries/session.inc.php');
 	include_once('./lang/translations.php');
 
 	// Report everything.
@@ -232,6 +233,11 @@
 		include("./lang/{$_language}.php");
 		$_SESSION['webdbLanguage'] = $_language;
 	}
+
+	// The bootstrap's own session work is done. Release the session lock so
+	// a slow page doesn't block the user's other requests; later changes to
+	// $_SESSION are still saved at the end of the request.
+	ppa_session_release();
 
 	// Check for config file version mismatch
 	if (!isset($conf['version']) || $conf['base_version'] > $conf['version']) {
