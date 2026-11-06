@@ -8,6 +8,8 @@
 
 	 
 	// Include application functions
+	// Opens in its own window, without the sidebar.
+	$_no_shell = true;
 	include_once('./libraries/lib.inc.php');
 	
 	$action = (isset($_REQUEST['action'])) ? $_REQUEST['action'] : '';

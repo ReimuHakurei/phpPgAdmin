@@ -807,6 +807,15 @@
 	$lang['strloading'] = 'Loading...';
 	$lang['strerrorloading'] = 'Error Loading';
 	$lang['strclicktoreload'] = 'Click to reload';
+	$lang['strfiltertree'] = 'Filter';
+	$lang['strnotreematch'] = 'Nothing matches. Only expanded branches are searched.';
+	$lang['strresizesidebar'] = 'Drag to resize';
+	$lang['strtogglesidebar'] = 'Show or hide the object browser';
+	$lang['strobjectbrowser'] = 'Object browser';
+	$lang['strpageloaderror'] = 'The page could not be loaded.';
+	$lang['strsections'] = 'Sections';
+	$lang['strbreadcrumb'] = 'Location';
+	$lang['strtools'] = 'Tools';
 	$lang['sessionsecuritywarning'] = 'You are running phpPgAdmin with session security disabled. This is a potential security risk!';
 
 	// Autovacuum

@@ -9,7 +9,7 @@ body {
 	background-color: #336;
 	margin:	0px;
 	padding: 0px;
-	font-size: smaller; /*0.8em;*/
+	font-size: 0.8125rem;
 	font-family: sans-serif;
 	color: #fff;
 }
@@ -22,19 +22,19 @@ p.comment, td.comment_cell {
 table {
 	border:1px gray solid;
 }
-body.browser {
+#ppa-sidebar {
 	background-color: #447;
 	color:#4bf;
-	font-size: smaller; /*1em;*/
-	border-right: 1px dashed #c0c0c0;
+	font-size: 0.8125rem;
+	border-inline-end: 1px dashed #c0c0c0;
 }
-body.browser a {
+#ppa-sidebar a {
 	color:#fff;
 }
-body.browser a:hover {
+#ppa-sidebar a:hover {
 	color:#cde;
 }
-body.browser div.webfx-tree-row:hover { background:#88d }
+#ppa-sidebar .ppa-node:hover { background:#88d }
 h2 {
 	color: #fff;
 	font-size: medium; /*1.3em;*/
@@ -55,7 +55,7 @@ table.error td {background-color: #f84}
 th.data {
 	color: #ada;
 	background-color: #241;
-	font-size: smaller; /* 0.9em */
+	font-size: 0.75rem;
 }
 th.data a:active, th.data a:link, th.data a:visited, th.data a:hover {
 	font-weight: bold;
@@ -83,7 +83,7 @@ ul.toplink li:first-child, ul.navlink li:first-child {
 tr.data1, tr.data2, tr.data3 {
 	color: #eed;
 	font-family: sans-serif;
-	font-size: smaller; /*0.8em;*/
+	font-size: 0.75rem;
 }
 tr.data1:hover, tr.data2:hover, tr.data3:hover {
 	background-color: #39663e;
@@ -128,12 +128,12 @@ p input:focus, .data input:focus, .data1 input:focus, .data2 input:focus, textar
 }
 td.opbutton1 {
 	border: 1px solid #484;
-	font-size: smaller; /*0.8em;*/
+	font-size: 0.75rem;
 	text-align: center;
 }
 td.opbutton2 {
 	border:	1px solid #484;
-	font-size: smaller; /*0.8em;*/
+	font-size: 0.75rem;
 	text-align: center;
 }
 td.opbutton1 a, td.opbutton2 a {
@@ -151,7 +151,7 @@ td.opbutton1 a, td.opbutton2 a {
 }
 .topbar, .trail, .tab {
 	padding: 2px 1ex;
-	font-size: smaller;
+	font-size: 0.75rem;
 	color: #ddf;
 }
 .crumb, .tab {
@@ -161,7 +161,7 @@ td.opbutton1 a, td.opbutton2 a {
 	vertical-align: middle;
 	margin: 0;
 }
-table.tabs {
+nav.tabs {
 	width: 100%;
 	border-collapse: collapse;
 	margin-bottom: 1ex;
@@ -171,10 +171,10 @@ table.tabs {
 .tab .icon {display: block}
 tr,td { height:100% }
 td:not(.constraint_cell) a:not(.help), th a { display:inline-block; height:100% }	/* vertical-align:middle doesn't work for block elements, CSS sux */
-td.crumb a, td.tab a { width:90% }
+li.crumb a, li.tab a { width:90% }
 tr.data1 a, tr.data2 a { width:100% }
 td.opbutton1 a, td.opbutton2 a { width:inherit }
-td a.help { display:inline; position:absolute; min-width:10px; }
+.tab a.help, .crumb a.help { display:inline; position:absolute; min-width:10px; }
 a.pagenav { display:inline-block; min-width:15px; }
 a.toplink { display:inline }
 a:active {
@@ -220,7 +220,7 @@ a.navlink:active, a.toplink:active, ul.navlink li a:active, ul.toplink li a:acti
 .active a {font-weight: bold}
 a.help {
 	color: #E68800;
-	font-size: smaller;
+	font-size: 0.75rem;
 	vertical-align: super;
 	text-decoration: none;
 }
@@ -244,7 +244,7 @@ pre.error {
 	background: #eee;
 	border-top: 1px dotted #999;
 	border-left: 1px dotted #999;
-	font-size: smaller;
+	font-size: 0.75rem;
 }
 
 a.bottom_link:hover { background:#68f }

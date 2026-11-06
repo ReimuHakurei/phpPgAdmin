@@ -42,14 +42,14 @@
 	}
 ?>
 	<input type="hidden" name="loginServer" value="<?php echo htmlspecialchars($server); ?>" />
-	<table class="navbar" border="0" cellpadding="5" cellspacing="3">
+	<table class="navbar login">
 		<tr>
-			<td><?php echo $lang['strusername']; ?></td>
-			<td><input type="text" name="loginUsername" value="<?php if (isset($_POST['loginUsername']) && is_scalar($_POST['loginUsername'])) echo htmlspecialchars((string) $_POST['loginUsername']); ?>" size="24" /></td>
+			<td><label for="loginUsername"><?php echo $lang['strusername']; ?></label></td>
+			<td><input type="text" id="loginUsername" name="loginUsername" autocomplete="username" value="<?php if (isset($_POST['loginUsername']) && is_scalar($_POST['loginUsername'])) echo htmlspecialchars((string) $_POST['loginUsername']); ?>" size="24" /></td>
 		</tr>
 		<tr>
-			<td><?php echo $lang['strpassword']; ?></td>
-			<td><input id="loginPassword" type="password" name="loginPassword_<?php echo $md5_server; ?>" size="24" /></td>
+			<td><label for="loginPassword"><?php echo $lang['strpassword']; ?></label></td>
+			<td><input id="loginPassword" type="password" autocomplete="current-password" name="loginPassword_<?php echo $md5_server; ?>" size="24" /></td>
 		</tr>
 	</table>
 <?php if (count($misc->getLoginTargets()) > 1) : ?>

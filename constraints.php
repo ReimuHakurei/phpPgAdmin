@@ -594,7 +594,11 @@
 	if ($action == 'add_unique_key' || $action == 'save_add_unique_key'
 			|| $action == 'add_primary_key' || $action == 'save_add_primary_key'
 			|| $action == 'add_foreign_key' || $action == 'save_add_foreign_key')
-		echo "<body onload=\"init();\">";
+	{
+		$misc->printBody();
+		// Runs once the whole form is on the page.
+		echo "<script>$(function () { init(); });</script>\n";
+	}
 	else
 		$misc->printBody();
 

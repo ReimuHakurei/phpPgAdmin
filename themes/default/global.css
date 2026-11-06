@@ -10,8 +10,9 @@
 :root {
 	--ppa-font: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
 	--ppa-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", "DejaVu Sans Mono", Menlo, Consolas, "Liberation Mono", monospace;
-	--ppa-size: 14px;
-	--ppa-size-sm: 13px;
+	/* rem, so the browser's own font size setting still counts. */
+	--ppa-size: 0.875rem;
+	--ppa-size-sm: 0.8125rem;
 }
 input, select, textarea, button {
 	font-family: var(--ppa-font);
@@ -32,11 +33,11 @@ body {
 	line-height: 1.45;
 	color: #1a1a1a;
 }
-body.browser {
+#ppa-sidebar {
 	background-color: #efefef;
 	font-family: var(--ppa-font);
 	font-size: var(--ppa-size);
-	border-right: 1px dashed #c0c0c0;
+	border-inline-end: 1px dashed #c0c0c0;
 }
 body.bottombar {
 	background-color: #CECF9C;
@@ -151,6 +152,13 @@ td.opbutton2 {
 .topbar .platform, .topbar .host, .topbar .username {
 	font-weight: bold;
 }
+/* Darker than the page links: the topbar background is darker too. */
+.topbar a:link, .topbar a:visited, .topbar ul.toplink li a {
+	color: #1F4E79;
+}
+.topbar a:hover, .topbar ul.toplink li a:hover {
+	color: #A30000;
+}
 .topbar, .trail {
 	margin-bottom: 2px;
 }
@@ -169,16 +177,14 @@ td.opbutton2 {
 	vertical-align: middle;
 	margin: 0 2px;
 }
-table.tabs {
-	width: 100%;
-	border-collapse: collapse;
+nav.tabs {
 	margin-bottom: 1ex;
 }
 .tab {text-align: center}
 .tabs .active {background-color: #E6E6CC}
 .tab .icon {display: block}
 a:active {
-	color: #989973;
+	color: #66673F;
 	font-weight: normal;
 	text-decoration: underline;
 }
@@ -216,7 +222,7 @@ a.navlink:active, a.toplink:active, ul.navlink li a:active, ul.toplink li a:acti
 }
 .active a {font-weight: bold}
 a.help {
-	color: #E68800;
+	color: #9A5700;
 	font-size: 0.75em;
 	vertical-align: super;
 	text-decoration: none;

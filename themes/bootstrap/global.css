@@ -3,7 +3,6 @@
 /**
  * Default style sheet
  */
-frame {border-right: 1px solid #CCC;}
 .label {
 	color:#336699 !important;
 	font-size: 12px;
@@ -16,10 +15,9 @@ body {
 	padding: 0px;
 }
 
-body.browser {
+#ppa-sidebar {
 	background-color: #FFFFFF !important;
 	font-size: 12px !important; /*1em;*/
-	border-right: 1px #c0c0c0;
 }
 body.bottombar {
 	background-color: #f9f9f9;
@@ -52,14 +50,14 @@ table.navbar td {
 	background-color: #FDFDFD;
 	text-align: center;
 	
-	font-size: smaller; /* 0.9em */
+	font-size: 12px;
 	font-weight: bold;
 }
 table.navbar td.active {background-color: #F9FFFF}
 th.data {
 	color: #000000;
 	background-color: #F9FFFF;
-	font-size: smaller; /* 0.9em */
+	font-size: 12px;
 	padding:3px;
 }
 th.data a:active, th.data a:link, th.data a:visited, th.data a:hover {
@@ -75,7 +73,7 @@ td.topbar {
 	margin:	0px	0px;
 	padding: 0px;
 	
-	font-size: smaller; /*0.8em;*/
+	font-size: 12px;
 	text-align: left;
 }
 
@@ -100,7 +98,7 @@ ul.toplink li:first-child, ul.navlink li:first-child {
 tr.data1, tr.data2, tr.data3 {
 	color: #000000;
 	
-	font-size: smaller; /*0.8em;*/
+	font-size: 12px;
 }
 
 tr.data1 td, tr.data2 td, tr.data3 td {
@@ -168,7 +166,7 @@ td.opbutton1 {
 	border-left: 1px solid #FFFFFF;
 	cursor:	pointer;
 	
-	font-size: smaller; /*0.8em;*/
+	font-size: 12px;
 	padding-left: 6px;
 	padding-right: 6px;
 	text-align: center;
@@ -181,7 +179,7 @@ td.opbutton2 {
 	border-left: 1px solid #FFFFFF;
 	cursor:	pointer;
 	
-	font-size: smaller; /*0.8em;*/
+	font-size: 12px;
 	padding-left: 6px;
 	padding-right: 6px;
 	text-align: center;
@@ -212,7 +210,7 @@ td.opbutton2 {
 	vertical-align: middle;
 	margin: 0 2px;
 }
-table.tabs {
+nav.tabs {
 	width: 100%;
 	border-collapse: collapse;
 	margin-bottom: 1ex;
@@ -268,7 +266,7 @@ a.navlink:active, a.toplink:active, ul.navlink li a:active, ul.toplink li a:acti
 .active a {font-weight: bold}
 a.help {
 	color: #E68800;
-	font-size: smaller;
+	font-size: 12px;
 	vertical-align: super;
 	text-decoration: none;
 }
@@ -287,7 +285,7 @@ pre.error {
 	background: #eee;
 	border-top: 1px dotted #999;
 	border-left: 1px dotted #999;
-	font-size: smaller;
+	font-size: 12px;
 }
 
 /** FK browsing **/
@@ -305,7 +303,7 @@ div.logo {
 	padding: 0px;
 	
 	background-size: 99% 90%;
-	font-size: smaller; /* 1em; */
+	font-size: 12px;
 	border: none;
 	margin-bottom: 2px;
 	background-image: url('../../images/themes/bootstrap/title.png');

@@ -388,7 +388,11 @@
 	$misc->printHeader($lang['strindexes'], "<script src=\"indexes.js\" type=\"text/javascript\"></script>");
 
 	if ($action == 'create_index' || $action == 'save_create_index')
-		echo "<body onload=\"init();\">";
+	{
+		$misc->printBody();
+		// Runs once the whole form is on the page.
+		echo "<script>$(function () { init(); });</script>\n";
+	}
 	else
 		$misc->printBody();
 

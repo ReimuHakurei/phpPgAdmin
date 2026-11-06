@@ -195,7 +195,13 @@ $(document).on('click', '#fknext', function () {
 	jQuery('#fklist').prev().focus();
 });
 
-jQuery(function () {
+/* Set up the page each time an insert/edit form with foreign keys is shown
+ * (js/app.js fires "ppa:load" after swapping pages in). */
+function acInit() {
+	var list = jQuery('#fklist');
+	if (!list.length || list.data('ppa-init')) return;
+	list.data('ppa-init', true);
+
 	/* register some global value in the ppa namespace */
 	jQuery.ppa = {
 		fklist: jQuery('#fklist'),
@@ -223,4 +229,7 @@ jQuery(function () {
 			triggerAc(this.checked);
 		})[0].checked
 	);
-});
+}
+
+jQuery(document).on('ppa:load', acInit);
+jQuery(acInit);

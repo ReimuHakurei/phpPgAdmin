@@ -436,7 +436,37 @@
 		 * @param $msg The message to print
 		 */
 		function printMsg($msg) {
-			if ($msg != '') echo "<p class=\"message\">{$msg}</p>\n";
+			if ($msg == '') return;
+			$error = $this->isErrorMessage($msg);
+			echo "<p class=\"message", ($error ? ' error' : ''), "\" role=\"", ($error ? 'alert' : 'status'), "\">{$msg}</p>\n";
+		}
+
+		/** Messages from the language file that report a failure, see isErrorMessage(). */
+		private $errorMessages = null;
+
+		/**
+		 * Tells failure messages ("Table creation failed.") from success
+		 * messages, so they can be shown differently. Pages pass the
+		 * translated text, so this looks it up by the language keys that
+		 * name failures.
+		 */
+		function isErrorMessage($msg) {
+			global $lang;
+
+			if ($this->errorMessages === null) {
+				$this->errorMessages = array();
+				foreach ($lang as $key => $text) {
+					if (is_string($text) && $text !== ''
+						&& preg_match('/(bad|failed|needs|error|invalid|notfound|disallowed|specifytable)/', $key)) {
+						$this->errorMessages[] = $text;
+					}
+				}
+			}
+			$msg = (string) $msg;
+			foreach ($this->errorMessages as $text) {
+				if (strncmp($msg, $text, strlen($text)) === 0) return true;
+			}
+			return false;
 		}
 
 		/**
@@ -506,21 +536,33 @@
 		 * @param $title The title of the page
 		 * @param $script script tag
 		 */
-		function printHeader($title = '', $script = null, $frameset = false) {
+		/**
+		 * True when the page was requested by the app shell (js/app.js) to
+		 * swap into the main area. Such responses leave out the sidebar.
+		 */
+		function isPartialRequest() {
+			return ($_SERVER['HTTP_X_PPA_PARTIAL'] ?? '') === '1';
+		}
+
+		/**
+		 * URL of a static asset with the app version appended, so browsers
+		 * can cache it for a long time and still pick up a new release.
+		 */
+		function asset($path) {
+			global $appVersion;
+			return $path . '?v=' . rawurlencode($appVersion);
+		}
+
+		function printHeader($title = '', $script = null) {
 			global $appName, $lang, $_no_output, $conf, $plugin_manager;
 
 			if (!isset($_no_output)) {
 				header("Content-Type: text/html; charset=utf-8");
-				// Send XHTML headers, or regular XHTML strict headers
-				echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
-				if ($frameset == true) {
-					echo "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Frameset//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd\">\n";
-				} else if (isset($conf['use_xhtml_strict']) && $conf['use_xhtml_strict']) {
-					echo "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-Strict.dtd\">\n";
-				} else {
-					echo "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
-				}
-				echo "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"{$lang['applocale']}\" lang=\"{$lang['applocale']}\"";
+				// The response differs with and without the sidebar.
+				header("Vary: X-PPA-Partial", false);
+
+				echo "<!DOCTYPE html>\n";
+				echo "<html lang=\"", htmlspecialchars($lang['applocale']), "\"";
 				if (strcasecmp($lang['applangdir'], 'ltr') != 0) echo " dir=\"", htmlspecialchars($lang['applangdir']), "\"";
 				echo ">\n";
 
@@ -531,48 +573,29 @@
 					$_formatTitle = htmlspecialchars($appName);
 				}
 
+				$theme = htmlspecialchars($conf['theme']);
+				$css = htmlspecialchars($this->asset("themes/{$conf['theme']}/global.css"));
+				// Not every theme has its own icons.
+				$favicon = is_file("images/themes/{$conf['theme']}/Favicon.ico")
+					? "images/themes/{$theme}/Favicon.ico" : 'images/themes/default/Favicon.ico';
+				$appicon = htmlspecialchars($this->icon('Introduction'));
+				$jquery = htmlspecialchars($this->asset('libraries/js/jquery.js'));
+				$appjs = htmlspecialchars($this->asset('js/app.js'));
+				$treejs = htmlspecialchars($this->asset('js/tree.js'));
+
 				echo <<<EOL
 				<head>
-					<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-					<link rel="stylesheet" href="themes/{$conf['theme']}/global.css" type="text/css" id="csstheme" />
-					<link rel="shortcut icon" href="images/themes/{$conf['theme']}/Favicon.ico" type="image/vnd.microsoft.icon" />
-					<link rel="icon" type="image/png" href="images/themes/{$conf['theme']}/Introduction.png" />
-					<script type="text/javascript" src="libraries/js/jquery.js"></script>
-
-					<script type="text/javascript">
-						$(function() {
-							if (window.parent.frames.length > 1) {
-								$('#csstheme', window.parent.frames[0].document).attr('href','themes/{$conf['theme']}/global.css');
-							}
-						});
-
-				EOL;
-				$requestMethod = $_SERVER['REQUEST_METHOD'] ?? '';
-				if (!$frameset) echo <<<EOL
-
-						if ("{$requestMethod}" === "GET" && (window.self === window.top) && (!window.opener)) {
-							$.post(new URL('./', location.href).href, { _originalPath: location.href }, function (data) {
-								// GET request from outside frame. Reload encapsulated in our frameset.
-								document.write(data);
-
-								history.replaceState({}, '', new URL('./', location.href).href);
-							});
-						}
-
-						$(function() {
-							top.document.title = document.title;
-						});
-
-
-				EOL;
-
-				echo <<<EOL
-					</script>
-
+					<meta charset="utf-8" />
+					<meta name="viewport" content="width=device-width, initial-scale=1" />
+					<link rel="stylesheet" href="{$css}" id="csstheme" data-theme="{$theme}" />
+					<link rel="shortcut icon" href="{$favicon}" type="image/vnd.microsoft.icon" />
+					<link rel="icon" type="image/png" href="{$appicon}" />
+					<script src="{$jquery}"></script>
+					<script src="{$appjs}"></script>
+					<script src="{$treejs}"></script>
 					<title>{$_formatTitle}</title>
 
 				EOL;
-
 
 				if ($script) echo "{$script}\n";
 
@@ -598,31 +621,91 @@
 			global $lang, $_no_bottom_link;
 
 			if ($doBody) {
-				if (isset($_reload_browser)) $this->printReload(false);
-				elseif (isset($_reload_drop_database)) $this->printReload(true);
+				// A full page load builds the tree from scratch anyway, so
+				// only a swapped-in page has to ask for a refresh.
+				if ($this->isPartialRequest()) {
+					if (isset($_reload_browser)) $this->printReload(false);
+					elseif (isset($_reload_drop_database)) $this->printReload(true);
+				}
 				if (!isset($_no_bottom_link))
 					echo "<a href=\"#\" class=\"bottom_link\">".$lang['strgotoppage']."</a>";
 
+				if ($this->shellOpen) {
+					echo "</main>\n</div>\n";
+					$this->shellOpen = false;
+				}
 				echo "</body>\n";
 			}
 			echo "</html>\n";
 		}
 
+		/** True between printBody() and printFooter() when the app shell is open. */
+		public $shellOpen = false;
+
 		/**
-		 * Prints the page body.
-		 * @param $doBody True to output body tag, false otherwise
+		 * Prints the page body, and around it the app shell: the sidebar with
+		 * the object tree and the main area the page content goes into.
+		 * Set global $_no_shell for pages that are shown on their own (help
+		 * popups and the like).
 		 * @param $bodyClass - name of body class
+		 * @param $doBody True to output body tag, false otherwise
 		 */
 		function printBody($bodyClass = '', $doBody = true ) {
-			global $_no_output;
+			global $_no_output, $_no_shell, $lang, $conf;
 
 			if (!isset($_no_output)) {
 				if ($doBody) {
+					if (!isset($_no_shell)) $bodyClass = trim("ppa-shell {$bodyClass}");
 					$bodyClass = htmlspecialchars($bodyClass);
 					echo "<body", ($bodyClass == '' ? '' : " class=\"{$bodyClass}\"");
 					echo ">\n";
+
+					if (!isset($_no_shell)) {
+						$width = (int) ($conf['left_width'] ?? 200);
+						if ($width < 120) $width = 200;
+						echo "<div id=\"ppa-app\" style=\"--ppa-sidebar-width: {$width}px\" data-load-error=\"",
+							htmlspecialchars($lang['strpageloaderror']), "\">\n";
+						if (!$this->isPartialRequest()) $this->printSidebar();
+						echo "<main id=\"ppa-main\" tabindex=\"-1\">\n";
+						$this->shellOpen = true;
+					}
 				}
 			}
+		}
+
+		/**
+		 * Prints the sidebar: app name, tree filter and the object tree.
+		 * The tree itself is built in the browser by js/tree.js from the
+		 * same XML the old frame-based tree used.
+		 */
+		function printSidebar() {
+			global $appName, $appVersion, $lang, $conf;
+
+			$cfg = array(
+				'src' => 'servers.php?action=tree',
+				'rootText' => $lang['strservers'],
+				'rootAction' => 'servers.php',
+				'rootIcon' => $this->icon('Servers'),
+				'loadingText' => $lang['strloading'],
+				'errorText' => $lang['strerrorloading'],
+				'errorIcon' => $this->icon('ObjectNotFound'),
+				'noMatchText' => $lang['strnotreematch'],
+			);
+			echo "<aside id=\"ppa-sidebar\" aria-label=\"", htmlspecialchars($lang['strobjectbrowser']), "\">\n";
+			// "logo" picks up each theme's logo styling.
+			echo "\t<div class=\"logo ppa-brand\"><a href=\"intro.php\" title=\"", htmlspecialchars("{$appName} {$appVersion}"), "\">",
+				htmlspecialchars($appName), "</a></div>\n";
+			echo "\t<div class=\"ppa-tree-tools\">\n";
+			echo "\t\t<input type=\"search\" id=\"ppa-tree-filter\" placeholder=\"", htmlspecialchars($lang['strfiltertree']),
+				" (Ctrl+K)\" aria-label=\"", htmlspecialchars($lang['strfiltertree']), "\" autocomplete=\"off\" spellcheck=\"false\" />\n";
+			echo "\t\t<button type=\"button\" id=\"ppa-tree-refresh\" title=\"", htmlspecialchars($lang['strrefresh']), "\" aria-label=\"",
+				htmlspecialchars($lang['strrefresh']), "\"><img src=\"", htmlspecialchars($this->icon('Refresh')), "\" alt=\"\" /></button>\n";
+			echo "\t</div>\n";
+			echo "\t<div id=\"ppa-tree\" data-config=\"", htmlspecialchars(json_encode($cfg)), "\"></div>\n";
+			echo "\t<div id=\"ppa-sidebar-resize\" role=\"separator\" aria-orientation=\"vertical\" title=\"", htmlspecialchars($lang['strresizesidebar']), "\"></div>\n";
+			echo "</aside>\n";
+			echo "<button type=\"button\" id=\"ppa-sidebar-toggle\" aria-controls=\"ppa-sidebar\" aria-expanded=\"false\" title=\"",
+				htmlspecialchars($lang['strtogglesidebar']), "\"><span aria-hidden=\"true\">&#9776;</span></button>\n";
 		}
 
 		/**
@@ -630,12 +713,7 @@
 		 * @param $database True if dropping a database, false otherwise
 		 */
 		function printReload($database) {
-			echo "<script type=\"text/javascript\">\n";
-			if ($database)
-				echo "\tparent.frames.browser.location.href=\"browser.php\";\n";
-			else
-				echo "\tparent.frames.browser.location.reload();\n";
-			echo "</script>\n";
+			echo "<script>window.ppa && ppa.reloadTree(", ($database ? 'true' : 'false'), ");</script>\n";
 		}
 
 		/**
@@ -699,40 +777,33 @@
 				$tabs = $this->getNavTabs($tabs);
 			}
 
-			echo "<table class=\"tabs\"><tr>\n";
-			#echo "<div class=\"tabs\">\n";
-
-			if (count($tabs) > 0)
-				$width = (int)(100 / count($tabs)).'%';
-			else
-				$width = 1;
+			echo "<nav class=\"tabs\" aria-label=\"", htmlspecialchars($lang['strsections']), "\"><ul>\n";
 
 			foreach ($tabs as $tab_id => $tab) {
-				$active = ($tab_id == $activetab) ? ' active' : '';
+				$isActive = ($tab_id == $activetab);
 
 				if (!isset($tab['hide']) || $tab['hide'] !== true) {
-					$tablink = '<a href="' . htmlentities($this->getActionUrl($tab, $_REQUEST)) . '">';
+					$tablink = '<a href="' . htmlentities($this->getActionUrl($tab, $_REQUEST)) . '"'
+						. ($isActive ? ' aria-current="page"' : '') . '>';
 
+					// The label says it all; the icon is decoration.
 					if (isset($tab['icon']) && $icon = $this->icon($tab['icon']))
-						$tablink .= "<span class=\"icon\"><img src=\"{$icon}\" alt=\"{$tab['title']}\" /></span>";
+						$tablink .= "<span class=\"icon\"><img src=\"{$icon}\" alt=\"\" /></span>";
 
 					$tablink .= "<span class=\"label\">{$tab['title']}</span></a>";
 
-					echo "<td style=\"width: {$width}\" class=\"tab{$active}\">";
-					#echo "<span class=\"tab{$active}\" style=\"white-space:nowrap;\">";
+					echo "<li class=\"tab", ($isActive ? ' active' : ''), "\">";
 
 					if (isset($tab['help']))
 						$this->printHelp($tablink, $tab['help']);
 					else
 						echo $tablink;
 
-					echo "</td>\n";
-					#echo "</span>\n";
+					echo "</li>\n";
 				}
 			}
 
-			echo "</tr></table>\n";
-			#echo "</div>\n";
+			echo "</ul></nav>\n";
 		}
 
 		/**
@@ -1356,7 +1427,7 @@
 				echo '<div class="alert-banner"><p><a href="https://www.php.net/manual/en/session.configuration.php#ini.session.cookie-samesite" target="_blank" rel="noopener noreferrer">', htmlspecialchars($lang['sessionsecuritywarning']), '</a></p></div>';
 			}
 
-			echo "<div class=\"topbar\"><table style=\"width: 100%\"><tr><td>";
+			echo "<div class=\"topbar\">\n<div class=\"topbar-info\">";
 
 			if ($server_info && isset($server_info['platform']) && isset($server_info['username'])) {
 				/* top left information when connected */
@@ -1366,7 +1437,7 @@
 					'<span class="port">'.htmlspecialchars($server_info['port']).'</span>',
 					'<span class="username">'.htmlspecialchars($server_info['username']).'</span>');
 
-				echo "</td>";
+				echo "</div>\n";
 
 				/* top right information when connected */
 
@@ -1379,7 +1450,6 @@
 									'action' => 'sql'
 								))
 							),
-							'target' => "sqledit",
 							'id' => 'toplink_sql',
 						),
 						'content' => $lang['strsql']
@@ -1404,7 +1474,6 @@
 									'action' => 'find'
 								))
 							),
-							'target' => "sqledit",
 							'id' => 'toplink_find',
 						),
 						'content' => $lang['strfind']
@@ -1431,64 +1500,22 @@
 
 				$plugin_manager->do_hook('toplinks', $plugin_functions_parameters);
 
-				echo "<td style=\"text-align: right\">";
+				echo "<nav class=\"topbar-links\" aria-label=\"", htmlspecialchars($lang['strtools']), "\">";
 				$this->printLinksList($toplinks, 'toplink');
-				echo "</td>";
-
-				$sql_window_id = htmlentities('sqledit:'.$_REQUEST['server']);
-				$history_window_id = htmlentities('history:'.$_REQUEST['server']);
-
-				echo "<script type=\"text/javascript\">
-						$('#toplink_sql').on('click', function() {
-							window.open($(this).attr('href'),'{$sql_window_id}','toolbar=no,width=700,height=500,resizable=yes,scrollbars=yes').focus();
-							return false;
-						});
-
-						$('#toplink_history').on('click', function() {
-							window.open($(this).attr('href'),'{$history_window_id}','toolbar=no,width=700,height=500,resizable=yes,scrollbars=yes').focus();
-							return false;
-						});
-
-						$('#toplink_find').on('click', function() {
-							window.open($(this).attr('href'),'{$sql_window_id}','toolbar=no,width=700,height=500,resizable=yes,scrollbars=yes').focus();
-							return false;
-						});
-						";
+				echo "</nav>\n";
 
 				if (isset($_SESSION['sharedUsername'])) {
-					printf("
+					printf("<script>
 						$('#toplink_logout').on('click', function() {
-							return confirm('%s');
-						});", str_replace("'", "\'", $lang['strconfdropcred']));
+							return confirm(%s);
+						});
+					</script>\n", json_encode($lang['strconfdropcred']));
 				}
-
-				echo "
-				</script>";
 			}
 			else {
-				echo "<span class=\"appname\">{$appName}</span> <span class=\"version\">{$appVersion}</span>";
+				echo "<span class=\"appname\">{$appName}</span> <span class=\"version\">{$appVersion}</span></div>\n";
 			}
-/*
-			echo "<td style=\"text-align: right; width: 1%\">";
-
-			echo "<form method=\"get\"><select name=\"language\" onchange=\"this.form.submit()\">\n";
-			$language = isset($_SESSION['webdbLanguage']) ? $_SESSION['webdbLanguage'] : 'english';
-			foreach ($appLangFiles as $k => $v) {
-				echo "<option value=\"{$k}\"",
-					($k == $language) ? ' selected="selected"' : '',
-					">{$v}</option>\n";
-			}
-			echo "</select>\n";
-			echo "<noscript><input type=\"submit\" value=\"Set Language\"></noscript>\n";
-			foreach ($_GET as $key => $val) {
-				if ($key == 'language') continue;
-				echo "<input type=\"hidden\" name=\"$key\" value=\"", htmlspecialchars($val), "\" />\n";
-			}
-			echo "</form>\n";
-
-			echo "</td>";
-*/
-			echo "</tr></table></div>\n";
+			echo "</div>\n";
 		}
 
 		/**
@@ -1503,10 +1530,13 @@
 				$trail = $this->getTrail($trail);
 			}
 
-			echo "<div class=\"trail\"><table><tr>";
+			echo "<nav class=\"trail\" aria-label=\"", htmlspecialchars($lang['strbreadcrumb']), "\"><ol>";
 
+			$last = count($trail);
+			$n = 0;
 			foreach ($trail as $crumb) {
-				echo "<td class=\"crumb\">";
+				$n++;
+				echo "<li class=\"crumb\">";
 				$crumblink = "<a";
 
 				if (isset($crumb['url']))
@@ -1515,15 +1545,14 @@
 				if (isset($crumb['title']))
 					$crumblink .= " title=\"{$crumb['title']}\"";
 
+				if ($n == $last)
+					$crumblink .= " aria-current=\"location\"";
+
 				$crumblink .= ">";
 
-				if (isset($crumb['title']))
-					$iconalt = $crumb['title'];
-				else
-					$iconalt = 'Database Root';
-
+				// The label carries the name; the icon is decoration.
 				if (isset($crumb['icon']) && $icon = $this->icon($crumb['icon']))
-					$crumblink .= "<span class=\"icon\"><img src=\"{$icon}\" alt=\"{$iconalt}\" /></span>";
+					$crumblink .= "<span class=\"icon\"><img src=\"{$icon}\" alt=\"\" /></span>";
 
 				$crumblink .= "<span class=\"label\">" . htmlspecialchars($crumb['text']) . "</span></a>";
 
@@ -1532,11 +1561,11 @@
 				else
 					echo $crumblink;
 
-				echo "{$lang['strseparator']}";
-				echo "</td>";
+				echo "<span class=\"sep\" aria-hidden=\"true\">{$lang['strseparator']}</span>";
+				echo "</li>";
 			}
 
-			echo "</tr></table></div>\n";
+			echo "</ol></nav>\n";
 		}
 
 		/**
@@ -1803,11 +1832,8 @@
 		 *        attached to the name.
 		 */
 		function setWindowName($name, $addServer = true) {
-			echo "<script type=\"text/javascript\">\n";
-			echo "//<![CDATA[\n";
-			echo "   window.name = '{$name}", ($addServer ? ':'.htmlspecialchars($_REQUEST['server']) : ''), "';\n";
-			echo "//]]>\n";
-			echo "</script>\n";
+			// Pages used to name their popup window. Everything lives in one
+			// window now, so there is nothing to name.
 		}
 
 		/**

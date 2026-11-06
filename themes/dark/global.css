@@ -47,15 +47,15 @@ body {
 	font-family: Arial;
 	font-size: 0.9em; /*0.8em;*/
 }
-body > * { margin-left: 20px }
-body.browser {
+body:not(.ppa-shell) > *, #ppa-main > * { margin-left: 20px }
+#ppa-sidebar {
 	background-color: #292929;
 	font-size: 0.9em;
 	border-right: 1px dashed #887f5c;
 	color: #fff;
 }
-body.browser > * { margin: 0 }
-body.browser div.webfx-tree-row:hover { background: #524a42}
+#ppa-sidebar > * { margin: 0 }
+#ppa-sidebar .ppa-node:hover { background: #524a42}
 h1 {
 	color: #f0f0f0;
 	font-size: 1.5em
@@ -125,7 +125,7 @@ th.required {text-decoration: underline}
 	padding: 0;
 	text-align: left;
 }
-.topbar a, .trail a, body.browser a, th.data a {
+.topbar a, .trail a, #ppa-sidebar a, th.data a {
 	color: #a8aac2;
 }
 .topbar .platform, .topbar .host, .topbar .username {
@@ -134,9 +134,9 @@ th.required {text-decoration: underline}
 .topbar, .trail, .tab {
 	padding: 2px 1ex;
 }
-.trail td {padding: 2px}
+.trail li {padding: 2px}
 .crumb .icon {margin-right: 5px}
-table.tabs {
+nav.tabs {
 	width: 100%;
 	border-collapse: collapse;
 	margin: 20px 0 40px 0;

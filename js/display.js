@@ -1,19 +1,34 @@
-$(function() {
+/*
+ * Foreign key browsing on display.php: clicking the FK icon in a cell shows
+ * the referenced row underneath it.
+ *
+ * Loaded once per full page load; set-up for each shown page happens on the
+ * "ppa:load" event (see js/app.js), the click handlers are bound once.
+ */
+(function() {
 
 	/* init some needed tags and values */
+	function init() {
+		var table = $('table#data');
+		if (!table.length || table.closest('#fkcontainer').length) return;
 
-	$('table#data').wrap('<div id="fkcontainer" class="fk" />');
-	$('#fkcontainer').append('<div id="root" />');
+		table.wrap('<div id="fkcontainer" class="fk" />');
+		$('#fkcontainer').append('<div id="root" />');
 
-	jQuery.ppa = {
-		root: $('#root')
-	};
+		jQuery.ppa = {
+			root: $('#root')
+		};
+	}
+
+	$(document).on('ppa:load', init);
+	// Pages from before the app shell existed, or a plain full load.
+	$(init);
 
 	$(document).on('click', "a.fk", null, function (event) {
 		/* make the cursor being a waiting cursor */
 		$('body').css('cursor','wait');
 
-		query = $.ajax({
+		var query = $.ajax({
 			type: 'GET',
 			dataType: 'html',
 			data: {action:'dobrowsefk'},
@@ -22,8 +37,8 @@ $(function() {
 			context: $(this),
 			contentType: 'application/x-www-form-urlencoded',
 			success: function(answer) {
-				pdiv = this.closest('div.fk');
-				divclass = this.attr('class').split(' ')[1];
+				var pdiv = this.closest('div.fk');
+				var divclass = this.attr('class').split(' ')[1];
 
 				/* if we are clicking on a FK from the original table
 				(level 0), we are using the #root div as parent-div */
@@ -53,7 +68,7 @@ $(function() {
 				}
 
 				/* creating the data div */
-				newdiv = $('<div class="fk '+divclass+'">').html(answer);
+				var newdiv = $('<div class="fk '+divclass+'">').html(answer);
 
 				/* highlight referencing fields */
 				newdiv.data('ref', this).data('refclass', $(this).attr('class').split(' ')[1])
@@ -87,4 +102,4 @@ $(function() {
 		}
 		return false; // do not refresh the page
 	});
-});
+})();

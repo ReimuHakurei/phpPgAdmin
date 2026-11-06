@@ -13,28 +13,6 @@ p.comment {font-style: italic}
 	padding-left:5pt;
 }
 
-/** Browser Tree using XLoadTree 2 **/
-body.browser {
-	height:	100%;
-	margin:	0px;
-	padding: 0px;
-	text-align: left;
-}
-.refreshTree {
-	float:right;
-	text-align:right;
-	padding: 0 3px;
-}
-.webfx-tree-row {white-space: nowrap}
-.webfx-tree-children {
-	background-repeat: repeat-y;
-	background-position-y: 1px !important;	/* IE only */
-}
-.webfx-tree-row img {vertical-align: middle}
-.webfx-tree-item-label {margin-left: 0.5ex}
-.webfx-tree-icon {margin-left: 1px}
-.webfx-tree-hide-root {display: none}
-
 /** auto-complete on insert **/
 #fkbg {
 	display:none;
@@ -137,6 +115,322 @@ div.fk_value {
 
 /* ---- Layout: app shell, sidebar, tree (js/app.js, js/tree.js) ---- */
 
+/* The shell: sidebar on the start side, page on the other. The page
+ * scrolls with the window; the sidebar stays put and scrolls on its own. */
+body.ppa-shell {
+	margin: 0;
+	padding: 0;
+}
+#ppa-app {
+	display: grid;
+	grid-template-columns: var(--ppa-sidebar-width, 200px) minmax(0, 1fr);
+	min-height: 100vh;
+}
+#ppa-sidebar {
+	position: sticky;
+	top: 0;
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	overflow: hidden;
+	border-inline-end: 1px solid rgba(128, 128, 128, 0.35);
+	text-align: start;
+}
+#ppa-main {
+	min-width: 0;
+	padding: 6px 12px 40px;
+	overflow-x: auto;
+	outline: none;
+}
+.ppa-brand {
+	flex: none;
+}
+/* Themes draw the logo as a background image and hide the link text. */
+#ppa-sidebar .logo a {
+	color: transparent;
+}
+.ppa-tree-tools {
+	flex: none;
+	display: flex;
+	gap: 4px;
+	padding: 6px;
+}
+#ppa-tree-filter {
+	flex: 1;
+	min-width: 0;
+	box-sizing: border-box;
+	padding: 3px 6px;
+}
+#ppa-tree-refresh {
+	flex: none;
+	padding: 2px 4px;
+	background: none;
+	border: 1px solid transparent;
+	border-radius: 3px;
+	cursor: pointer;
+	line-height: 0;
+}
+#ppa-tree-refresh:hover {
+	border-color: rgba(128, 128, 128, 0.5);
+}
+#ppa-tree {
+	flex: 1;
+	overflow: auto;
+	padding: 0 4px 16px;
+}
+.ppa-tree,
+.ppa-tree ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+.ppa-tree ul {
+	padding-inline-start: 14px;
+}
+.ppa-node {
+	display: flex;
+	align-items: center;
+	gap: 3px;
+	padding: 1px 2px;
+	border-radius: 3px;
+	white-space: nowrap;
+}
+.ppa-node:hover {
+	background-color: rgba(128, 128, 128, 0.16);
+}
+.ppa-node.selected {
+	background-color: rgba(128, 128, 128, 0.3);
+}
+.ppa-node.ppa-match .ppa-label {
+	font-weight: bold;
+}
+.ppa-twisty {
+	flex: none;
+	width: 12px;
+	font-size: 10px;
+	line-height: 1;
+	text-align: center;
+	opacity: 0.7;
+	cursor: pointer;
+	user-select: none;
+}
+li[aria-expanded="false"] > .ppa-node > .ppa-twisty::before { content: "\25B8"; }
+li[aria-expanded="true"] > .ppa-node > .ppa-twisty::before { content: "\25BE"; }
+[dir="rtl"] li[aria-expanded="false"] > .ppa-node > .ppa-twisty::before { content: "\25C2"; }
+.ppa-icon {
+	flex: none;
+	width: 16px;
+	height: 16px;
+	vertical-align: middle;
+}
+.ppa-icon-link {
+	line-height: 0;
+}
+.ppa-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding: 1px 2px;
+	border-radius: 2px;
+}
+.ppa-label:focus-visible,
+#ppa-tree-refresh:focus-visible {
+	outline: 2px solid #1a73e8;
+	outline-offset: 1px;
+}
+.ppa-tree .ppa-message {
+	display: flex;
+	align-items: center;
+	gap: 3px;
+	padding: 1px 2px 1px 15px;
+	font-style: italic;
+	opacity: 0.75;
+	white-space: nowrap;
+}
+.ppa-tree .ppa-error {
+	cursor: pointer;
+}
+.ppa-tree .ppa-hidden {
+	display: none;
+}
+.ppa-tree.ppa-filtering li.ppa-filter-open > ul {
+	display: block !important;
+}
+.ppa-tree-empty {
+	margin: 4px 8px;
+	font-style: italic;
+	opacity: 0.75;
+}
+#ppa-sidebar-resize {
+	position: absolute;
+	top: 0;
+	inset-inline-end: -3px;
+	width: 7px;
+	height: 100%;
+	cursor: col-resize;
+	z-index: 2;
+}
+#ppa-sidebar-resize:hover,
+body.ppa-resizing #ppa-sidebar-resize {
+	background: rgba(128, 128, 128, 0.35);
+}
+body.ppa-resizing {
+	cursor: col-resize;
+	user-select: none;
+}
+#ppa-sidebar-toggle {
+	display: none;
+}
+
+/* Thin bar at the top while a page loads. */
+#ppa-progress {
+	position: fixed;
+	top: 0;
+	inset-inline-start: 0;
+	z-index: 1000;
+	width: 0;
+	height: 3px;
+	background: #1a73e8;
+	opacity: 0;
+	pointer-events: none;
+	transition: width 0.3s ease, opacity 0.3s ease;
+}
+#ppa-progress.active {
+	width: 85%;
+	opacity: 1;
+	transition: width 10s cubic-bezier(0.1, 0.8, 0.2, 1), opacity 0.1s;
+}
+
+/* Top bar, breadcrumbs and tabs. Themes give them colours and borders. */
+.topbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 2px 16px;
+}
+.topbar-links {
+	margin-inline-start: auto;
+}
+.trail ol {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+.trail li.crumb {
+	display: inline-flex;
+	align-items: center;
+}
+.crumb .icon img,
+.tab .icon img {
+	vertical-align: middle;
+}
+nav.tabs {
+	margin-bottom: 1ex;
+}
+nav.tabs ul {
+	display: flex;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	overflow-x: auto;
+}
+nav.tabs li.tab {
+	flex: 1 1 0;
+	min-width: min-content;
+}
+nav.tabs li.tab + li.tab {
+	border-inline-start-width: 0;
+}
+
+/* Messages and confirmation pages. */
+p.message.error {
+	color: #b3261e;
+	font-weight: bold;
+}
+input.danger,
+button.danger {
+	background: #b3261e;
+	border: 1px solid #8c1d18;
+	border-radius: 3px;
+	color: #fff;
+	padding: 3px 12px;
+	cursor: pointer;
+}
+input.danger:hover,
+button.danger:hover {
+	background: #8c1d18;
+}
+input[type="submit"]:focus-visible,
+button:focus-visible {
+	outline: 2px solid #1a73e8;
+	outline-offset: 2px;
+}
+
+/* Small screens: the sidebar slides in over the page. */
+@media (max-width: 760px) {
+	#ppa-app {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	#ppa-sidebar {
+		position: fixed;
+		top: 0;
+		bottom: 0;
+		inset-inline-start: 0;
+		z-index: 50;
+		width: min(85vw, 320px);
+		height: auto;
+		transform: translateX(-100%);
+		transition: transform 0.2s ease;
+		box-shadow: 0 0 24px rgba(0, 0, 0, 0.35);
+		visibility: hidden;
+	}
+	[dir="rtl"] #ppa-sidebar {
+		transform: translateX(100%);
+	}
+	body.ppa-sidebar-open #ppa-sidebar {
+		transform: none;
+		visibility: visible;
+	}
+	#ppa-sidebar-resize {
+		display: none;
+	}
+	#ppa-sidebar-toggle {
+		display: block;
+		position: fixed;
+		bottom: 14px;
+		inset-inline-start: 14px;
+		z-index: 60;
+		width: 46px;
+		height: 46px;
+		border: 1px solid rgba(0, 0, 0, 0.25);
+		border-radius: 50%;
+		background: #fff;
+		color: #222;
+		font-size: 20px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+		cursor: pointer;
+	}
+	#ppa-main {
+		padding: 4px 8px 72px;
+	}
+	nav.tabs li.tab {
+		flex: 0 0 auto;
+	}
+	.topbar-links {
+		margin-inline-start: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	#ppa-sidebar,
+	#ppa-progress,
+	#ppa-progress.active {
+		transition: none;
+	}
+}
 /* ---- end layout ---- */
 
 
