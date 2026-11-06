@@ -129,3 +129,22 @@ div.fk_value {
 .comment {color: #008080}
 .keyword {color: #FF8000}
 .literal {color: #808080}
+
+/* ======================================================================
+ * Shared component styles, used by every theme. Themes only set colours.
+ * Each block below is owned by one area of the app; keep edits inside it.
+ * ====================================================================== */
+
+/* ---- Layout: app shell, sidebar, tree (js/app.js, js/tree.js) ---- */
+
+/* ---- end layout ---- */
+
+
+/* ---- Data grid: browse/query results (display.php, sql.php, js/grid.js) ---- */
+
+/* ---- end data grid ---- */
+
+
+/* ---- SQL editor (sqledit.php, database.php SQL tab, js/sqleditor.js) ---- */
+
+/* ---- end SQL editor ---- */
