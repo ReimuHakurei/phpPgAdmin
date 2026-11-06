@@ -54,7 +54,8 @@
 
 		$misc->printTable($groups, $columns, $actions,'servers-servers');
 
-		$servers = $misc->getServers(true, $group);
+		$dbserver = isset($_GET['dbserver']) && is_scalar($_GET['dbserver']) ? (string) $_GET['dbserver'] : null;
+		$servers = $misc->getServers(true, $dbserver === null ? $group : false, $dbserver);
 		
 		function svPre(&$rowdata, $actions) {
 			$actions['logout']['disable'] = empty($rowdata->fields['username']);
@@ -114,8 +115,18 @@
 		$nodes = array();
 		$group_id = isset($_GET['group']) ? $_GET['group'] : false;
 
+		/* databases of a server that has a login per database */
+		if (isset($_GET['dbserver']) && is_scalar($_GET['dbserver'])) {
+			$nodes = $misc->getServers(false, false, (string) $_GET['dbserver']);
+			foreach ($nodes as &$node) {
+				$node['desc'] = $node['database'];
+			}
+			unset($node);
+			include_once('./classes/ArrayRecordSet.php');
+			$nodes = new ArrayRecordSet($nodes);
+		}
 		/* root with srv_groups */
-		if (isset($conf['srv_groups']) and count($conf['srv_groups']) > 0
+		else if (isset($conf['srv_groups']) and count($conf['srv_groups']) > 0
 			and $group_id === false)
 		{
 			$nodes = $misc->getServersGroups(true);
@@ -124,13 +135,14 @@
 		else if (isset($conf['srv_groups']) and $group_id !== false) {
 			if ($group_id !== 'all')
 				$nodes = $misc->getServersGroups(false, $group_id);
-			$nodes = array_merge($nodes, $misc->getServers(false, $group_id));
+			$nodes = array_merge($nodes, $misc->groupServersForTree($misc->getServers(false, $group_id)));
 			include_once('./classes/ArrayRecordSet.php');
 			$nodes = new ArrayRecordSet($nodes);
 		}
 		/* no srv_group */
 		else {
-			$nodes = $misc->getServers(true, false);
+			include_once('./classes/ArrayRecordSet.php');
+			$nodes = new ArrayRecordSet($misc->groupServersForTree($misc->getServers(false, false)));
 		}
 		
 		$reqvars = $misc->getRequestVars('server');

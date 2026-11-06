@@ -37,6 +37,22 @@ services:
       - postgres
 ```
 
+### One login per database
+
+If each database on a server has its own user, list the databases after a `/`,
+separated by `+`:
+
+```sh
+-e PPA_SERVERS="Shop=db1.internal:5432/orders+billing, Temp=db2.internal/scratch"
+```
+
+Each database then shows up under its server in the sidebar. Clicking one asks
+for that database's username and password, and the login is checked against
+that database (not `postgres`), so a user that can only connect there gets in.
+A per-database login only sees its own database: the server-wide pages
+(database list, roles, tablespaces, full export) aren't available with it.
+Servers without a `/` part keep a single login for the whole server.
+
 By default you can't log in as `postgres` (or `root`, `pgsql`, `administrator`)
 or with an empty password. Create a normal login role for yourself, or set
 `PPA_EXTRA_LOGIN_SECURITY=false` if you really want the old behaviour.
@@ -45,7 +61,7 @@ or with an empty password. Create a normal login role for yourself, or set
 
 | Variable | Default | |
 |---|---|---|
-| `PPA_SERVERS` | `localhost` | Servers shown on the login page, separated by commas or spaces. Each one is `host`, `host:port` or `Name=host:port`. IPv6 goes in brackets: `[::1]:5432`. Names can't contain spaces. |
+| `PPA_SERVERS` | `localhost` | Servers shown on the login page, separated by commas or spaces. Each one is `host`, `host:port` or `Name=host:port`, optionally followed by `/db1+db2` for a login per database (see above). IPv6 goes in brackets: `[::1]:5432`. Names can't contain spaces. |
 | `PPA_SSLMODE` | `allow` | `disable`, `allow`, `prefer`, `require`. Same for all servers. |
 | `PPA_DEFAULTDB` | `postgres` | Database to connect to before you pick one. |
 | `PPA_EXTRA_LOGIN_SECURITY` | `true` | Block superuser names and empty passwords on the login page. |

@@ -52,7 +52,7 @@
 			<td><input id="loginPassword" type="password" name="loginPassword_<?php echo $md5_server; ?>" size="24" /></td>
 		</tr>
 	</table>
-<?php if (sizeof($conf['servers']) > 1) : ?>
+<?php if (count($misc->getLoginTargets()) > 1) : ?>
 	<p><input type="checkbox" id="loginShared" name="loginShared" <?php echo isset($_POST['loginShared']) ? 'checked="checked"' : '' ?> /><label for="loginShared"><?php echo $lang['strtrycred'] ?></label></p>
 <?php endif; ?>
 	<p><input type="submit" name="loginSubmit" value="<?php echo $lang['strlogin']; ?>" /></p>

@@ -263,6 +263,24 @@
 		if(isset($_server_info['pgVersion']) && version_compare($_server_info['pgVersion'], '9', '>='))
 			putenv("PGAPPNAME={$appName}_{$appVersion}");
 
+		// A per-database login only gets that one database. Server-wide pages
+		// and other databases send you back to it instead.
+		if (isset($_server_info['database'])) {
+			$_server_wide = in_array(basename($_SERVER['SCRIPT_NAME']),
+				array('all_db.php', 'roles.php', 'users.php', 'groups.php', 'tablespaces.php'), true);
+			if ($_server_wide
+				|| (isset($_REQUEST['subject']) && $_REQUEST['subject'] === 'server')
+				|| (isset($_REQUEST['database']) && $_REQUEST['database'] !== $_server_info['database'])
+			) {
+				header('Location: redirect.php?' . http_build_query(array(
+					'subject' => 'database',
+					'server' => $_REQUEST['server'],
+					'database' => $_server_info['database'],
+				), '', '&'));
+				exit;
+			}
+		}
+
 		// Redirect to the login form if not logged in
 		if (!isset($_server_info['username'])) {
 			include('./login.php');

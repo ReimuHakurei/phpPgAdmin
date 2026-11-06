@@ -1415,7 +1415,7 @@
 								'url' => 'servers.php',
 								'urlvars' => array (
 								'action' => 'logout',
-								'logoutServer' => ($server_info['host'] ?? '').":{$server_info['port']}:{$server_info['sslmode']}"
+								'logoutServer' => self::getServerId($server_info)
 								)
 							),
 							'id' => 'toplink_logout',
@@ -1562,7 +1562,7 @@
 				$server_info = $this->getServerInfo();
 				$trail['server'] = array(
 					'title' => $lang['strserver'],
-					'text'  => $server_info['desc'],
+					'text'  => $server_info['server_desc'] ?? $server_info['desc'],
 					'url'   => $this->getHREFSubject('server'),
 					'help'  => 'pg.server',
 					'icon'  => 'Server'
@@ -2352,17 +2352,65 @@
 
 
 		/**
+		 * The identifier of a server (or of one database on it), as used in
+		 * URLs and as the key of its login in the session.
+		 * @param $info array A server entry from getLoginTargets()
+		 * @return string
+		 */
+		static function getServerId($info) {
+			$id = $info['host'].':'.$info['port'].':'.$info['sslmode'];
+			if (isset($info['database']))
+				$id .= ':'.$info['database'];
+			return $id;
+		}
+
+		/**
+		 * Everything the user can log in to, keyed by server id.
+		 *
+		 * A server whose config has a 'databases' list doesn't get a login of
+		 * its own. Instead each of those databases becomes a separate entry
+		 * with its own login, which only ever connects to that database.
+		 * @return array
+		 */
+		function getLoginTargets() {
+			global $conf;
+
+			$targets = array();
+			foreach($conf['servers'] as $idx => $info) {
+				$info['server_index'] = $idx;
+
+				if (empty($info['databases']) || !is_array($info['databases'])) {
+					$targets[self::getServerId($info)] = $info;
+					continue;
+				}
+
+				foreach($info['databases'] as $database) {
+					$target = $info;
+					unset($target['databases']);
+					$target['database'] = (string) $database;
+					$target['defaultdb'] = (string) $database;
+					$target['server_desc'] = $info['desc'];
+					$target['desc'] = $info['desc'].' / '.$database;
+					$targets[self::getServerId($target)] = $target;
+				}
+			}
+
+			return $targets;
+		}
+
+		/**
 		 * Get list of servers
 		 * @param $recordset return as RecordSet suitable for printTable if true,
 		 *                   otherwise just return an array.
 		 * @param $group a group name to filter the returned servers using $conf[srv_groups]
+		 * @param $server_index only return the per-database logins of this
+		 *                      $conf['servers'] entry
 		 */
-		function getServers($recordset = false, $group = false) {
-			global $conf;
-
+		function getServers($recordset = false, $group = false, $server_index = null) {
 			$logins = isset($_SESSION['webdbLogin']) && is_array($_SESSION['webdbLogin']) ? $_SESSION['webdbLogin'] : array();
 			$srvs = array();
 
+			global $conf;
 			if (($group !== false) and ($group !== 'all'))
 				if (isset($conf['srv_groups'][$group]['servers']))
 					$group = array_fill_keys(explode(',', preg_replace('/\s/', '',
@@ -2370,25 +2418,48 @@
 				else
 					$group = '';
 
-			foreach($conf['servers'] as $idx => $info) {
-				$server_id = $info['host'].':'.$info['port'].':'.$info['sslmode'];
+			foreach($this->getLoginTargets() as $server_id => $info) {
+				$idx = $info['server_index'];
+				if ($server_index !== null && ((string) $idx !== (string) $server_index || !isset($info['database'])))
+					continue;
+
 				if (($group === false)
 					or (isset($group[$idx]))
 					or ($group === 'all')
 				) {
-					$server_id = $info['host'].':'.$info['port'].':'.$info['sslmode'];
-
 					if (isset($logins[$server_id])) $srvs[$server_id] = array_merge($info, $logins[$server_id]);
 					else $srvs[$server_id] = $info;
 
 					$srvs[$server_id]['id'] = $server_id;
+					$logged_in = isset($srvs[$server_id]['username']);
+
+					if (isset($info['database'])) {
+						$srvs[$server_id]['action'] = url('redirect.php',
+							array(
+								'subject' => 'database',
+								'server' => field('id'),
+								'database' => field('database')
+							)
+						);
+						$srvs[$server_id]['icon'] = $logged_in ? 'Database' : 'DisconnectedDatabase';
+						$srvs[$server_id]['branch'] = $logged_in ? url('database.php',
+							array(
+								'action' => 'tree',
+								'subject' => 'database',
+								'server' => field('id'),
+								'database' => field('database')
+							)
+						) : false;
+						continue;
+					}
+
 					$srvs[$server_id]['action'] = url('redirect.php',
 						array(
 							'subject' => 'server',
 							'server' => field('id')
 						)
 					);
-					if (isset($srvs[$server_id]['username'])) {
+					if ($logged_in) {
 						$srvs[$server_id]['icon'] = 'Server';
 						$srvs[$server_id]['branch'] = url('all_db.php',
 							array(
@@ -2417,6 +2488,40 @@
 		}
 
 		/**
+		 * Put the per-database logins of a server under one node for the
+		 * browser tree, so the databases show up as children of their server.
+		 * @param $srvs array as returned by getServers()
+		 * @return array
+		 */
+		function groupServersForTree($srvs) {
+			$nodes = array();
+			foreach($srvs as $server_id => $srv) {
+				if (!isset($srv['database'])) {
+					$nodes[$server_id] = $srv;
+					continue;
+				}
+
+				$key = 'databases:'.$srv['server_index'];
+				if (!isset($nodes[$key]))
+					$nodes[$key] = array(
+						'id' => $srv['host'].':'.$srv['port'],
+						'desc' => $srv['server_desc'],
+						'icon' => 'DisconnectedServer',
+						'action' => url('servers.php',
+							array('dbserver' => $srv['server_index'])
+						),
+						'branch' => url('servers.php',
+							array('action' => 'tree', 'dbserver' => $srv['server_index'])
+						),
+					);
+				if (isset($srv['username']))
+					$nodes[$key]['icon'] = 'Server';
+			}
+
+			return $nodes;
+		}
+
+		/**
 		 * Validate and retrieve information on a server.
 		 * If the parameter isn't supplied then the currently
 		 * connected server is returned.
@@ -2430,13 +2535,8 @@
 				$server_id = $_REQUEST['server'];
 
 			// Look for the server in the conf file
-			$server_info = null;
-			foreach($conf['servers'] as $idx => $info) {
-				if ($server_id == $info['host'].':'.$info['port'].':'.$info['sslmode']) {
-					$server_info = $info;
-					break;
-				}
-			}
+			$targets = $this->getLoginTargets();
+			$server_info = is_scalar($server_id) && isset($targets[$server_id]) ? $targets[$server_id] : null;
 
 			if (isset($_SESSION['webdbLogin'][$server_id ?? ''])) {
 				if ($server_info === null)
@@ -2548,8 +2648,17 @@
 			}
 			echo "</select>\n</td><td style=\"text-align: right\">\n";
 
-			// Get the list of all databases
-			$databases = $data->getDatabases();
+			$server_info = $misc->getServerInfo();
+
+			// A per-database login only gets to see its own database
+			if (isset($server_info['database'])) {
+				include_once('./classes/ArrayRecordSet.php');
+				$databases = new ArrayRecordSet(array(array('datname' => $server_info['database'])));
+			}
+			else {
+				// Get the list of all databases
+				$databases = $data->getDatabases();
+			}
 
 			if ($databases->recordCount() > 0) {
 				echo "<label>";
@@ -2570,7 +2679,6 @@
 				echo "</select></label>\n";
 			}
 			else {
-				$server_info = $misc->getServerInfo();
 				echo "<input type=\"hidden\" name=\"database\" value=\"",
 					htmlspecialchars($server_info['defaultdb']), "\" />\n";
 			}

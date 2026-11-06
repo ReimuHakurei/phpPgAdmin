@@ -79,3 +79,10 @@ GRANT USAGE ON SCHEMA shop TO staff;
 GRANT SELECT ON ALL TABLES IN SCHEMA shop TO staff;
 
 CREATE DATABASE ppa_other;
+
+-- A user that can only get into ppa_other, for tests/dblogin.py. Taking
+-- CONNECT away from PUBLIC on the other databases is what makes a normal
+-- server-wide login (which goes through "postgres") impossible for it.
+CREATE ROLE scoped LOGIN PASSWORD 'scoped';
+REVOKE CONNECT ON DATABASE postgres FROM PUBLIC;
+REVOKE CONNECT ON DATABASE ppa_test FROM PUBLIC;
