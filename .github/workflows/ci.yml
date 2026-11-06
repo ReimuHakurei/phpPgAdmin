@@ -42,6 +42,10 @@ jobs:
         php: ['8.5']
         pg: ['9.6', '12', '14', '16', '17', '18']
         include:
+          # Headless Chrome checks of the app shell, SQL editor and data grid.
+          - php: '8.5'
+            pg: '18'
+            browser: true
           - php: '8.1'
             pg: '18'
           - php: '8.6-rc'
@@ -49,8 +53,12 @@ jobs:
             experimental: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install browser test dependencies
+        if: ${{ matrix.browser }}
+        run: npm ci --prefix tests/browser
       - name: Run tests/run.sh
         env:
           PHP_VERSION: ${{ matrix.php }}
           PG_VERSION: ${{ matrix.pg }}
+          BROWSER: ${{ matrix.browser && '1' || '0' }}
         run: tests/run.sh

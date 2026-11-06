@@ -1,0 +1,8 @@
+{
+  "name": "phppgadmin-browser-tests",
+  "private": true,
+  "description": "Headless Chrome checks run by tests/run.sh when BROWSER=1.",
+  "dependencies": {
+    "puppeteer-core": "24.43.1"
+  }
+}

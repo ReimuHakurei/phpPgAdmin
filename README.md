@@ -12,6 +12,28 @@ kept it alive with PHP 8 fixes, and this repo builds on that. What's added here:
 - GitHub Actions that run those tests and push the image to Docker Hub when a
   release is published
 - a few fixes for things that broke on newer PostgreSQL (see `HISTORY`)
+- a reworked UI: one page instead of frames, a SQL editor, faster browsing of
+  big tables (see below)
+
+## Using it
+
+- Every page has its own address, so bookmarks, reloads, new tabs and the
+  back button work. Pages load in place; the object tree on the left keeps
+  its state.
+- **Ctrl+K** jumps to the tree filter. Type part of a name, **Enter** opens the
+  first match. Only branches you've opened are searched. The tree can be
+  resized by dragging its edge (double-click resets it); on a phone it slides
+  in from the ☰ button.
+- In the SQL editor, **Ctrl+Enter** (Cmd+Enter on a Mac) runs the query, or
+  only the selected text if there is a selection. **Ctrl+Space** completes
+  table and column names. "Explain analyze" really runs the statement. The
+  last 50 queries per database are kept in your browser under "Recent
+  queries".
+- When browsing a table, the row above the data filters each column
+  (`=value` for an exact match), and the page size can be changed. Big tables
+  show an estimated row count ("about 1.2M rows") instead of counting every
+  row; there's a link to count exactly. Double-click a cell to copy its full
+  value.
 
 ## Running it
 
@@ -143,9 +165,14 @@ tests/run.sh                              # PHP 8.5, PostgreSQL 18
 PG_VERSION=12 tests/run.sh
 PHP_VERSION=8.1 PG_VERSION=9.6 tests/run.sh
 KEEP=1 tests/run.sh                       # leave it running on :8080 afterwards
+BROWSER=1 tests/run.sh                    # also run the headless Chrome checks
 ```
 
-You need Docker with the Compose plugin and Python 3. The crawler skips
+You need Docker with the Compose plugin and Python 3. `BROWSER=1` also runs
+the scripts in `tests/browser` against the app in headless Chrome (the app
+shell, the SQL editor and the data grid); it needs Node and Chrome
+(`npm ci --prefix tests/browser` once; set `CHROME` if Chrome isn't at
+`/usr/bin/google-chrome`). The crawler skips
 actions that drop, empty or change things on a GET, but it does click a lot,
 so don't point `crawl.py` at a database you care about.
 

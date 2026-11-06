@@ -5,11 +5,58 @@ Unreleased
 --------------
 
 Features:
+* One page instead of frames. Every page has its own URL (bookmarks, reload,
+  back/forward and new tabs work), pages load in place and the object tree
+  keeps its state. SQL, History and Find open in the page, not in popups.
+  Works on phones: the tree slides in over the page
+* New object tree: remembers open branches by name, filter box (Ctrl+K),
+  keyboard navigation, resizable
+* SQL editor (CodeMirror) on the SQL tab, the SQL page and view definitions:
+  syntax highlighting, Ctrl+Enter to run, run the selection only, Explain and
+  Explain analyze buttons, completion of table/column names, recent queries
+  kept in the browser. Results show under the editor, errors highlight the
+  failing line
+* Browsing: page size selector, a filter box per column, sticky column
+  headers, NULL and empty strings look different, double-click copies a
+  cell, "Rows 31-60 of 1,234" instead of the row count of the page
+* Tables bigger than browse_exact_count_limit (PPA_BROWSE_EXACT_COUNT_LIMIT,
+  default 100000 rows) are browsed with the planner's row estimate instead of
+  a COUNT(*) on every page; query results check for a next page instead of
+  counting
+* New settings: statement_timeout (PPA_STATEMENT_TIMEOUT), max_result_rows
+  (PPA_MAX_RESULT_ROWS, default 1000); PGCONNECT_TIMEOUT defaults to 10s
+* Destructive buttons on confirmation pages are red and Cancel has the focus.
+  Failure messages are styled as errors. Navigation uses proper nav/list
+  markup, the login form has labels, contrast fixes in the default theme
 * Default theme: larger, clearer text. Sizes no longer shrink with nesting
   (action buttons were ~9px), and it uses the system UI font
 * The version shown is this fork's release tag plus "-mod", e.g. "v1.2.0-mod".
   Docker release images take it from the git tag; otherwise it's the version
   in libraries/lib.inc.php
+
+Performance:
+* The session is no longer locked for the whole request, so a slow query
+  doesn't freeze the tree, other tabs or the processes page
+* Connection settings go in the connection's startup packet: 2 statements
+  per page instead of 8 (tables.php)
+* Database sizes are only computed on the database list
+* Exports stream rows through a cursor instead of loading the whole table
+  into memory
+* Static files are cached by the browser; the Docker image doesn't check PHP
+  files for changes (OPcache) and has a static /healthz for its health check
+
+Bugs:
+* Timestamps were cut to 19 characters in the collapsed view, dropping
+  fractional seconds and the time zone
+* The SQL page said "SQL executed." even when the query failed
+* The tree reloaded after every query; now only after statements that can
+  change the schema
+* Two browser tabs shared one "current query", so paging in one showed the
+  other's results
+* SQL results without pagination rendered every row; now capped at
+  max_result_rows with a notice
+* Reloading the SQL results page showed "could not find the query!!"
+* Locks/processes auto-refresh kept polling after leaving the page
 
 
 Version v1.1.0-mod
