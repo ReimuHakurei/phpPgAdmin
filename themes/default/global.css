@@ -3,32 +3,52 @@
  * Default style sheet
  */
 
+/** TYPOGRAPHY
+ * One fixed base size. Sizes are set explicitly instead of with nested
+ * `font-size: smaller`, which compounded down to ~9px in table buttons.
+ */
+:root {
+	--ppa-font: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
+	--ppa-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", "DejaVu Sans Mono", Menlo, Consolas, "Liberation Mono", monospace;
+	--ppa-size: 14px;
+	--ppa-size-sm: 13px;
+}
+input, select, textarea, button {
+	font-family: var(--ppa-font);
+	font-size: var(--ppa-size);
+}
+textarea, pre, code, kbd, samp {
+	font-family: var(--ppa-mono);
+	font-size: var(--ppa-size-sm);
+}
+
 /** ELEMENTS */
 body {
 	background-color: #FFFFFF;
 	margin:	4px;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
 	padding: 0px;
-	font-size: smaller; /*0.8em;*/
+	font-family: var(--ppa-font);
+	font-size: var(--ppa-size);
+	line-height: 1.45;
+	color: #1a1a1a;
 }
 body.browser {
 	background-color: #efefef;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
-	font-size: smaller; /*1em;*/
+	font-family: var(--ppa-font);
+	font-size: var(--ppa-size);
 	border-right: 1px dashed #c0c0c0;
 }
 body.bottombar {
 	background-color: #CECF9C;
 	margin:	0px;
 	padding: 0px;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
-	font-size: smaller; /*1em;*/
+	font-family: var(--ppa-font);
+	font-size: var(--ppa-size-sm);
 	text-align: left;
 }
 h2 {
 	color: #666633;
-	font-size: medium; /*1.3em;*/
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
+	font-size: 1.4em;
 	font-weight: bold;
 	border: 2px solid #E6E6CC;
 	background-color: #F3F3E9;
@@ -37,8 +57,7 @@ h2 {
 }
 h3 {
 	color: #666633;
-	font-size: small;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
+	font-size: 1.15em;
 	font-weight: bold;
 }
 table.error {background-color: #E6E6CC}
@@ -49,16 +68,13 @@ table.navbar td {
 	color: #000000;
 	background-color: #F3F3E9;
 	text-align: center;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
-	font-size: smaller; /* 0.9em */
 	font-weight: bold;
 }
 table.navbar td.active {background-color: #E6E6CC}
 th.data {
 	color: #000000;
 	background-color: #E6E6CC;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
-	font-size: smaller; /* 0.9em */
+	padding: 6px 8px;
 }
 th.data a:active, th.data a:link, th.data a:visited, th.data a:hover {
 	font-weight: bold;
@@ -72,8 +88,6 @@ td.topbar {
 	background-color: #CECF9C;
 	margin:	0px	0px;
 	padding: 0px;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
-	font-size: smaller; /*0.8em;*/
 	text-align: left;
 }
 ul.toplink,ul.navlink {
@@ -91,9 +105,10 @@ ul.toplink li:first-child, ul.navlink li:first-child {
 	padding-left:0;
 }
 tr.data1, tr.data2, tr.data3 {
-	color: #000000;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
-	font-size: smaller; /*0.8em;*/
+	color: #1a1a1a;
+}
+tr.data1 > td, tr.data2 > td, tr.data3 > td {
+	padding: 4px 8px;
 }
 tr.data1:hover, tr.data2:hover, tr.data3:hover {
 	background-color: #DDD;
@@ -114,10 +129,8 @@ td.opbutton1 {
 	border-bottom: 1px solid #706D41;
 	border-left: 1px solid #FFFFFF;
 	cursor:	pointer;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
-	font-size: smaller; /*0.8em;*/
-	padding-left: 6px;
-	padding-right: 6px;
+	font-size: var(--ppa-size-sm);
+	padding: 4px 8px;
 	text-align: center;
 }
 td.opbutton2 {
@@ -127,10 +140,8 @@ td.opbutton2 {
 	border-bottom: 1px solid #706D41;
 	border-left: 1px solid #FFFFFF;
 	cursor:	pointer;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
-	font-size: smaller; /*0.8em;*/
-	padding-left: 6px;
-	padding-right: 6px;
+	font-size: var(--ppa-size-sm);
+	padding: 4px 8px;
 	text-align: center;
 }
 .topbar {border: 2px solid #CECF9C}
@@ -144,8 +155,7 @@ td.opbutton2 {
 	margin-bottom: 2px;
 }
 .topbar, .trail, .tab {
-	padding: 2px 1ex;
-	font-size: smaller;
+	padding: 4px 1ex;
 }
 .trail, .tab {
 	border: 2px solid #E6E6CC;
@@ -169,64 +179,56 @@ table.tabs {
 .tab .icon {display: block}
 a:active {
 	color: #989973;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
 	font-weight: normal;
 	text-decoration: underline;
 }
 a,a:link {
 	color: #336699;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
 	text-decoration: none;
 }
 a:visited {
 	color: #336699;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
 	text-decoration: none;
 }
 a:hover {
 	color: #cc0000;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
 	text-decoration: none;
 }
 a.navlink:link, a.toplink:link, ul.navlink li a, ul.toplink li a {
 	color: #336699;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
 	font-weight: bold;
 	text-decoration: none;
 }
 a.navlink:visited, a.toplink:visited, ul.navlink li a:visited, ul.toplink li a:visited {
 	color: #336699;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
 	font-weight: bold;
 	text-decoration: none;
 }
 a.navlink:hover, a.toplink:hover, ul.navlink li a:hover, ul.toplink li a:hover {
 	color: #cc0000;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
 	font-weight: bold;
 	text-decoration: none;
 }
 a.navlink:active, a.toplink:active, ul.navlink li a:active, ul.toplink li a:active {
 	color: #cc0000;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
 	font-weight: bold;
 	text-decoration: none;
 }
 .active a {font-weight: bold}
 a.help {
 	color: #E68800;
-	font-size: smaller;
+	font-size: 0.75em;
 	vertical-align: super;
 	text-decoration: none;
 }
-pre {font-size: 110%}
+pre {font-size: var(--ppa-size-sm)}
 pre.data {
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
-	font-size: 100%;
+	font-family: var(--ppa-font);
+	font-size: var(--ppa-size);
 }
 pre.error {
-	font-family: "Lucida Console", "Courier New", "DejaVu Sans Mono", monospace;
-	font-size: 120%;
+	font-family: var(--ppa-mono);
+	font-size: var(--ppa-size-sm);
 }
 .intro li {font-weight: bold}
 .ac_field {border:1px solid #D9D95F}
@@ -234,7 +236,7 @@ pre.error {
 	background: #eee;
 	border-top: 1px dotted #999;
 	border-left: 1px dotted #999;
-	font-size: smaller;
+	font-size: var(--ppa-size-sm);
 }
 
 /** FK browsing **/
@@ -250,8 +252,6 @@ div.logo {
 	background-color: #CECF9C;
 	margin:	0px;
 	padding: 0px;
-	font-family: arial, tahoma, verdana, helvetica, sans-serif, serif;
-	font-size: smaller; /* 1em; */
 	border: none;
 	border-bottom: 2px solid #000000;
 	margin-bottom: 2px;
