@@ -74,6 +74,7 @@ or with an empty password. Create a normal login role for yourself, or set
 | `PPA_THEME` | `default` | `default`, `bootstrap`, `cappuccino`, `dark`, `gotar`. |
 | `PPA_MAX_ROWS` | `30` | Rows per page when browsing. |
 | `PPA_MAX_CHARS` | `50` | Characters shown per field before cutting it off. |
+| `PPA_MAX_RESULT_ROWS` | `1000` | Rows shown on the SQL results page without pagination. The rest is cut off with a notice. |
 | `PPA_MIN_PASSWORD_LENGTH` | `1` | |
 | `PPA_LEFT_WIDTH` | `200` | Width of the tree on the left, in pixels. |
 | `PPA_AJAX_REFRESH` | `3` | Seconds between refreshes on the locks and processes pages. `0` turns it off. |

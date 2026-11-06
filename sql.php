@@ -9,53 +9,107 @@
 	 * $Id: sql.php,v 1.43 2008/01/10 20:19:27 xzilla Exp $
 	 */
 
-	 global $lang;
+	// Global also when included from a function (the Report plugin does that)
+	global $lang, $conf, $_reload_browser, $sql_script_errors;
 
 	// Prevent timeouts on large exports
 	set_time_limit(0);
 
 	// Include application functions
 	include_once('./libraries/lib.inc.php');
+	include_once('./classes/SqlEditor.php');
+
+	/**
+	 * Prints one cell of a result. Long values are clipped like on the
+	 * browse page; the full value (up to a limit) is printed alongside and
+	 * shown by the "show long values in full" checkbox.
+	 * @return true if the value was clipped
+	 */
+	function sqlPrintCell($v, $type) {
+		global $misc, $conf, $lang;
+
+		$params = array('null' => true);
+		if ($v === null || mb_strlen($v, 'UTF-8') <= $conf['max_chars'] + mb_strlen($lang['strellipsis'], 'UTF-8')) {
+			echo '<td>', $misc->printVal($v, $type, $params), '</td>';
+			return false;
+		}
+
+		$fullmax = max($conf['max_chars'] * 100, 5000);
+		$full = mb_strlen($v, 'UTF-8') > $fullmax ? mb_substr($v, 0, $fullmax, 'UTF-8') . $lang['strellipsis'] : $v;
+		echo '<td><div class="sql-clipped">', $misc->printVal($v, $type, array('null' => true, 'clip' => true)),
+			'</div><div class="sql-full">', $misc->printVal($full, $type, $params), '</div></td>';
+		return true;
+	}
+
+	/**
+	 * Prints a result set as a table, at most $conf['max_result_rows'] rows.
+	 * @param $names Column names
+	 * @param $types Column types
+	 * @param $fetch Function returning the next row as a numeric array, or false
+	 * @param $total Number of rows in the result
+	 */
+	function sqlPrintResults($names, $types, $fetch, $total) {
+		global $misc, $conf, $lang;
+		static $count = 0;
+		$count++;
+
+		$max = isset($conf['max_result_rows']) ? (int) $conf['max_result_rows'] : 1000;
+		$shown = ($max > 0 && $total > $max) ? $max : $total;
+
+		ob_start();
+		echo "<div class=\"data-scroll sql-results\">\n<table class=\"data-grid\">\n<thead><tr>";
+		foreach ($names as $name)
+			echo "<th class=\"data\">", $misc->printVal($name), "</th>";
+		echo "</tr></thead>\n<tbody>\n";
+
+		$clipped = false;
+		for ($i = 0; $i < $shown && ($row = $fetch()) !== false; $i++) {
+			echo "<tr class=\"data", ($i % 2 == 0 ? '1' : '2'), "\">";
+			foreach ($row as $k => $v)
+				$clipped = sqlPrintCell($v, $types[$k]) || $clipped;
+			echo "</tr>\n";
+		}
+		echo "</tbody>\n</table>\n</div>\n";
+		$table = ob_get_clean();
+
+		if ($shown < $total)
+			echo "<p class=\"sql-rows-capped\">", sprintf($lang['strresultrowscapped'], $shown, $total), "</p>\n";
+		echo "<div class=\"sql-result\">\n";
+		// The checkbox has to come before the table for the CSS to work
+		if ($clipped)
+			echo "<input type=\"checkbox\" class=\"sql-expand\" id=\"sql-expand-{$count}\" />",
+				"<label for=\"sql-expand-{$count}\">{$lang['strexpandvalues']}</label>\n";
+		echo $table;
+		echo "<p>{$total} {$lang['strrows']}</p>\n</div>\n";
+	}
 
 	/**
 	 * This is a callback function to display the result of each separate query
 	 * @param ADORecordSet $rs The recordset returned by the script execetor
 	 */
 	function sqlCallback($query, $rs, $lineno) {
-		global $data, $misc, $lang, $_connection;
+		global $data, $misc, $lang, $_connection, $sql_script_errors;
 		// Check if $rs is false, if so then there was a fatal error
 		if ($rs === false) {
-			echo htmlspecialchars($_FILES['script']['name']), ':', $lineno, ': ', nl2br(htmlspecialchars($_connection->getLastError())), "<br/>\n";
+			$sql_script_errors++;
+			echo "<table class=\"error sql-error\"><tr><td><p><b>", htmlspecialchars($_FILES['script']['name']), ':', $lineno, ":</b></p>",
+				$misc->printVal($_connection->getLastError(), 'errormsg'), "</td></tr></table>\n";
 		}
 		else {
 			// Print query results
 			switch (pg_result_status($rs)) {
 				case PGSQL_TUPLES_OK:
 					// If rows returned, then display the results
-					$num_fields = pg_num_fields($rs);
-					echo "<p><table>\n<tr>";
-					for ($k = 0; $k < $num_fields; $k++) {
-						echo "<th class=\"data\">", $misc->printVal(pg_field_name($rs, $k)), "</th>";
+					$names = $types = array();
+					for ($k = 0; $k < pg_num_fields($rs); $k++) {
+						$names[] = pg_field_name($rs, $k);
+						$types[] = pg_field_type($rs, $k);
 					}
-		
-					$i = 0;
-					$row = pg_fetch_row($rs);
-					while ($row !== false) {
-						$id = (($i % 2) == 0 ? '1' : '2');
-						echo "<tr class=\"data{$id}\">\n";
-						foreach ($row as $k => $v) {
-							echo "<td style=\"white-space:nowrap;\">", $misc->printVal($v, pg_field_type($rs, $k), array('null' => true)), "</td>";
-						}							
-						echo "</tr>\n";
-						$row = pg_fetch_row($rs);
-						$i++;
-					};
-					echo "</table><br/>\n";
-					echo $i, " {$lang['strrows']}</p>\n";
+					sqlPrintResults($names, $types, function () use ($rs) { return pg_fetch_row($rs); }, pg_num_rows($rs));
 					break;
 				case PGSQL_COMMAND_OK:
 					// Print the command completion tag
-					echo htmlspecialchars(pg_result_status($rs, PGSQL_STATUS_STRING)), "<br/>\n";
+					echo "<p>", htmlspecialchars(pg_result_status($rs, PGSQL_STATUS_STRING)), "</p>\n";
 					break;
 				case PGSQL_EMPTY_QUERY:
 					break;
@@ -63,6 +117,15 @@
 					break;
 			}
 		}
+	}
+
+	// The Explain buttons of the SQL editor run EXPLAIN on the query. Done
+	// before the query is stored, so pagination and history see what ran.
+	$sql_posted_query = isset($_POST['query']) ? $_POST['query'] : null;
+	if ($sql_posted_query !== null && ($sql_explain = SqlEditor::explainPrefix()) !== '') {
+		$_POST['query'] = $sql_explain . SqlEditor::stripTrailingSemicolons($sql_posted_query);
+		// Explain what is in the editor, not an uploaded script
+		unset($_FILES['script']);
 	}
 
 	// We need to store the query in a session for editing purposes
@@ -95,9 +158,20 @@
 		include('./display.php');
 		exit;
 	}
-	
+
+	// The query that runs. What goes back into the editor is what the user
+	// had there: all of it when only a selection ran, and without EXPLAIN.
+	$sql_query = isset($_SESSION['sqlquery']) ? $_SESSION['sqlquery'] : '';
+	if (isset($_POST['sqleditor_text']))
+		$sql_editor_text = $_POST['sqleditor_text'];
+	elseif ($sql_posted_query !== null)
+		$sql_editor_text = $sql_posted_query;
+	else
+		$sql_editor_text = $sql_query;
+	$sql_is_script = isset($_FILES['script']) && $_FILES['script']['size'] > 0;
+
 	$subject = isset($_REQUEST['subject'])? $_REQUEST['subject'] : '';
-	$misc->printHeader($lang['strqueryresults']);
+	$misc->printHeader($lang['strqueryresults'], SqlEditor::head());
 	$misc->printBody();
 	$misc->printTrail('database');
 	$misc->printTitle($lang['strqueryresults']);
@@ -108,7 +182,10 @@
 			$misc->printFooter();
 			exit;
 		}
+		$sql_search_path = $_REQUEST['search_path'];
 	}
+	else
+		$sql_search_path = implode(',', $data->getSearchPath());
 
 	// May as well try to time the query
 	if (function_exists('microtime')) {
@@ -116,44 +193,45 @@
 		$start_time = ((float)$usec + (float)$sec);
 	}
 	else $start_time = null;
+
+	// Results are printed below the editor, which needs to know about errors
+	$sql_error = null;
+	$sql_script_errors = 0;
+	ob_start();
 	// Execute the query.  If it's a script upload, special handling is necessary
-	if (isset($_FILES['script']) && $_FILES['script']['size'] > 0)
+	if ($sql_is_script)
 		$data->executeScript('script', 'sqlCallback');
 	else {
 		// Set fetch mode to NUM so that duplicate field names are properly returned
 		$data->conn->setFetchMode(ADODB_FETCH_NUM);
-		$rs = $data->conn->Execute($_SESSION['sqlquery']);
+		// An error in the user's SQL is not a PHP warning, and the error
+		// handler's message is replaced by the one printed below.
+		ob_start();
+		$rs = @$data->conn->Execute($sql_query);
+		ob_end_clean();
 
 		// $rs will only be an object if there is no error
 		if (is_object($rs)) {
 			// Request was run, saving it in history
 			if(!isset($_REQUEST['nohistory']))
-				$misc->saveScriptHistory($_SESSION['sqlquery']);
+				$misc->saveScriptHistory($sql_query);
 
 			// Now, depending on what happened do various things
-	
+
 			// First, if rows returned, then display the results
 			if ($rs->recordCount() > 0) {
-				echo "<table>\n<tr>";
+				$names = $types = array();
 				foreach ($rs->fields as $k => $v) {
 					$finfo = $rs->fetchField($k);
-					echo "<th class=\"data\">", $misc->printVal($finfo->name), "</th>";
+					$names[] = $finfo->name;
+					$types[] = $finfo->type;
 				}
-                                echo "</tr>\n";	
-				$i = 0;		
-				while (!$rs->EOF) {
-					$id = (($i % 2) == 0 ? '1' : '2');
-					echo "<tr class=\"data{$id}\">\n";
-					foreach ($rs->fields as $k => $v) {
-						$finfo = $rs->fetchField($k);
-						echo "<td style=\"white-space:nowrap;\">", $misc->printVal($v, $finfo->type, array('null' => true)), "</td>";
-					}							
-					echo "</tr>\n";
+				sqlPrintResults($names, $types, function () use ($rs) {
+					if ($rs->EOF) return false;
+					$row = $rs->fields;
 					$rs->moveNext();
-					$i++;
-				}
-				echo "</table>\n";
-				echo "<p>", $rs->recordCount(), " {$lang['strrows']}</p>\n";
+					return $row;
+				}, $rs->recordCount());
 			}
 			// Otherwise if any rows have been affected
 			elseif ($data->conn->Affected_Rows() > 0) {
@@ -162,27 +240,61 @@
 			// Otherwise nodata to print
 			else echo '<p>', $lang['strnodata'], "</p>\n";
 		}
+		else {
+			$sql_error = $data->conn->ErrorMsg();
+			if ($sql_error === '' || $sql_error === false) $sql_error = $lang['strsqlfailed'];
+		}
 	}
+	$sql_results = ob_get_clean();
 
 	// May as well try to time the query
 	if ($start_time !== null) {
 		list($usec, $sec) = explode(' ', microtime());
-		$end_time = ((float)$usec + (float)$sec);	
-		// Get duration in milliseconds, round to 3dp's	
+		$end_time = ((float)$usec + (float)$sec);
+		// Get duration in milliseconds, round to 3dp's
 		$duration = number_format(($end_time - $start_time) * 1000, 3);
 	}
 	else $duration = null;
 
-	// Reload the browser as we may have made schema changes
-	$_reload_browser = true;
+	// Reload the browser only if the schema may have changed
+	if ($sql_is_script || SqlEditor::changesSchema($sql_query))
+		$_reload_browser = true;
 
-	// Display duration if we know it
-	if ($duration !== null) {
-		echo "<p>", sprintf($lang['strruntime'], $duration), "</p>\n";
+	// The editor, filled with the query, to change and run it again
+	echo "<form action=\"sql.php\" method=\"post\" enctype=\"multipart/form-data\" id=\"sql-editor-form\" class=\"sql-editor-form\">\n";
+	echo $misc->form;
+	if (isset($_REQUEST['return']))
+		echo "<input type=\"hidden\" name=\"return\" value=\"", htmlspecialchars($_REQUEST['return']), "\" />\n";
+	echo "<p><label>";
+	$misc->printHelp($lang['strsearchpath'], 'pg.schema.search_path');
+	echo ": <input type=\"text\" name=\"search_path\" size=\"50\" value=\"", htmlspecialchars($sql_search_path), "\" /></label></p>\n";
+	SqlEditor::printTextarea($sql_editor_text, array(
+		'rows' => 6,
+		'error' => $sql_error !== null ? SqlEditor::errorPosition($sql_error) : null,
+		'selection' => isset($_POST['sqleditor_selection']) ? $_POST['sqleditor_selection'] : null,
+	));
+	SqlEditor::printPaginate(isset($_REQUEST['paginate']));
+	SqlEditor::printButtons(false);
+	echo "</form>\n";
+
+	// Outcome, then the results
+	if ($sql_error !== null) {
+		echo "<table class=\"error sql-error\" role=\"alert\"><tr><td><p><b>{$lang['strsqlerror']}</b></p>",
+			$misc->printVal($sql_error, 'errormsg'), "</td></tr></table>\n";
 	}
-	
-	echo "<p>{$lang['strsqlexecuted']}</p>\n";
-			
+	echo "<p class=\"sql-status\">";
+	if ($sql_error === null && $sql_script_errors == 0)
+		echo "<span class=\"sql-ok\">{$lang['strsqlexecuted']}</span> ";
+	else
+		echo "<span class=\"sql-failed\">{$lang['strsqlfailed']}</span> ";
+	// Display duration if we know it
+	if ($duration !== null)
+		echo sprintf($lang['strruntime'], $duration);
+	echo "</p>\n";
+
+	echo $sql_results;
+	unset($sql_results);
+
 	$navlinks = array();
 	$fields = array(
 		'server' => $_REQUEST['server'],
@@ -191,7 +303,7 @@
 
 	if(isset($_REQUEST['schema']))
 		$fields['schema'] = $_REQUEST['schema'];
-	
+
 	// Return
 	if (isset($_REQUEST['return'])) {
 		$urlvars = $misc->getSubjectParams($_REQUEST['return']);
@@ -206,7 +318,7 @@
 		);
 	}
 
-	// Edit		
+	// Edit
 	$navlinks['alter'] = array (
 		'attr'=> array (
 			'href' => array (
@@ -251,6 +363,6 @@
 	}
 
 	$misc->printNavLinks($navlinks, 'sql-form', get_defined_vars());
-	
+
 	$misc->printFooter();
 ?>
