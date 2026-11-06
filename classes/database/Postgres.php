@@ -889,11 +889,20 @@ class Postgres extends ADODB_base {
 	 * @return 0 success
 	 */
 	function setSchema($schema) {
-		// Get the current schema search path, including 'pg_catalog'.
-		$search_path = $this->getSearchPath();
-		// Prepend $schema to search path
-		array_unshift($search_path, $schema);
-		$status = $this->setSearchPath($search_path);
+		// Prepend $schema to the current search path in a single statement,
+		// instead of reading the path first and setting it after. An empty
+		// name leaves the path alone, as it always did.
+		if ($schema === '' || $schema === null) {
+			$this->_schema = $schema;
+			return 0;
+		}
+		$c_schema = $schema;
+		$this->clean($c_schema);
+		$sql = "SELECT pg_catalog.set_config('search_path',
+			CASE WHEN pg_catalog.current_setting('search_path') = '' THEN pg_catalog.quote_ident('{$c_schema}')
+			ELSE pg_catalog.quote_ident('{$c_schema}') || ', ' || pg_catalog.current_setting('search_path') END,
+			false)";
+		$status = $this->execute($sql);
 		if ($status == 0) {
 			$this->_schema = $schema;
 			return 0;

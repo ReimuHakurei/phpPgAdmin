@@ -272,9 +272,15 @@
 	    }
 		$_server_info = $misc->getServerInfo();
 
-		/* starting with PostgreSQL 9.0, we can set the application name */
-		if(isset($_server_info['pgVersion']) && version_compare($_server_info['pgVersion'], '9', '>='))
+		/* starting with PostgreSQL 9.0, we can set the application name.
+		 * Before the first connection the version isn't known yet: assume a
+		 * current server (libpq retries without it if the server rejects it). */
+		if (!isset($_server_info['pgVersion']) || version_compare($_server_info['pgVersion'], '9', '>='))
 			putenv("PGAPPNAME={$appName}_{$appVersion}");
+
+		// Don't hang on a server that doesn't answer.
+		if (getenv('PGCONNECT_TIMEOUT') === false)
+			putenv('PGCONNECT_TIMEOUT=10');
 
 		// A per-database login only gets that one database. Server-wide pages
 		// and other databases send you back to it instead.

@@ -163,6 +163,10 @@
 	// (e.g. 8.4 )
 	$conf['help_base'] = 'http://www.postgresql.org/docs/%s/interactive/';
 
+	// Abort statements that run longer than this, e.g. '30s' or '5min'
+	// (PostgreSQL's statement_timeout). Empty means no limit.
+	$conf['statement_timeout'] = '';
+
 	// Configuration for ajax scripts
 	// Time in seconds. If set to 0, refreshing data using ajax will be disabled (locks and activity pages)
 	$conf['ajax_refresh'] = 3;

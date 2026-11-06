@@ -756,7 +756,10 @@ class ADODB_postgres64 extends ADOConnection{
 			$this->_connectionID = pg_connect($str);
 		}
 		if ($this->_connectionID === false) return false;
-		$this->Execute("set datestyle='ISO'");
+		// phpPgAdmin: skip the round trip when DateStyle=ISO already came in
+		// with the startup options (PGOPTIONS, see Misc::getDatabaseAccessor).
+		if (strncmp((string) pg_parameter_status($this->_connectionID, 'DateStyle'), 'ISO', 3) !== 0)
+			$this->Execute("set datestyle='ISO'");
 
 		$info = $this->ServerInfo(false);
 
@@ -989,7 +992,9 @@ class ADORecordSet_postgres64 extends ADORecordSet{
 		// apparently pg_field_type actually performs an sql query on the database to get the type.
 		if (empty($this->connection->noBlobs))
 		for ($i=0, $max = $this->_numOfFields; $i < $max; $i++) {
-			if (pg_field_type($qid,$i) == 'bytea') {
+			// phpPgAdmin: compare the type oid (bytea is always 17) instead of
+			// the name, which costs a "select oid,typname from pg_type" per connection.
+			if (pg_field_type_oid($qid,$i) == 17) {
 				$this->_blobArr[$i] = pg_field_name($qid,$i);
 			}
 		}

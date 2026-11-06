@@ -79,6 +79,8 @@ or with an empty password. Create a normal login role for yourself, or set
 | `PPA_AJAX_REFRESH` | `3` | Seconds between refreshes on the locks and processes pages. `0` turns it off. |
 | `PPA_AUTOCOMPLETE` | `default on` | `default on`, `default off` or `disable`. |
 | `PPA_PLUGINS` | | Comma-separated, e.g. `Report`. |
+| `PPA_STATEMENT_TIMEOUT` | | Cancel statements that run longer than this, e.g. `30s` or `5min` (PostgreSQL's `statement_timeout`, also applies to the SQL editor). Unset means no limit. |
+| `PGCONNECT_TIMEOUT` | `10` | Seconds to wait for a server to accept a connection. |
 | `PHP_SESSION_COOKIE_SECURE` | `0` | Set to `1` when the site is served over HTTPS. |
 
 If you need something the variables can't do (server groups, a different
