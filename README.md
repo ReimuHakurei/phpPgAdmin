@@ -74,6 +74,7 @@ or with an empty password. Create a normal login role for yourself, or set
 | `PPA_THEME` | `default` | `default`, `bootstrap`, `cappuccino`, `dark`, `gotar`. |
 | `PPA_MAX_ROWS` | `30` | Rows per page when browsing. |
 | `PPA_MAX_CHARS` | `50` | Characters shown per field before cutting it off. |
+| `PPA_BROWSE_EXACT_COUNT_LIMIT` | `100000` | Tables the planner estimates to have more rows than this are browsed without counting them: the page shows "about N rows" and a link to count exactly. |
 | `PPA_MIN_PASSWORD_LENGTH` | `1` | |
 | `PPA_LEFT_WIDTH` | `200` | Width of the tree on the left, in pixels. |
 | `PPA_AJAX_REFRESH` | `3` | Seconds between refreshes on the locks and processes pages. `0` turns it off. |
