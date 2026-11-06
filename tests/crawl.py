@@ -72,6 +72,9 @@ def main(base, server, user, password):
         "tables.php?subject=schema&schema=shop&database=ppa_test&server=" + q,
         "tblproperties.php?subject=table&table=orders&schema=shop&database=ppa_test&server=" + q,
         "display.php?subject=table&table=orders&schema=shop&database=ppa_test&server=" + q,
+        "display.php?subject=table&table=big&schema=public&database=ppa_test&server=" + q,
+        "display.php?subject=table&table=oddities&schema=public&database=ppa_test&server=" + q,
+        "display.php?subject=view&view=open_orders&schema=shop&database=ppa_test&server=" + q,
         "fulltext.php?subject=schema&schema=shop&database=ppa_test&server=" + q,
         "history.php?server=" + q + "&database=ppa_test",
         "sqledit.php?action=sql&server=" + q,
@@ -115,6 +118,8 @@ def main(base, server, user, password):
         if path == "dbexport.php" and "CREATE TABLE" not in body:
             failures.append("POST dbexport.php -> no CREATE TABLE in dump: " + body[:300])
 
+    check_data_grid(fetch, check, failures, base, server)
+
     while todo and visited < MAX_PAGES:
         url = todo.popleft()
         if url in seen:
@@ -153,6 +158,89 @@ def main(base, server, user, password):
         print("too few pages visited, the crawler probably got stuck")
         return 1
     return 1 if failures else 0
+
+
+def check_data_grid(fetch, check, failures, base, server):
+    """Browsing: row counts and estimates, page size, quick filters, and
+    paging through query results with two queries open at once."""
+    db = {"server": server, "database": "ppa_test"}
+
+    def get(params, expect=(), reject=()):
+        url = base + "display.php?" + urllib.parse.urlencode(dict(db, **params))
+        status, body = fetch(url)
+        check(url, status, body)
+        text = html.unescape(body)
+        for e in expect:
+            if e not in text:
+                failures.append("%s -> expected %r" % (url, e))
+        for r in reject:
+            if r in text:
+                failures.append("%s -> did not expect %r" % (url, r))
+        return body
+
+    def table(name, schema="public", **params):
+        return dict({"subject": "table", "table": name, "schema": schema}, **params)
+
+    md5 = lambda n: hashlib.md5(str(n).encode()).hexdigest()
+
+    # Big table: planner estimate instead of COUNT(*), unless asked for
+    get(table("big"), ["of about 200K", "Count exactly"], ["Last >>"])
+    get(table("big", count="exact"), ["of 200,000", "Last >>"], ["Count exactly"])
+    get(table("big", sortkey="2", sortdir="desc", page="3"), ["Rows 61–90 of about 200K"])
+    get(table("big", **{"filter[val]": "abc"}), ["Count rows"], ["of about"])
+    # Small table: exact count, page size, a page past the end goes to the last one
+    get(table("plain", page_size="50"), ["Rows 1–50 of 100", 'aria-current="page"'])
+    get(table("plain", page_size="50", page="2"), ["Rows 51–100 of 100"])
+    get(table("plain", page_size="25", page="99"), ["Rows 76–100 of 100"])
+    get(table("plain", page_size="7"))
+    # Quick filters: contains, exact (=), LIKE wildcards taken literally, unknown column
+    n = sum(1 for i in range(1, 101) if "c4ca" in md5(i))
+    get(table("plain", page_size="25", **{"filter[val]": "c4ca"}),
+        ["Rows 1–%d of %d" % (n, n), "Clear filters"])
+    get(table("plain", **{"filter[id]": "=42"}), ["Rows 1–1 of 1", md5(42)])
+    get(table("oddities", **{"filter[label]": "%_"}), ["No rows found."])
+    get(table("oddities", **{"filter[label]": "0% u"}), ["Rows 1–1 of 1", "100% under_score"])
+    get(table("plain", **{"filter[nope]": "x", "filter[val]": ""}), ["Rows 1–"])
+    # NULL, empty string, timestamps keep fractions and time zone, clipped text copyable
+    body = get(table("oddities"), [".345678+00", "12.345678", "END\""])
+    for marker in ('<span class="null">NULL</span>', '<span class="empty">empty</span>'):
+        if marker not in body:
+            failures.append("oddities -> expected %r" % marker)
+    # A view: no count up front
+    get({"subject": "view", "view": "open_orders", "schema": "shop"}, ["Count rows"])
+    # SELECT browse (as from the table's Select form)
+    get(table("plain", query="SELECT * FROM public.plain WHERE id > 10", page="2", page_size="25"),
+        ["Rows 26–50", "qt="])
+
+    # Query results paged with qt tokens: two "tabs" with their own query
+    def run_query(sql):
+        status, body = fetch(base + "sql.php", dict(db, query=sql, paginate="on", page_size="25"))
+        check("POST sql.php paginate " + sql, status, body)
+        m = re.search(r'href="(display\.php\?[^"]*qt=[0-9a-f]{16}[^"]*page=2)"', body)
+        if not m:
+            failures.append("POST sql.php paginate %s -> no page 2 link with a qt token" % sql)
+            return None
+        return base + html.unescape(m.group(1))
+
+    page2_a = run_query("SELECT id, val FROM public.plain ORDER BY id")
+    page2_b = run_query("SELECT g AS tab_b FROM generate_series(1000, 1100) g")
+    for url, expect, reject in ((page2_a, md5(26), "tab_b"), (page2_b, "1025", md5(26))):
+        if url is None:
+            continue
+        status, body = fetch(url)
+        check(url, status, body)
+        if expect not in body or reject in body or "Rows 26–50" not in html.unescape(body):
+            failures.append("%s -> page 2 shows the wrong query's rows" % url)
+    if page2_a:
+        status, body = fetch(page2_a + "&count=exact")
+        if "Rows 26–50 of 100" not in html.unescape(body):
+            failures.append("%s&count=exact -> expected 'Rows 26–50 of 100'" % page2_a)
+
+    # sql.php without a query (reload, back button) goes to the SQL editor
+    status, body = fetch(base + "sql.php?" + urllib.parse.urlencode(db))
+    check("GET sql.php", status, body)
+    if "could not find the query" in body or 'name="query"' not in body:
+        failures.append("GET sql.php -> expected the SQL editor")
 
 
 if __name__ == "__main__":

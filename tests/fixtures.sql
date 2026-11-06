@@ -72,6 +72,27 @@ REFRESH MATERIALIZED VIEW shop.order_totals;
 CREATE TABLE public.plain (id int, val text);
 INSERT INTO public.plain SELECT g, md5(g::text) FROM generate_series(1, 100) g;
 
+-- Big enough for browsing to use the planner's row estimate instead of counting
+-- (browse_exact_count_limit is 100000).
+CREATE TABLE public.big AS
+    SELECT g AS id, md5(g::text) AS val FROM generate_series(1, 200000) g;
+ALTER TABLE public.big ADD PRIMARY KEY (id);
+ANALYZE public.big;
+
+-- Values the data grid has to tell apart: NULL, empty string, timestamps with
+-- fractional seconds and a time zone, long text that gets clipped.
+CREATE TABLE public.oddities (
+    id int PRIMARY KEY,
+    label text,
+    at timestamptz,
+    at_local timestamp(6),
+    long_text text
+);
+INSERT INTO public.oddities VALUES
+    (1, NULL, '2024-02-29 13:45:12.345678+07', '2024-02-29 13:45:12.345678', repeat('long text ', 20) || 'END'),
+    (2, '', '2024-03-01 00:00:00+00', '2024-03-01 00:00:00', ''),
+    (3, '100% under_score', NULL, NULL, NULL);
+
 CREATE ROLE reader LOGIN PASSWORD 'reader';
 CREATE ROLE staff;
 GRANT staff TO reader;
