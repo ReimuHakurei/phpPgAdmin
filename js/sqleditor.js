@@ -127,6 +127,23 @@
 		return tables;
 	}
 
+	// CodeMirror's SQL completion. When the list pops up on its own while
+	// typing, it stays closed once the word typed so far is itself one of
+	// the suggestions, so Enter after a finished word starts a new line
+	// instead of swapping it for a longer name. Ctrl+Space shows them all.
+	function sqlHint(cm, options) {
+		var result = window.CodeMirror.hint.sql(cm, options);
+		if (!result || !result.list || !result.list.length) return null;
+		if (options && options.auto) {
+			var typed = cm.getRange(result.from, result.to).toLowerCase();
+			for (var i = 0; i < result.list.length; i++) {
+				var item = result.list[i];
+				if (String(typeof item === 'string' ? item : item.text).toLowerCase() === typed) return null;
+			}
+		}
+		return result;
+	}
+
 	function firstLine(query, max) {
 		var s = query.replace(/\s+/g, ' ').trim();
 		return s.length > max ? s.slice(0, max - 1) + '…' : s;
@@ -185,7 +202,7 @@
 			tabSize: 4,
 			indentWithTabs: false,
 			extraKeys: keys,
-			hintOptions: { tables: hintTables(textarea), completeSingle: false }
+			hintOptions: { tables: hintTables(textarea), completeSingle: false, hint: sqlHint }
 		});
 		var wrapper = cm.getWrapperElement();
 		wrapper.className += ' sql-editor-cm';
@@ -221,10 +238,23 @@
 			ed.observer.observe(wrapper);
 		}
 
-		// Autocomplete after "schema." or "table."
+		// Suggestions pop up while typing a name (from its second character)
+		// and after "schema." or "table.". Ctrl+Space opens them any time.
 		cm.on('inputRead', function (cm, change) {
-			if (change.text.length === 1 && change.text[0] === '.' && !cm.state.completionActive)
+			if (cm.state.completionActive || change.origin !== '+input') return;
+			if (change.text.length !== 1) return;
+			var typed = change.text[0];
+			var cur = cm.getCursor();
+			var token = cm.getTokenAt(cur);
+			if (/\b(string|comment)\b/.test(token.type || '')) return;
+			if (typed === '.') {
 				cm.showHint({ completeSingle: false });
+				return;
+			}
+			if (!/^[A-Za-z0-9_]$/.test(typed)) return;
+			var before = cm.getLine(cur.line).slice(0, cur.ch);
+			var word = /[A-Za-z_][A-Za-z0-9_]*$/.exec(before);
+			if (word && word[0].length >= 2) cm.showHint({ completeSingle: false, auto: true });
 		});
 
 		if (runnable) setupRunnable(ed);

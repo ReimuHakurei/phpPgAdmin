@@ -157,6 +157,34 @@ async function run(page, key = 'Control') {
 	ok(hints.includes('SELECT'), 'Ctrl+Space completes keywords: ' + hints.slice(0, 5).join(', '));
 	await page.keyboard.press('Escape');
 
+	// Suggestions pop up while typing, without Ctrl+Space
+	const hintsShown = async () => {
+		await new Promise((r) => setTimeout(r, 300));
+		return page.$$eval('.CodeMirror-hint', (a) => a.map((e) => e.textContent));
+	};
+	await cmSet(page, '');
+	await page.keyboard.type('sel');
+	hints = await hintsShown();
+	ok(hints.some((h) => /^select$/i.test(h)), 'typing "sel" suggests SELECT: ' + hints.slice(0, 5).join(', '));
+	await page.keyboard.press('Enter');
+	ok(/^select$/i.test(await cmValue(page)), 'Enter takes the suggestion: ' + JSON.stringify(await cmValue(page)));
+	await page.keyboard.type(' * FROM pla');
+	hints = await hintsShown();
+	ok(hints.includes('plain'), 'typing a table name suggests it: ' + hints.slice(0, 5).join(', '));
+	await page.keyboard.type('in');
+	hints = await hintsShown();
+	ok(hints.length === 0, 'no popup once the word is complete: ' + hints.join(', '));
+	await page.keyboard.press('Enter');
+	ok(/plain\n$/.test(await cmValue(page)), 'Enter after a finished word makes a new line');
+	await cmSet(page, "SELECT 'pla");
+	await page.keyboard.type('in');
+	ok((await hintsShown()).length === 0, 'no suggestions inside a string');
+	await cmSet(page, 'SELECT 1 -- pla');
+	await page.keyboard.type('in');
+	ok((await hintsShown()).length === 0, 'no suggestions inside a comment');
+	await cmSet(page, 'SELECT x');
+	ok((await hintsShown()).length === 0, 'one letter is not enough');
+
 	// Error highlighting
 	await cmSet(page, 'SELECT *\nFROM shop.orders\nWHERE nope = 1');
 	await run(page);
