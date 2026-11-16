@@ -1,3 +1,6 @@
+includes:
+    - phpstan-disallowed-calls.neon
+
 parameters:
     level: max
     paths:

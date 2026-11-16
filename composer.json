@@ -43,7 +43,8 @@
         "slevomat/coding-standard": "^8.25",
         "squizlabs/php_codesniffer": "^4.0",
         "vlucas/phpdotenv": "^5.6",
-        "phpunit/phpunit": "^12.5"
+        "phpunit/phpunit": "^12.5",
+        "spaze/phpstan-disallowed-calls": "^4.15"
     },
     "minimum-stability": "stable",
     "scripts": {
