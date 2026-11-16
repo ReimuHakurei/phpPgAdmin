@@ -25,20 +25,20 @@ final class RequestParameterTest extends TestCase
         self::assertSame('127.0.0.1:5432:allow', RequestParameter::getString('server'));
     }
 
-    public function testGetStringPrefersTheQueryToThePostedForm(): void
+    public function testGetStringPrefersThePostedFormToTheQuery(): void
     {
-        $_GET['server'] = 'query';
         $_POST['server'] = 'form';
+        $_GET['server'] = 'query';
 
-        self::assertSame('query', RequestParameter::getString('server'));
+        self::assertSame('form', RequestParameter::getString('server'));
     }
 
     public function testGetStringSkipsAnArray(): void
     {
-        $_GET['server'] = ['query'];
-        $_POST['server'] = 'form';
+        $_POST['server'] = ['form'];
+        $_GET['server'] = 'query';
 
-        self::assertSame('form', RequestParameter::getString('server'));
+        self::assertSame('query', RequestParameter::getString('server'));
     }
 
     public function testGetStringWithoutTheParameterReturnsTheDefault(): void
@@ -61,20 +61,20 @@ final class RequestParameterTest extends TestCase
         self::assertSame(['1', '2'], RequestParameter::getArray('ids'));
     }
 
-    public function testGetArrayPrefersTheQueryToThePostedForm(): void
+    public function testGetArrayPrefersThePostedFormToTheQuery(): void
     {
-        $_GET['ids'] = ['query'];
         $_POST['ids'] = ['form'];
+        $_GET['ids'] = ['query'];
 
-        self::assertSame(['query'], RequestParameter::getArray('ids'));
+        self::assertSame(['form'], RequestParameter::getArray('ids'));
     }
 
     public function testGetArraySkipsAString(): void
     {
-        $_GET['ids'] = 'query';
-        $_POST['ids'] = ['form'];
+        $_POST['ids'] = 'form';
+        $_GET['ids'] = ['query'];
 
-        self::assertSame(['form'], RequestParameter::getArray('ids'));
+        self::assertSame(['query'], RequestParameter::getArray('ids'));
     }
 
     public function testGetArrayWithoutTheParameterReturnsTheDefault(): void
