@@ -9,6 +9,7 @@ use PhpPgAdmin\Config;
 use PhpPgAdmin\DDD\ValueObjects\Server\Filename;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
 use PhpPgAdmin\Infrastructure\Session\Logins;
+use PhpPgAdmin\Infrastructure\Shell\PgDump;
 use PhpPgAdmin\Website;
 
 final class DbExport extends Website
@@ -128,7 +129,7 @@ final class DbExport extends Website
             throw new ServerNotFoundException("No Server for server ($serverId) found.");
         }
 
-        $dumpFilename = $server->tryGetPgDumpFilename($all);
+        $dumpFilename = PgDump::tryGetFilename($server, $all);
 
         if (is_null($dumpFilename)) {
             $errorMessageFormat = _(

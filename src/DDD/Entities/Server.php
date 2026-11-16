@@ -80,28 +80,6 @@ class Server
         );
     }
 
-    public function tryGetPgDumpFilename(bool $all): ?Filename
-    {
-        $pgDumpFilename = $all
-            ? $this->PgDumpAllPath
-            : $this->PgDumpPath;
-
-        if (!file_exists((string)$pgDumpFilename)) {
-            return null;
-        }
-
-        $pregMatchResult = preg_match(
-            "/(\d+(?:\.\d+)?)(?:\.\d+)?.*$/",
-            exec($pgDumpFilename . " --version") ?: '',
-        );
-
-        if (!$pregMatchResult) {
-            return null;
-        }
-
-        return $pgDumpFilename;
-    }
-
     public function id(): string
     {
         return (string)$this->host . ':' . $this->port->Value . ':' . $this->sslMode->value;
