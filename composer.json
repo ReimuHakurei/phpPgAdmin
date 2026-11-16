@@ -59,7 +59,7 @@
             "@dev:lint:phpcs"
         ],
         "dev:lint:php": "parallel-lint --exclude vendor .",
-        "dev:lint:phpcs": "phpcs -d memory_limit=256M src/ Tests/Integration/ Tests/Support/ Tests/Unit/ Tests/bootstrap.php Tests/test-environment.php autoload.php all_db.php all_db_export.php alter_db.php alter_role.php alter_tablespace.php browser.php create_db.php create_role.php create_tablespace.php dbexport.php drop_db.php drop_role.php drop_tablespace.php history.php history_clear.php history_delete.php history_download.php index.php intro.php languages.php login.php logout.php roles.php server-logout.php servers.php servers-tree.php sqledit.php tablespaces.php",
+        "dev:lint:phpcs": "phpcs -d memory_limit=256M src/ Tests/Architecture/ Tests/Integration/ Tests/Support/ Tests/Unit/ Tests/bootstrap.php Tests/test-environment.php autoload.php all_db.php all_db_export.php alter_db.php alter_role.php alter_tablespace.php browser.php create_db.php create_role.php create_tablespace.php dbexport.php drop_db.php drop_role.php drop_tablespace.php history.php history_clear.php history_delete.php history_download.php index.php intro.php languages.php login.php logout.php roles.php server-logout.php servers.php servers-tree.php sqledit.php tablespaces.php",
         "dev:serve": [
             "Composer\\Config::disableProcessTimeout",
             "@php Tests/test-environment.php setup",

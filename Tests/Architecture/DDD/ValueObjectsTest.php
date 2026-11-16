@@ -19,7 +19,7 @@ final class ValueObjectsTest
                 Selector::AllOf(
                     Selector::inNamespace('PhpPgAdmin\DDD\ValueObjects'),
                     Selector::Not(Selector::isEnum()),
-                )
+                ),
             )
             ->should()->beReadonly()
             ->because('ValueObjects are immutable by definition.');
