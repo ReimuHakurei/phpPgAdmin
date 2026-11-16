@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpPgAdmin;
 
 use PhpPgAdmin\DDD\Entities\Server;
+use PhpPgAdmin\Infrastructure\Http\RequestParameter;
 use Symfony\Component\Yaml\Parser as YamlParser;
 
 /**
@@ -149,7 +150,7 @@ final class Config
     {
         if (!isset(self::$data['locale'])) {
             $locale = null;
-            $requestLanguage = $_REQUEST['language'] ?? null;
+            $requestLanguage = RequestParameter::getString('language');
             $sessionLanguage = $_SESSION['webdbLanguage'] ?? null;
             $cookieLanguage = $_COOKIE['webdbLanguage'] ?? null;
 
@@ -288,10 +289,10 @@ final class Config
     {
         if (!isset(self::$data['theme'])) {
             self::$data['theme'] = 'default';
-            $requestServer = $_REQUEST['server'] ?? null;
+            $requestServer = RequestParameter::getString('server');
             $cookieTheme = $_COOKIE['ppaTheme'] ?? null;
             $sessionTheme = $_SESSION['ppaTheme'] ?? null;
-            $requestTheme = $_REQUEST['theme'] ?? null;
+            $requestTheme = RequestParameter::getString('theme');
 
             if (is_string($requestServer)) {
                 $serverIdTheme = self::tryGetThemeByServerId($requestServer);

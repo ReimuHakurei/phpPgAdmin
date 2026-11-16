@@ -31,4 +31,40 @@ final class ConfigTest extends TestCase
         self::assertContains('de_DE', $locales);
         self::assertContains('en_US', $locales);
     }
+
+    public function testTheLanguageOfTheRequestSetsTheLocale(): void
+    {
+        $_GET['language'] = 'german';
+
+        self::assertSame('de_DE', Config::locale());
+    }
+
+    public function testTheThemeOfTheRequestSetsTheTheme(): void
+    {
+        $_GET['theme'] = 'dark';
+
+        self::assertSame('dark', Config::theme());
+    }
+
+    protected function setUp(): void
+    {
+        $_GET = [];
+        $_SESSION = [];
+        self::forgetTheLocaleAndTheTheme();
+    }
+
+    protected function tearDown(): void
+    {
+        $_GET = [];
+        $_SESSION = [];
+        self::forgetTheLocaleAndTheTheme();
+    }
+
+    /**
+     * Config keeps the locale and the theme of the first call for the whole request.
+     */
+    private static function forgetTheLocaleAndTheTheme(): void
+    {
+        (new \ReflectionProperty(Config::class, 'data'))->setValue(null, []);
+    }
 }
