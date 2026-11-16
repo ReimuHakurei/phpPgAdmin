@@ -24,4 +24,18 @@ final class ValueObjectsTest
             ->should()->beReadonly()
             ->because('ValueObjects are immutable by definition.');
     }
+
+    #[TestRule]
+    public function testValueObjectsAreFinal(): Rule
+    {
+        return PHPat::rule()
+            ->classes(
+                Selector::AllOf(
+                    Selector::inNamespace('PhpPgAdmin\DDD\ValueObjects'),
+                    Selector::Not(Selector::isEnum()),
+                ),
+            )
+            ->should()->beFinal()
+            ->because('A subclass could override methods, and two equal values would no longer behave the same.');
+    }
 }
