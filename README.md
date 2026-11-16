@@ -54,7 +54,7 @@ For an overview of the software quality over time and the evolving metrics, chec
 | indexes.php        | ❌     | yyyy-mm-dd |
 | info.php           | ❌     | yyyy-mm-dd |
 | intro.php          | ✅     | 2025-01-17 |
-| languages.php      | ❌     | yyyy-mm-dd |
+| languages.php      | ✅     | 2026-11-16 |
 | login.php          | ✅     | 2025-01-29 |
 | logout.php         | ✅     | 2025-03-02 |
 | opclasses.php      | ❌     | yyyy-mm-dd |
