@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PhpPgAdmin\Website;
 
-use PhpPgAdmin\DDD\Repositories\History;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+use PhpPgAdmin\Infrastructure\Session\History;
 use PhpPgAdmin\Website;
 
 final class HistoryDownload extends Website

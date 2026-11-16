@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpPgAdmin\DDD\Repositories;
+namespace PhpPgAdmin\Infrastructure\Session;
 
 final class History
 {

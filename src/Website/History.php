@@ -6,8 +6,8 @@ namespace PhpPgAdmin\Website;
 
 use PhpPgAdmin\{Config, Website, WebsiteComponents};
 use PhpPgAdmin\Database\PhpPgAdminConnection;
-use PhpPgAdmin\DDD\Repositories\History as HistoryRepository;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+use PhpPgAdmin\Infrastructure\Session\History as HistoryRepository;
 use PhpPgAdmin\Infrastructure\Session\Logins;
 
 final class History extends Website
