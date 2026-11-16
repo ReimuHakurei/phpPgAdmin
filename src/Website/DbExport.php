@@ -6,6 +6,7 @@ namespace PhpPgAdmin\Website;
 
 use PhpPgAdmin\Application\Exceptions\{FileNotFoundException, ServerNotFoundException, ServerSessionNotFoundException};
 use PhpPgAdmin\Config;
+use PhpPgAdmin\DDD\Entities\Server;
 use PhpPgAdmin\DDD\ValueObjects\Server\Filename;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
 use PhpPgAdmin\Infrastructure\Session\Logins;
@@ -25,6 +26,34 @@ final class DbExport extends Website
         if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->handlePostRequest();
         }
+    }
+
+    /**
+     * The path of pg_dump, or with $all of pg_dumpall, if the program runs there.
+     *
+     * @throws FileNotFoundException if it does not.
+     */
+    public static function ensurePgDumpFilenameExists(Server $server, bool $all): Filename
+    {
+        $dumpFilename = PgDump::tryGetFilename($server, $all);
+
+        if (is_null($dumpFilename)) {
+            $errorMessageFormat = _(
+                'Export error: Failed to execute pg_dump (given path in your conf/config.inc.php : %s).'
+                . ' Please, fix this path in your configuration and relog.',
+            );
+
+            if ($all) {
+                $errorMessageFormat = _(
+                    'Export error: Failed to execute pg_dumpall (given path in your conf/config.inc.php : %s).'
+                    . ' Please, fix this path in your configuration and relog.',
+                );
+            }
+
+            throw new FileNotFoundException(sprintf($errorMessageFormat, (string)$dumpFilename));
+        }
+
+        return $dumpFilename;
     }
 
     private function applyCompressSpecificCommandArguments(string $command, bool $dumpAll): string
@@ -110,7 +139,7 @@ final class DbExport extends Website
     {
         $subject = RequestParameter::getString('subject') ?? '';
         $dumpAll = ($subject === 'server');
-        $dumpFilename = $this->ensurePgDumpFilenameExists($dumpAll);
+        $dumpFilename = self::ensurePgDumpFilenameExists($this->server(), $dumpAll);
 
         $command = escapeshellarg((string)$dumpFilename);
         $command = $this->applySubjectSpecificCommandArguments($command, $subject);
@@ -120,7 +149,7 @@ final class DbExport extends Website
         return $command;
     }
 
-    private function ensurePgDumpFilenameExists(bool $all): Filename
+    private function server(): Server
     {
         $serverId = RequestParameter::getString('server') ?? '';
         $server = Config::getServerById($serverId);
@@ -129,25 +158,7 @@ final class DbExport extends Website
             throw new ServerNotFoundException("No Server for server ($serverId) found.");
         }
 
-        $dumpFilename = PgDump::tryGetFilename($server, $all);
-
-        if (is_null($dumpFilename)) {
-            $errorMessageFormat = _(
-                'Export error: Failed to execute pg_dump (given path in your conf/config.inc.php : %s).'
-                . ' Please, fix this path in your configuration and relog.',
-            );
-
-            if ($all) {
-                $errorMessageFormat = _(
-                    'Export error: Failed to execute pg_dumpall (given path in your conf/config.inc.php : %s).'
-                    . ' Please, fix this path in your configuration and relog.',
-                );
-            }
-
-            throw new FileNotFoundException(sprintf($errorMessageFormat, (string)$dumpFilename));
-        }
-
-        return $dumpFilename;
+        return $server;
     }
 
     private function handlePostRequest(): never
