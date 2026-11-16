@@ -54,11 +54,6 @@ final class WebsiteComponentsTest extends TestCase
      */
     private const ADVANCED_DATABASE_TABS = ['casts', 'languages'];
 
-    /**
-     * @var array<mixed>
-     */
-    private array $request = [];
-
     public function testDatabaseTabsLabels(): void
     {
         $tabs = self::buildDatabaseTabs(activeTab: 'languages', showAdvanced: true);
@@ -424,8 +419,6 @@ final class WebsiteComponentsTest extends TestCase
 
     public function testTopBarWithoutALoginShowsTheAppWithoutLinks(): void
     {
-        unset($_REQUEST['server']);
-
         $dom = new \DOMDocument();
         $topBar = WebsiteComponents::buildTopBar($dom);
         $dom->appendChild($topBar);
@@ -475,12 +468,12 @@ final class WebsiteComponentsTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->request = $_REQUEST;
+        $_GET = [];
     }
 
     protected function tearDown(): void
     {
-        $_REQUEST = $this->request;
+        $_GET = [];
         $_SESSION = [];
     }
 
@@ -577,7 +570,7 @@ final class WebsiteComponentsTest extends TestCase
      */
     private static function loggedInTopBar(?string $database = null): \DOMElement
     {
-        $_REQUEST['server'] = self::TOP_BAR_SERVER_ID;
+        $_GET['server'] = self::TOP_BAR_SERVER_ID;
         $_SESSION['webdbLogin'] = [
             self::TOP_BAR_SERVER_ID => [
                 'password' => '',

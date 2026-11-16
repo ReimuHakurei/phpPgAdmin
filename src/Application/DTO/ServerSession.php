@@ -6,16 +6,19 @@ namespace PhpPgAdmin\Application\DTO;
 
 use PhpPgAdmin\Config;
 use PhpPgAdmin\DDD\Entities\ServerSession as EntityServerSession;
+use PhpPgAdmin\Infrastructure\Http\RequestParameter;
 use PhpPgAdmin\Infrastructure\Session\Logins;
 
 abstract readonly class ServerSession
 {
     public static function createFromRequestParameter(): ?EntityServerSession
     {
-        if (!isset($_REQUEST['server']) || !is_string($_REQUEST['server'])) {
+        $serverId = RequestParameter::getString('server');
+
+        if (is_null($serverId)) {
             return null;
         }
 
-        return Logins::serverSession($_REQUEST['server'], Config::getServers());
+        return Logins::serverSession($serverId, Config::getServers());
     }
 }
