@@ -132,7 +132,6 @@
     $lang['strstarttime'] = 'Inizio';
     $lang['strfile'] = 'File';
     $lang['strfileimported'] = 'File importato.';
-    $lang['strtrycred'] = 'Usa queste credenziali per tutti i server';
     $lang['stractionsonmultiplelines'] = 'Azioni su righe multiple';
     $lang['strselectall'] = 'Seleziona tutti';
     $lang['strunselectall'] = 'Deseleziona tutti';

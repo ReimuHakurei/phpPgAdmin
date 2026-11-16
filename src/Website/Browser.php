@@ -20,6 +20,14 @@ final class Browser extends Website
         ];
     }
 
+    /**
+     * The browser tree, which lists all servers, also the ones one is not logged in to.
+     */
+    public static function requiresServerLogin(): bool
+    {
+        return false;
+    }
+
     protected function buildHtmlBody(\DOMDocument $dom): \DOMElement
     {
         $body = parent::buildHtmlBody($dom);

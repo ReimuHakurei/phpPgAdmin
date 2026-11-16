@@ -131,7 +131,6 @@ $lang['strclustered'] = 'Clustered?';
     $lang['strstarttime'] = '開始時間';
     $lang['strfile'] = 'ファイル';
     $lang['strfileimported'] = 'ファイルをインポートしました。';
-    $lang['strtrycred']  =  'すべてのサーバーでこの情報を使う';
     $lang['stractionsonmultiplelines']  =  '複数行の操作';
     $lang['strselectall']  =  'すべて選択する';
     $lang['strunselectall']  =  'すべて選択を解除する';

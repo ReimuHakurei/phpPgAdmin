@@ -248,7 +248,7 @@ msgstr "Şir/câmp gol"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Administrare"
 
 msgid "strvacuum"
@@ -338,13 +338,13 @@ msgstr "OID-uri"
 msgid "stradvanced"
 msgstr "Avansat"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Variabile"
 
 msgid "strprocess"
 msgstr "Proces"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Procese"
 
 msgid "strsetting"
@@ -370,9 +370,6 @@ msgstr "Fişier"
 
 msgid "strfileimported"
 msgstr "Fişier importat"
-
-msgid "strtrycred"
-msgstr "Folosiţi aceste acreditări pentru toate serverele"
 
 msgid "Execute"
 msgstr "Executare"
@@ -430,7 +427,7 @@ msgstr "Parametrii scriptului sunt incorecţi."
 msgid "strnodata"
 msgstr "Nici un rând găsit."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Nici un obiect găsit."
 
 msgid "strrownotunique"
@@ -1316,7 +1313,7 @@ msgid "stronupdate"
 msgstr "ON UPDATE"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Funcţie"
 
 msgid "Functions"
@@ -1741,7 +1738,7 @@ msgid "stroperatordroppedbad"
 msgstr "Ştergere operator eşuată."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Conversii de tip"
 
 msgid "strnocasts"
@@ -1776,13 +1773,13 @@ msgid "strtargetencoding"
 msgstr "Codificare destinaţie"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Limbaje"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Nici un limbaj găsit."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Sigur"
 
 # Info
@@ -2045,7 +2042,7 @@ msgid "strvacuumcostlimit"
 msgstr "Vacuum Cost Limit"
 
 # Table-level Locks
-msgid "strlocks"
+msgid "Locks"
 msgstr "Blocări"
 
 msgid "strtransaction"

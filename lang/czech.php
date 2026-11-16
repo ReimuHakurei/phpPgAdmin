@@ -134,8 +134,6 @@
     $lang['strstarttime'] = 'Čas spuštění';
     $lang['strfile'] = 'Soubor';
     $lang['strfileimported'] = 'Soubor byl importován.';
-    $lang['strtrycred'] = 'Použít tato prověření pro všechny servery';
-    $lang['strconfdropcred'] = 'Odpojením se z bezpečnostních důvodů smažou vaše sdílené připojovací informace. Opravdu se chcete odpojit?';
     $lang['stractionsonmultiplelines'] = 'Akce pro víc řádků';
     $lang['strselectall'] = 'Vybrat vše';
     $lang['strunselectall'] = 'Zrušit výběr';

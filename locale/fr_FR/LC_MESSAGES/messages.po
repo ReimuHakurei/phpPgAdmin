@@ -260,7 +260,7 @@ msgstr "Chaîne/champ vide"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Admin"
 
 msgid "strvacuum"
@@ -344,13 +344,13 @@ msgstr "OID"
 msgid "stradvanced"
 msgstr "Avancé"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Variables"
 
 msgid "strprocess"
 msgstr "Processus"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Processus"
 
 msgid "strblocked"
@@ -379,12 +379,6 @@ msgstr "Fichier"
 
 msgid "strfileimported"
 msgstr "Fichier importé."
-
-msgid "strtrycred"
-msgstr "Utilisez ces identifiants pour tous les serveurs"
-
-msgid "strconfdropcred"
-msgstr "For security reason, disconnecting will destroy your shared login information. Are you sure you want to disconnect ?"
 
 msgid "Actions on multiple lines"
 msgstr "Actions sur plusieurs lignes"
@@ -516,7 +510,7 @@ msgstr "Paramètres de script invalides."
 msgid "strnodata"
 msgstr "Pas de résultats."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Aucun objet trouvé."
 
 msgid "strrownotunique"
@@ -1519,7 +1513,7 @@ msgid "stronupdate"
 msgstr "ON UPDATE"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Fonction"
 
 msgid "Functions"
@@ -1974,7 +1968,7 @@ msgid "stroperatordroppedbad"
 msgstr "Échec lors de la suppression de l'opérateur."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Conversions"
 
 msgid "strnocasts"
@@ -2009,13 +2003,13 @@ msgid "strtargetencoding"
 msgstr "Codage cible"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Langages"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Pas de langage trouvé."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "De confiance"
 
 # Info
@@ -2308,7 +2302,7 @@ msgid "strnotdefaultinred"
 msgstr "Valeurs différentes de celles par défaut en rouge."
 
 # Table-level Locks
-msgid "strlocks"
+msgid "Locks"
 msgstr "Verrous"
 
 msgid "strtransaction"

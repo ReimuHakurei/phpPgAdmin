@@ -260,7 +260,7 @@ msgstr "空 字符串/字段"
 msgid "SQL"
 msgstr "SQL码"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "管理"
 
 msgid "strvacuum"
@@ -344,13 +344,13 @@ msgstr "OIDs"
 msgid "stradvanced"
 msgstr "高级"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "变量"
 
 msgid "strprocess"
 msgstr "进程"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "进程"
 
 msgid "strsetting"
@@ -376,12 +376,6 @@ msgstr "文件"
 
 msgid "strfileimported"
 msgstr "文件已导入。"
-
-msgid "strtrycred"
-msgstr "对所有服务器使用该用户名和密码"
-
-msgid "strconfdropcred"
-msgstr "因为安全原因，中断连接将会销毁你的登录信息。你确定要中断连接吗？"
 
 msgid "Actions on multiple lines"
 msgstr "多行上的操作"
@@ -507,7 +501,7 @@ msgstr "无效的脚本参数。"
 msgid "strnodata"
 msgstr "查无数据行。"
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "查无对象。"
 
 msgid "strrownotunique"
@@ -1510,7 +1504,7 @@ msgid "stronupdate"
 msgstr "ON UPDATE"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "函数"
 
 msgid "Functions"
@@ -1965,7 +1959,7 @@ msgid "stroperatordroppedbad"
 msgstr "操作符删除失败。"
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "类型转换"
 
 msgid "strnocasts"
@@ -2000,13 +1994,13 @@ msgid "strtargetencoding"
 msgstr "目标编码"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "过程语言"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "查无过程语言。"
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "信任的"
 
 # Info
@@ -2299,7 +2293,7 @@ msgid "strnotdefaultinred"
 msgstr "非默认值被标注为红色。"
 
 # Table-level Locks
-msgid "strlocks"
+msgid "Locks"
 msgstr "锁"
 
 msgid "strtransaction"

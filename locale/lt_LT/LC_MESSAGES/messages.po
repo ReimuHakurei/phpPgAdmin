@@ -268,7 +268,7 @@ msgstr "Tuščia eilutė/laukas"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Admin"
 
 # Administratorius
@@ -355,13 +355,13 @@ msgid "stradvanced"
 msgstr "Išplėstinis(-ė)"
 
 # papildomas(-a),
-msgid "strvariables"
+msgid "Variables"
 msgstr "Kintamieji"
 
 msgid "strprocess"
 msgstr "Procesas"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Procesai"
 
 msgid "strsetting"
@@ -388,12 +388,6 @@ msgstr "Failas"
 
 msgid "strfileimported"
 msgstr "Failas importuotas."
-
-msgid "strtrycred"
-msgstr "Naudoti šiuos įgaliojimus visiems serveriams"
-
-msgid "strconfdropcred"
-msgstr "Dėl saugumo, ryšio nutraukimas panaikins jūsų bendrą prisijungimo informaciją. Ar tikrai norite nutraukti ryšį ?"
 
 msgid "Actions on multiple lines"
 msgstr "Veiksmai keliose eilutėse"
@@ -522,7 +516,7 @@ msgstr "Neteisingi skripto parametrai."
 msgid "strnodata"
 msgstr "Įrašų nerasta."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Objektų nerasta."
 
 msgid "strrownotunique"
@@ -1528,7 +1522,7 @@ msgid "stronupdate"
 msgstr "atnaujinant"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Funkcija"
 
 msgid "Functions"
@@ -1986,7 +1980,7 @@ msgid "stroperatordroppedbad"
 msgstr "Nepavyko pašalinti operatoriaus."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Casts"
 
 # duomenų tipo keitimas
@@ -2028,13 +2022,13 @@ msgstr "Target encoding"
 # galutinė koduotė
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Programavimo kalbos"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Kalbų nerasta."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Patikima"
 
 # Info
@@ -2327,7 +2321,7 @@ msgid "strnotdefaultinred"
 msgstr "Reikšmės, kitokios nei numatytosios, pažymėtos raudonai."
 
 # Table-level Locks
-msgid "strlocks"
+msgid "Locks"
 msgstr "Blokuotės"
 
 msgid "strtransaction"

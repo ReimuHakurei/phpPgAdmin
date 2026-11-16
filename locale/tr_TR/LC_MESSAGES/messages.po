@@ -239,7 +239,7 @@ msgstr "Boş metin/alan"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Yönetici"
 
 msgid "strvacuum"
@@ -332,13 +332,13 @@ msgstr "OIDler"
 msgid "stradvanced"
 msgstr "Gelişmiş"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Değişkenler"
 
 msgid "strprocess"
 msgstr "Süreç"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Süreçler"
 
 msgid "strsetting"
@@ -364,9 +364,6 @@ msgstr "Dosya"
 
 msgid "strfileimported"
 msgstr "Dosya import edildi."
-
-msgid "strtrycred"
-msgstr "Giriş bilgilerini tüm sunucular için kullan"
 
 msgid "Execute"
 msgstr "Execute"
@@ -405,7 +402,7 @@ msgstr "Geçersiz betik parametreleri."
 msgid "strnodata"
 msgstr "Satır bulunamadı."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Hiçbir nesne bulunamadı.."
 
 msgid "strrownotunique"
@@ -1195,7 +1192,7 @@ msgid "stronupdate"
 msgstr "ON UPDATE"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Fonksiyon"
 
 msgid "Functions"
@@ -1566,7 +1563,7 @@ msgid "stroperatordroppedbad"
 msgstr "Operator kaldırma işlemi başarısız oldu."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Casts"
 
 msgid "strnocasts"
@@ -1601,13 +1598,13 @@ msgid "strtargetencoding"
 msgstr "Hedef dil kodlaması"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Diller"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Hiç bir dil bulunamadı."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Güvenilir"
 
 # Info

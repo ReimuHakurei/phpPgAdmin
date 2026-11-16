@@ -133,8 +133,6 @@
     $lang['strstarttime'] = '开始时间';
     $lang['strfile'] = '文件';
     $lang['strfileimported'] = '文件已导入。';
-    $lang['strtrycred'] = '对所有服务器使用该用户名和密码';
-    $lang['strconfdropcred']  =  '因为安全原因，中断连接将会销毁你的登录信息。你确定要中断连接吗？';
     $lang['stractionsonmultiplelines'] = '多行上的操作';
     $lang['strselectall'] = '选择所有';
     $lang['strunselectall'] = '取消选择所有';

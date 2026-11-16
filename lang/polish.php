@@ -134,7 +134,6 @@
     $lang['strstarttime'] = 'Czas początku';
     $lang['strfile'] = 'Plik';
     $lang['strfileimported'] = 'Plik został zaimportowany.';
-    $lang['strtrycred'] = 'Użyj tych parametrów dla wszystkich serwerów';
     $lang['strexecute'] = 'Wykonaj';
 
     // Database Sizes

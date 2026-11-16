@@ -9,6 +9,14 @@ use PhpPgAdmin\Infrastructure\Http\RequestParameter;
 
 final class Intro extends Website
 {
+    /**
+     * The introduction, which belongs to no server.
+     */
+    public static function requiresServerLogin(): bool
+    {
+        return false;
+    }
+
     protected function buildHtmlBody(\DOMDocument $dom): \DOMElement
     {
         $body = parent::buildHtmlBody($dom);
@@ -112,10 +120,7 @@ final class Intro extends Website
         $languageParam = RequestParameter::getString('language');
 
         if (!is_null($languageParam)) {
-            $scriptElement = $dom->createElement('script');
-            $scriptElement->setAttribute('type', 'text/javascript');
-            $scriptElement->appendChild($dom->createCDATASection('parent.frames.browser.location.reload();'));
-            $body->appendChild($scriptElement);
+            $body->appendChild(WebsiteComponents::buildBrowserReloadScript($dom));
         }
 
         return $body;

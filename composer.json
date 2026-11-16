@@ -51,15 +51,22 @@
             "@dev:analyze:phpstan"
         ],
         "dev:analyze:phpstan": "@dev:analyze:phpstan-8.3",
-        "dev:analyze:phpstan-8.3": "phpstan analyse --configuration=phpstan-8.3.neon --autoload-file=autoload-tests.php --memory-limit=512M",
-        "dev:analyze:phpstan-8.4": "phpstan analyse --configuration=phpstan-8.4.neon --autoload-file=autoload-tests.php --memory-limit=512M",
-        "dev:analyze:phpstan-8.5": "phpstan analyse --configuration=phpstan-8.5.neon --autoload-file=autoload-tests.php --memory-limit=512M",
+        "dev:analyze:phpstan-8.3": "phpstan analyse --configuration=phpstan-8.3.neon --memory-limit=512M",
+        "dev:analyze:phpstan-8.4": "phpstan analyse --configuration=phpstan-8.4.neon --memory-limit=512M",
+        "dev:analyze:phpstan-8.5": "phpstan analyse --configuration=phpstan-8.5.neon --memory-limit=512M",
         "dev:lint": [
             "@dev:lint:php",
             "@dev:lint:phpcs"
         ],
         "dev:lint:php": "parallel-lint --exclude vendor .",
-        "dev:lint:phpcs": "phpcs -d memory_limit=256M src/ Tests/Integration/ Tests/Support/TestEnvironment.php Tests/Unit/ Tests/bootstrap.php Tests/test-environment.php autoload.php all_db.php all_db_export.php alter_db.php alter_role.php alter_tablespace.php browser.php create_db.php create_role.php create_tablespace.php dbexport.php drop_db.php drop_role.php drop_tablespace.php history.php history_clear.php history_delete.php history_download.php index.php intro.php login.php logout.php roles.php server-logout.php servers.php servers-tree.php sqledit.php tablespaces.php",
+        "dev:lint:phpcs": "phpcs -d memory_limit=256M src/ Tests/Integration/ Tests/Support/ Tests/Unit/ Tests/bootstrap.php Tests/test-environment.php autoload.php all_db.php all_db_export.php alter_db.php alter_role.php alter_tablespace.php browser.php create_db.php create_role.php create_tablespace.php dbexport.php drop_db.php drop_role.php drop_tablespace.php history.php history_clear.php history_delete.php history_download.php index.php intro.php languages.php login.php logout.php roles.php server-logout.php servers.php servers-tree.php sqledit.php tablespaces.php",
+        "dev:serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php Tests/test-environment.php setup",
+            "@putenv PHPPGADMIN_CONFIG_YAML_FILE=config-test.yml",
+            "@putenv PHPPGADMIN_CONFIG_INC_PHP_FILE=config-test.inc.php",
+            "@php -S 127.0.0.1:9876"
+        ],
         "dev:test": "phpunit",
         "dev:test:unit": "phpunit --testsuite Unit",
         "dev:test:integration": "phpunit --testsuite Integration",

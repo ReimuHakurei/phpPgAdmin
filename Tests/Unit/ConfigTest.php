@@ -17,6 +17,12 @@ final class ConfigTest extends TestCase
         self::assertFalse(Config::extraLoginSecurity());
     }
 
+    public function testShowAdvancedIsReadFromTheConfiguration(): void
+    {
+        // Tests\Support\TestEnvironment enables it for the E2E tests of the advanced tabs; the default would be false.
+        self::assertTrue(Config::showAdvanced());
+    }
+
     public function testAvailableLocales(): void
     {
         $locales = Config::getAvailableLocales();

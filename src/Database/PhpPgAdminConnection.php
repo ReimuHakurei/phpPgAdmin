@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace PhpPgAdmin\Database;
 
-use PhpPgAdmin\Application\DTO\{Role as DTORole, ServerSession as DTOServerSession, Tablespace as DTOTablespace};
+use PhpPgAdmin\Application\DTO\{
+    Language as DTOLanguage,
+    Role as DTORole,
+    ServerSession as DTOServerSession,
+    Tablespace as DTOTablespace,
+};
 use PhpPgAdmin\Config;
 use PhpPgAdmin\DDD\Entities\ServerSession;
-use PhpPgAdmin\DDD\ValueObjects\{Role, Tablespace};
+use PhpPgAdmin\DDD\ValueObjects\{Language, Role, Tablespace};
 use PhpPgAdmin\DDD\ValueObjects\Server\SslMode;
 use PhpPgAdmin\Enums\RevokeType;
 
@@ -71,7 +76,11 @@ final class PhpPgAdminConnection extends \PDO
         return $pdo;
     }
 
-    public static function createFromServerSession(?ServerSession $serverSession): ?self
+    /**
+     * @param string $database Pages about objects inside a database (languages, schemas, …) need a connection to that
+     *                         database, the server-wide objects can be read from any database.
+     */
+    public static function createFromServerSession(?ServerSession $serverSession, string $database = 'postgres'): ?self
     {
         if ($serverSession === null) {
             return null;
@@ -83,7 +92,7 @@ final class PhpPgAdminConnection extends \PDO
             sslmode: $serverSession->SslMode->value,
             user: (string)$serverSession->Username,
             password: (string)$serverSession->Password,
-            database: 'postgres',
+            database: $database,
         );
 
         $connection->exec("SET client_encoding TO 'UTF-8'");
@@ -540,6 +549,46 @@ final class PhpPgAdminConnection extends \PDO
         }
 
         return $result;
+    }
+
+    /**
+     * The languages of the connected database, sorted by name.
+     *
+     * @param bool $all Also the built-in languages (c, internal, sql), regardless of show_system.
+     * @return array<Language>
+     */
+    public function getLanguages(bool $all = false): array
+    {
+        $sql = 'SELECT lanname, lanpltrusted, lanplcallfoid::pg_catalog.regproc AS lanplcallf
+            FROM pg_catalog.pg_language';
+
+        if (!Config::showSystem() && !$all) {
+            $sql .= ' WHERE lanispl';
+        }
+
+        $sql .= ' ORDER BY lanname';
+
+        $statement = $this->prepare($sql);
+
+        if ($statement === false) {
+            throw new \PDOException('Failed to prepare SQL statement for getting languages.');
+        }
+
+        if (!$statement->execute()) {
+            throw new \PDOException('Failed to execute SQL statement for getting languages.');
+        }
+
+        $languages = [];
+
+        while ($row = $statement->fetch()) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $languages[] = DTOLanguage::createFromDbArray($row);
+        }
+
+        return $languages;
     }
 
     /**

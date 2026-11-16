@@ -4,7 +4,7 @@ parameters:
         - src/
         - Tests/Architecture/
         - Tests/Integration/
-        - Tests/Support/TestEnvironment.php
+        - Tests/Support/
         - Tests/Unit/
         - Tests/bootstrap.php
         - Tests/test-environment.php
@@ -28,6 +28,7 @@ parameters:
         - history_download.php
         - index.php
         - intro.php
+        - languages.php
         - login.php
         - logout.php
         - roles.php

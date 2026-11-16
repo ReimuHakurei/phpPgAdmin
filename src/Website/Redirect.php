@@ -29,6 +29,14 @@ final class Redirect extends Website
         };
     }
 
+    /**
+     * Leads to the login form itself while one is not logged in to the server (see redirectToServer()).
+     */
+    public static function requiresServerLogin(): bool
+    {
+        return false;
+    }
+
     private function redirectToRoot(): void
     {
         $locationUrl = './intro.php';
@@ -51,18 +59,9 @@ final class Redirect extends Website
             );
         }
 
-        $locationUrl = './login.php';
-        $locationUrlParams = [
-            'server' => $server,
-            'subject' => 'server',
-        ];
-
-        if (ServerSession::isLoggedIn($server)) {
-            $locationUrl = './all_db.php';
-            unset($locationUrlParams['subject']);
-        }
-
-        $locationUrl .= '?' . http_build_query($locationUrlParams);
+        $locationUrl = ServerSession::isLoggedIn($server)
+            ? './all_db.php?' . http_build_query(['server' => $server])
+            : Login::buildUrl($server);
 
         header('Location: ' . $locationUrl);
         exit;

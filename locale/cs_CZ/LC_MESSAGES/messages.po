@@ -260,7 +260,7 @@ msgstr "Prázdné řetězce/pole"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Správa"
 
 msgid "strvacuum"
@@ -344,13 +344,13 @@ msgstr "OID"
 msgid "stradvanced"
 msgstr "Pokročilé"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Proměnné"
 
 msgid "strprocess"
 msgstr "Proces"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Procesy"
 
 msgid "strsetting"
@@ -376,12 +376,6 @@ msgstr "Soubor"
 
 msgid "strfileimported"
 msgstr "Soubor byl importován."
-
-msgid "strtrycred"
-msgstr "Použít tato prověření pro všechny servery"
-
-msgid "strconfdropcred"
-msgstr "Odpojením se z bezpečnostních důvodů smažou vaše sdílené připojovací informace. Opravdu se chcete odpojit?"
 
 msgid "Actions on multiple lines"
 msgstr "Akce pro víc řádků"
@@ -507,7 +501,7 @@ msgstr "Neplatné parametry skriptu."
 msgid "strnodata"
 msgstr "Nenalezen žádný řádek."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Nenalezen žádný objekt."
 
 msgid "strrownotunique"
@@ -1504,7 +1498,7 @@ msgid "stronupdate"
 msgstr "ON UPDATE"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Funkce"
 
 msgid "Functions"
@@ -1959,7 +1953,7 @@ msgid "stroperatordroppedbad"
 msgstr "Nezdařilo se odstranit operátor."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Přetypování"
 
 msgid "strnocasts"
@@ -1994,13 +1988,13 @@ msgid "strtargetencoding"
 msgstr "Cílové kódování"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Jazyky"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Nenalezeny žádné jazyky."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Důvěryhodný"
 
 # Info
@@ -2293,7 +2287,7 @@ msgid "strnotdefaultinred"
 msgstr "V účtu nejsou žádné výchozí hodnoty."
 
 # Table-level Locks
-msgid "strlocks"
+msgid "Locks"
 msgstr "Zámky"
 
 msgid "strtransaction"

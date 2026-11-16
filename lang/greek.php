@@ -129,7 +129,6 @@
     $lang['strstarttime'] = 'Ωρα Εναρξης';
     $lang['strfile'] = 'Αρχείο';
     $lang['strfileimported'] = 'Αρχείο εισήχθη.';
-    $lang['strtrycred'] = 'Χρήση αυτών των διαπιστευτηρίων για όλους τους διακομιστές';
     $lang['strexecute'] = 'Εκτέλεση';
 
     // Database Sizes

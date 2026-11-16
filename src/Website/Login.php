@@ -4,22 +4,91 @@ declare(strict_types=1);
 
 namespace PhpPgAdmin\Website;
 
-use PhpPgAdmin\{Config, Website, WebsiteComponents};
+use PhpPgAdmin\{Config, Session, Website, WebsiteComponents};
 use PhpPgAdmin\Database\PhpPgAdminConnection;
 use PhpPgAdmin\DDD\Entities\ServerSession;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
 
 final class Login extends Website
 {
+    private const RETURN_URL_PARAMETER = 'loginReturnUrl';
+
     public function __construct()
     {
         parent::__construct();
 
         $this->title = _('Login');
 
-        if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (self::isLoginFormSent()) {
             $this->handlePostRequest();
         }
+    }
+
+    /**
+     * Whether the request sends the login form, which goes to login.php. A legacy page that shows the form in place
+     * (see libraries/lib.inc.php) was sent a form of its own, e.g. after the login expired.
+     */
+    public static function isLoginFormSent(): bool
+    {
+        return ($_SERVER['REQUEST_METHOD'] ?? null) === 'POST' && !self::isShownByALegacyPage();
+    }
+
+    /**
+     * The login form of a server, where the pages lead to while one is not logged in to it. After the login, it leads
+     * back to the page of $returnUrl (see buildReturnUrl()).
+     */
+    public static function buildUrl(string $serverId, ?string $returnUrl = null): string
+    {
+        $params = ['server' => $serverId, 'subject' => 'server'];
+
+        if (!is_null($returnUrl)) {
+            $params[self::RETURN_URL_PARAMETER] = $returnUrl;
+        }
+
+        return './login.php?' . http_build_query($params);
+    }
+
+    /**
+     * The requested page, to lead back to after the login. Relative, like the links between the pages.
+     */
+    public static function buildReturnUrl(): ?string
+    {
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? null;
+
+        // The redirect after the login would not send a posted form again.
+        if (($_SERVER['REQUEST_METHOD'] ?? null) !== 'GET' || !is_string($scriptName)) {
+            return null;
+        }
+
+        $returnUrl = './' . basename($scriptName);
+        $queryString = $_SERVER['QUERY_STRING'] ?? '';
+
+        if (is_string($queryString) && $queryString !== '') {
+            $returnUrl .= '?' . $queryString;
+        }
+
+        return $returnUrl;
+    }
+
+    /**
+     * Back to the page of $returnUrl, or else to the databases of the server. Only to a page of phpPgAdmin itself,
+     * so that a link to the login form cannot lead to another site after the login (open redirect).
+     */
+    public static function buildUrlAfterLogin(string $serverId, ?string $returnUrl): string
+    {
+        if (!is_null($returnUrl) && preg_match('/^\.\/[A-Za-z0-9_-]+\.php(\?[!-~]*)?$/D', $returnUrl) === 1) {
+            return $returnUrl;
+        }
+
+        return './all_db.php?' . http_build_query(['server' => $serverId]);
+    }
+
+    /**
+     * The login form, which is shown while one is not logged in to the server.
+     */
+    public static function requiresServerLogin(): bool
+    {
+        return false;
     }
 
     protected function buildHtmlBody(\DOMDocument $dom): \DOMElement
@@ -49,13 +118,8 @@ final class Login extends Website
 
         $form = $dom->createElement('form');
         $form->setAttribute('id', 'login_form');
-        $loginFormAction = '';
-
-        if (isset($_SERVER['SCRIPT_NAME']) && is_string($_SERVER['SCRIPT_NAME'])) {
-            $loginFormAction = $_SERVER['SCRIPT_NAME'];
-        }
-
-        $form->setAttribute('action', $loginFormAction);
+        // Also from the legacy pages, which show the form in place. Some, like redirect.php, don't handle a login.
+        $form->setAttribute('action', './login.php');
         $form->setAttribute('method', 'post');
         $form->setAttribute('name', 'login_form');
         $inputTypeHiddenSubject = $dom->createElement('input');
@@ -73,6 +137,16 @@ final class Login extends Website
         $inputTypeHiddenLoginServer->setAttribute('name', 'loginServer');
         $inputTypeHiddenLoginServer->setAttribute('value', $serverId);
         $form->appendChild($inputTypeHiddenLoginServer);
+        $returnUrl = self::getReturnUrl();
+
+        if (!is_null($returnUrl)) {
+            $inputTypeHiddenLoginReturnUrl = $dom->createElement('input');
+            $inputTypeHiddenLoginReturnUrl->setAttribute('type', 'hidden');
+            $inputTypeHiddenLoginReturnUrl->setAttribute('name', self::RETURN_URL_PARAMETER);
+            $inputTypeHiddenLoginReturnUrl->setAttribute('value', $returnUrl);
+            $form->appendChild($inputTypeHiddenLoginReturnUrl);
+        }
+
         $table = $dom->createElement('table');
         $table->setAttribute('class', 'navbar');
         $table->setAttribute('border', '0');
@@ -191,10 +265,34 @@ final class Login extends Website
             'username' => $loginUsername,
         ];
 
-        $redirectLocationUrlParams = [
-            'server' => $loginServer,
-        ];
-        header('Location: ./all_db.php?' . http_build_query($redirectLocationUrlParams));
+        // The browser tree still shows the server as logged out and without its databases.
+        Session::requestBrowserReload();
+
+        $returnUrl = RequestParameter::getString(self::RETURN_URL_PARAMETER);
+        header('Location: ' . self::buildUrlAfterLogin($loginServer, $returnUrl));
         exit;
+    }
+
+    /**
+     * The page the login leads back to. A legacy page shows the form in place (see libraries/lib.inc.php), so it is
+     * that page. The other pages lead to the form with it (see buildUrl()).
+     */
+    private static function getReturnUrl(): ?string
+    {
+        if (self::isShownByALegacyPage()) {
+            return self::buildReturnUrl();
+        }
+
+        return RequestParameter::getString(self::RETURN_URL_PARAMETER);
+    }
+
+    /**
+     * Whether a legacy page shows the form in place (see libraries/lib.inc.php), under its own script name.
+     */
+    private static function isShownByALegacyPage(): bool
+    {
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? null;
+
+        return is_string($scriptName) && basename($scriptName) !== 'login.php';
     }
 }

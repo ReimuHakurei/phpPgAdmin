@@ -59,23 +59,11 @@ final class ServerSession extends Server
                 continue;
             }
 
-            $sharedUsername = '';
-            $sharedPassword = '';
-
-            if (
-                isset($_SESSION['sharedUsername']) &&
-                is_string($_SESSION['sharedUsername']) &&
-                isset($_SESSION['sharedPassword']) &&
-                is_string($_SESSION['sharedPassword'])
-            ) {
-                $sharedUsername = $_SESSION['sharedUsername'];
-                $sharedPassword = $_SESSION['sharedPassword'];
-            }
-
+            $username = '';
+            $password = '';
             $platform = 'Unknown';
 
             if (
-                $sharedUsername === '' &&
                 isset($_SESSION['webdbLogin']) &&
                 is_array($_SESSION['webdbLogin']) &&
                 isset($_SESSION['webdbLogin'][$serverId]) &&
@@ -87,8 +75,8 @@ final class ServerSession extends Server
                     isset($_SESSION['webdbLogin'][$serverId]['password']) &&
                     is_string($_SESSION['webdbLogin'][$serverId]['password'])
                 ) {
-                    $sharedUsername = $_SESSION['webdbLogin'][$serverId]['username'];
-                    $sharedPassword = $_SESSION['webdbLogin'][$serverId]['password'];
+                    $username = $_SESSION['webdbLogin'][$serverId]['username'];
+                    $password = $_SESSION['webdbLogin'][$serverId]['password'];
                 }
 
                 if (
@@ -100,10 +88,10 @@ final class ServerSession extends Server
             }
 
             // The password may be empty, e.g. with trust authentication; loginIsAllowed() decided that at login.
-            if ($sharedUsername !== '') {
+            if ($username !== '') {
                 return new self(
-                    username: new Username($sharedUsername),
-                    password: new Password($sharedPassword),
+                    username: new Username($username),
+                    password: new Password($password),
                     name: new Name((string)$server->Name),
                     host: new Host((string)$server->Host),
                     port: new Port($server->Port->Value),

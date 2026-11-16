@@ -248,7 +248,7 @@ msgstr "Leere Zeichenkette / Leere Spalte"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Admin"
 
 msgid "strvacuum"
@@ -332,13 +332,13 @@ msgstr "OIDs"
 msgid "stradvanced"
 msgstr "Erweitert"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Variable"
 
 msgid "strprocess"
 msgstr "Prozess"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Prozesse"
 
 msgid "strsetting"
@@ -364,12 +364,6 @@ msgstr "Datei"
 
 msgid "strfileimported"
 msgstr "Datei importiert."
-
-msgid "strtrycred"
-msgstr "Diese Anmeldedaten für alle Server verwenden"
-
-msgid "strconfdropcred"
-msgstr "Aus Sicherheitsgründen werden gemeinsamme Anmeldedaten beim Abmelden gelöscht. Sind Sie sicher, dass sie sich abmelden wollen?"
 
 msgid "Actions on multiple lines"
 msgstr "Mehrzeilige Aktionen"
@@ -461,7 +455,7 @@ msgstr "Unzulässige Script-Parameter."
 msgid "strnodata"
 msgstr "Keine Datensätze gefunden."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Keine Objekte gefunden."
 
 msgid "strrownotunique"
@@ -1404,7 +1398,7 @@ msgid "stronupdate"
 msgstr "ON UPDATE"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Funktion"
 
 msgid "Functions"
@@ -1859,7 +1853,7 @@ msgid "stroperatordroppedbad"
 msgstr "Löschen des Operators fehlgeschlagen."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Typumwandlungen"
 
 msgid "strnocasts"
@@ -1894,13 +1888,13 @@ msgid "strtargetencoding"
 msgstr "Ziel-Zeichenkodierung"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Programmiersprachen"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Keine Sprachen gefunden."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Vertrauenswürdig"
 
 # Info
@@ -2157,7 +2151,7 @@ msgid "strvacuumcostlimit"
 msgstr "Autovacuum-Kostenlimits"
 
 # Table-level Locks
-msgid "strlocks"
+msgid "Locks"
 msgstr "Sperren"
 
 msgid "strtransaction"

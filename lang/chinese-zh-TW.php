@@ -131,7 +131,6 @@
     $lang['strstarttime'] = '啟動時間';
     $lang['strfile'] = '檔案';
     $lang['strfileimported'] = '檔案已匯入。';
-    $lang['strtrycred'] = '使用這些憑證給全部伺服器';
     $lang['stractionsonmultiplelines'] = '動作在多個行列上';
     $lang['strcheckall'] = '檢查全部';
     $lang['struncheckall'] = '不檢查全部';

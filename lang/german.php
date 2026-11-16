@@ -131,8 +131,6 @@
     $lang['strstarttime'] = 'Beginnzeitpunkt';
     $lang['strfile'] = 'Datei';
     $lang['strfileimported'] = 'Datei importiert.';
-    $lang['strtrycred'] = 'Diese Anmeldedaten für alle Server verwenden';
-    $lang['strconfdropcred']  = 'Aus Sicherheitsgründen werden gemeinsamme Anmeldedaten beim Abmelden gelöscht. Sind Sie sicher, dass sie sich abmelden wollen?';
     $lang['stractionsonmultiplelines'] = 'Mehrzeilige Aktionen';
     $lang['strselectall'] = 'Alle auswählen';
     $lang['strunselectall'] = 'Alle abwählen';

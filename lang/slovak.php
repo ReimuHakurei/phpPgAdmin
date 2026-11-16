@@ -130,7 +130,6 @@
     $lang['strstarttime'] = 'Čas štartu';
     $lang['strfile']  =  'Súbor';
     $lang['strfileimported']  =  'Súbor importovaný.';
-    $lang['strtrycred']  =  'Použiť tieto hodnoty pre všetky hodnoty';
 $lang['strexecute']  =  'Execute';
 
     // Error handling

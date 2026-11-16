@@ -260,7 +260,7 @@ msgstr "Üres szöveg/mező"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Gazda"
 
 msgid "strvacuum"
@@ -344,13 +344,13 @@ msgstr "OID-k"
 msgid "stradvanced"
 msgstr "Haladó"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Változók"
 
 msgid "strprocess"
 msgstr "Folyamat"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Folyamatok"
 
 msgid "strsetting"
@@ -376,12 +376,6 @@ msgstr "Fájl"
 
 msgid "strfileimported"
 msgstr "Fájl behozva."
-
-msgid "strtrycred"
-msgstr "Használja minden kiszolgálóhoz e beállításokat"
-
-msgid "strconfdropcred"
-msgstr "Biztonság okán a szétválás megszünteti a megosztott bejelentkező adatait. Biztosan szét akar válni?"
 
 msgid "Actions on multiple lines"
 msgstr "Több soros műveletek"
@@ -507,7 +501,7 @@ msgstr "Érvénytelen paraméterek."
 msgid "strnodata"
 msgstr "Nincsenek sorok."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Nincsenek objektumok."
 
 msgid "strrownotunique"
@@ -1504,7 +1498,7 @@ msgid "stronupdate"
 msgstr "VÁLTOZTATÁSKOR"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Függvény"
 
 msgid "Functions"
@@ -1959,7 +1953,7 @@ msgid "stroperatordroppedbad"
 msgstr "Nem sikerült törölni az operátort."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Kasztok"
 
 msgid "strnocasts"
@@ -1994,13 +1988,13 @@ msgid "strtargetencoding"
 msgstr "Célkódolás"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Nyelvek"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Nincsenek nyelvek."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Hiteles"
 
 # Info
@@ -2293,7 +2287,7 @@ msgid "strnotdefaultinred"
 msgstr "A nem alap értékek pirosak."
 
 # Table-level Locks
-msgid "strlocks"
+msgid "Locks"
 msgstr "Zárak"
 
 msgid "strtransaction"

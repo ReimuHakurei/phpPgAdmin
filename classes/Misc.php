@@ -1477,16 +1477,7 @@ class Misc
                     window.open($(this).attr('href'),'{$sql_window_id}','toolbar=no,width=700,height=500,resizable=yes,scrollbars=yes').focus();
                     return false;
                 });
-                ";
 
-            if (isset($_SESSION['sharedUsername'])) {
-                printf("
-                    $('#toplink_logout').on('click', function() {
-                        return confirm('%s');
-                    });", str_replace("'", "\'", $lang['strconfdropcred']));
-            }
-
-            echo "
 				</script>";
         } else {
             echo "<span class=\"appname\">{$appName}</span> <span class=\"version\">{$appVersion}</span>";
@@ -2535,7 +2526,7 @@ class Misc
      */
     public function getServerInfo($server_id = null)
     {
-        global $conf, $_reload_browser, $lang;
+        global $conf, $lang;
 
         if ($server_id === null && isset($_REQUEST['server'])) {
             $server_id = $_REQUEST['server'];
@@ -2549,14 +2540,6 @@ class Misc
         // Otherwise, look for it in the conf file
         foreach ($conf['servers'] as $idx => $info) {
             if ($server_id == $info['host'] . ':' . $info['port'] . ':' . $info['sslmode']) {
-                // Automatically use shared credentials if available
-                if (!isset($info['username']) && isset($_SESSION['sharedUsername'])) {
-                    $info['username'] = $_SESSION['sharedUsername'];
-                    $info['password'] = $_SESSION['sharedPassword'];
-                    $_reload_browser = true;
-                    $this->setServerInfo(null, $info, $server_id);
-                }
-
                 return $info;
             }
         }
@@ -2572,8 +2555,7 @@ class Misc
 
     /**
      * Set server information.
-     * @param $key string parameter name to set, or null to replace all
-     *             params with the assoc-array in $value.
+     * @param $key string parameter name to set
      * @param $value string the new value, or null to unset the parameter
      * @param $server_id string the server identifier, or null for current
      *                   server.
@@ -2584,18 +2566,10 @@ class Misc
             $server_id = $_REQUEST['server'];
         }
 
-        if ($key === null) {
-            if ($value === null) {
-                unset($_SESSION['webdbLogin'][$server_id]);
-            } else {
-                $_SESSION['webdbLogin'][$server_id] = $value;
-            }
+        if ($value === null) {
+            unset($_SESSION['webdbLogin'][$server_id][$key]);
         } else {
-            if ($value === null) {
-                unset($_SESSION['webdbLogin'][$server_id][$key]);
-            } else {
-                $_SESSION['webdbLogin'][$server_id][$key] = $value;
-            }
+            $_SESSION['webdbLogin'][$server_id][$key] = $value;
         }
     }
 

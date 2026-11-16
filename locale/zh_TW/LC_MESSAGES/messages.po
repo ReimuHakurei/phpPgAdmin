@@ -245,7 +245,7 @@ msgstr "空 字串/欄位"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "管理"
 
 msgid "strvacuum"
@@ -329,13 +329,13 @@ msgstr "OIDs"
 msgid "stradvanced"
 msgstr "進階"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "變數"
 
 msgid "strprocess"
 msgstr "進程"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "進程"
 
 msgid "strsetting"
@@ -361,9 +361,6 @@ msgstr "檔案"
 
 msgid "strfileimported"
 msgstr "檔案已匯入。"
-
-msgid "strtrycred"
-msgstr "使用這些憑證給全部伺服器"
 
 msgid "Actions on multiple lines"
 msgstr "動作在多個行列上"
@@ -452,7 +449,7 @@ msgstr "無效的稿本變數。"
 msgid "strnodata"
 msgstr "找不到資料列。"
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "找不到物件。"
 
 msgid "strrownotunique"
@@ -1380,7 +1377,7 @@ msgid "stronupdate"
 msgstr "ON UPDATE"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "函數"
 
 msgid "Functions"
@@ -1838,7 +1835,7 @@ msgid "stroperatordroppedbad"
 msgstr "運算子移除已失敗。"
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "類型轉換"
 
 msgid "strnocasts"
@@ -1873,13 +1870,13 @@ msgid "strtargetencoding"
 msgstr "目標編碼"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "程序語言"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "找不到任何程序語言。"
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "被信任的"
 
 # Info
@@ -2136,7 +2133,7 @@ msgid "strvacuumcostlimit"
 msgstr "Vacuum 成本限制"
 
 # Table-level Locks
-msgid "strlocks"
+msgid "Locks"
 msgstr "鎖定"
 
 msgid "strtransaction"

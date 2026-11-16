@@ -221,7 +221,7 @@ msgstr "SQL"
 msgid "strgo"
 msgstr "לך"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "מנהל"
 
 msgid "strvacuum"
@@ -311,13 +311,13 @@ msgstr "OIDs"
 msgid "stradvanced"
 msgstr "מתקדם"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "משתנים"
 
 msgid "strprocess"
 msgstr "תהליך"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "תהליכים"
 
 msgid "strsetting"
@@ -375,7 +375,7 @@ msgstr "ממדי תסריט שגוי."
 msgid "strnodata"
 msgstr "לא נמצאו שורות."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "לא נמצאו נתונים."
 
 msgid "strrownotunique"
@@ -1130,7 +1130,7 @@ msgid "stronupdate"
 msgstr "UPDATE ב"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "פונקציה"
 
 msgid "Functions"
@@ -1495,7 +1495,7 @@ msgid "stroperatordroppedbad"
 msgstr "מחיקת מפעיל נכשלה."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Casts"
 
 msgid "strnocasts"
@@ -1530,13 +1530,13 @@ msgid "strtargetencoding"
 msgstr "סוג הקידוד של המטרה"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "שפות"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "לא נמצאו שפות"
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Trusted"
 
 # Info

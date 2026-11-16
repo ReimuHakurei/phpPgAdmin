@@ -248,7 +248,7 @@ msgstr "Stringa vuota"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Amministratore"
 
 msgid "strvacuum"
@@ -338,13 +338,13 @@ msgstr "OIDs"
 msgid "stradvanced"
 msgstr "Avanzato"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Variabili"
 
 msgid "strprocess"
 msgstr "Processo"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Processi"
 
 msgid "strsetting"
@@ -370,9 +370,6 @@ msgstr "File"
 
 msgid "strfileimported"
 msgstr "File importato."
-
-msgid "strtrycred"
-msgstr "Usa queste credenziali per tutti i server"
 
 msgid "Actions on multiple lines"
 msgstr "Azioni su righe multiple"
@@ -436,7 +433,7 @@ msgstr "Parametri di script non validi."
 msgid "strnodata"
 msgstr "Nessuna riga trovata."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Nessun oggetto trovato."
 
 msgid "strrownotunique"
@@ -1319,7 +1316,7 @@ msgid "stronupdate"
 msgstr "ON UPDATE"
 
 # Functions - Funzioni
-msgid "strfunction"
+msgid "Function"
 msgstr "Funzione"
 
 msgid "Functions"
@@ -1693,7 +1690,7 @@ msgid "stroperatordroppedbad"
 msgstr "Eliminazione dell'operatore fallita."
 
 # Casts - Cast
-msgid "strcasts"
+msgid "Casts"
 msgstr "Cast"
 
 msgid "strnocasts"
@@ -1728,13 +1725,13 @@ msgid "strtargetencoding"
 msgstr "Codifica destinazione"
 
 # Languages - Linguaggi
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Linguaggi"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Nessun linguaggio trovato."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Trusted"
 
 # Info

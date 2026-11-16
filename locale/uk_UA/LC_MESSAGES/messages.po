@@ -221,7 +221,7 @@ msgstr "SQL"
 msgid "strgo"
 msgstr "Виконати"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Управління"
 
 msgid "strvacuum"
@@ -308,13 +308,13 @@ msgstr "OIDs"
 msgid "stradvanced"
 msgstr "Додатково"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Змінні"
 
 msgid "strprocess"
 msgstr "Процес"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Процеси"
 
 msgid "strsetting"
@@ -366,7 +366,7 @@ msgstr "Неправильний параметр скрипта."
 msgid "strnodata"
 msgstr "Даних не виявлено."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Об\"єктів не виявлено."
 
 msgid "strrownotunique"
@@ -1121,7 +1121,7 @@ msgid "stronupdate"
 msgstr "ON UPDATE"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Функція"
 
 msgid "Functions"
@@ -1450,7 +1450,7 @@ msgid "stroperatordroppedbad"
 msgstr "Видалення оператора перервано."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Взірці"
 
 msgid "strnocasts"
@@ -1485,13 +1485,13 @@ msgid "strtargetencoding"
 msgstr "Кодування приймача"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Мови"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Мов не виявлено."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Перевірено"
 
 # Info

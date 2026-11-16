@@ -134,8 +134,6 @@
     $lang['strstarttime'] = 'Kezdés ideje';
     $lang['strfile'] = 'Fájl';
     $lang['strfileimported'] = 'Fájl behozva.';
-    $lang['strtrycred']  =  'Használja minden kiszolgálóhoz e beállításokat';
-    $lang['strconfdropcred'] = 'Biztonság okán a szétválás megszünteti a megosztott bejelentkező adatait. Biztosan szét akar válni?';
     $lang['stractionsonmultiplelines']  =  'Több soros műveletek';
     $lang['strselectall']  =  'Mindent kiválaszt';
     $lang['strunselectall']  =  'Semmit sem választ ki';

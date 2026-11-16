@@ -257,7 +257,7 @@ msgstr "Пустая строка/поле"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Управление"
 
 msgid "strvacuum"
@@ -341,13 +341,13 @@ msgstr "OIDs"
 msgid "stradvanced"
 msgstr "Дополнительно"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Переменные"
 
 msgid "strprocess"
 msgstr "Процесс"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Процессы"
 
 msgid "strsetting"
@@ -373,12 +373,6 @@ msgstr "Файл"
 
 msgid "strfileimported"
 msgstr "Файл импортирован."
-
-msgid "strtrycred"
-msgstr "Использовать эти данные аутентификации для всех серверов"
-
-msgid "strconfdropcred"
-msgstr "В целях безопасности отключение уничтожит общую аутентификационную информацию. Вы действительно хотите отключится?"
 
 msgid "Actions on multiple lines"
 msgstr "Действия над несколькими строками."
@@ -504,7 +498,7 @@ msgstr "Неверный параметр скрипта."
 msgid "strnodata"
 msgstr "Данных не найдено."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Объектов не найдено."
 
 msgid "strrownotunique"
@@ -1492,7 +1486,7 @@ msgid "stronupdate"
 msgstr "при обновлении"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Функция"
 
 msgid "Functions"
@@ -1947,7 +1941,7 @@ msgid "stroperatordroppedbad"
 msgstr "Удаление оператора прервано."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Образцы"
 
 msgid "strnocasts"
@@ -1982,13 +1976,13 @@ msgid "strtargetencoding"
 msgstr "Кодировка приемника"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Языки"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Языков не найдено."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Проверено"
 
 # Info
@@ -2281,7 +2275,7 @@ msgid "strnotdefaultinred"
 msgstr "Значения, отличные от значений по умолчанию, отмечены красным цветом."
 
 # Table-level Locks
-msgid "strlocks"
+msgid "Locks"
 msgstr "Блокировки"
 
 msgid "strtransaction"

@@ -218,7 +218,7 @@ msgstr "Importeer"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Admin"
 
 msgid "strvacuum"
@@ -308,13 +308,13 @@ msgstr "OIDs"
 msgid "stradvanced"
 msgstr "Gevorderd"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Veranderlikes"
 
 msgid "strprocess"
 msgstr "Proses"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Prosesse"
 
 msgid "strsetting"
@@ -372,7 +372,7 @@ msgstr "Ongeldige parameters."
 msgid "strnodata"
 msgstr "Geen rye gevind."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Geen objekte gevind."
 
 msgid "strrownotunique"
@@ -1136,7 +1136,7 @@ msgid "stronupdate"
 msgstr "ON UPDATE"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Funksie"
 
 msgid "Functions"
@@ -1507,7 +1507,7 @@ msgid "stroperatordroppedbad"
 msgstr "Verwydering van die operator het misluk."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Ekwivalente"
 
 msgid "strnocasts"
@@ -1542,13 +1542,13 @@ msgid "strtargetencoding"
 msgstr "Doel-enkodering"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Tale"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Geen tale gevind."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Betroubaar"
 
 # Info

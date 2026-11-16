@@ -38,7 +38,11 @@ final class ServerSessionTest extends TestCase
         self::assertSame(' secret ', (string)$serverSession->Password);
     }
 
-    public function testFromServerIdAcceptsSharedCredentialsWithAnEmptyPassword(): void
+    /**
+     * Only the login of the server counts, like in isLoggedIn(). The legacy pages kept credentials for all servers in
+     * sharedUsername and sharedPassword, which no login sets any more.
+     */
+    public function testFromServerIdIgnoresCredentialsForAllServers(): void
     {
         $this->logIn('alice', 'secret');
         $_SESSION['sharedUsername'] = 'bob';
@@ -47,8 +51,17 @@ final class ServerSessionTest extends TestCase
         $serverSession = ServerSession::fromServerId($this->server->id(), [$this->server]);
 
         self::assertNotNull($serverSession);
-        self::assertSame('bob', (string)$serverSession->Username);
-        self::assertSame('', (string)$serverSession->Password);
+        self::assertSame('alice', (string)$serverSession->Username);
+        self::assertSame('secret', (string)$serverSession->Password);
+    }
+
+    public function testFromServerIdWithOnlyCredentialsForAllServersReturnsNull(): void
+    {
+        $_SESSION['sharedUsername'] = 'bob';
+        $_SESSION['sharedPassword'] = 'secret';
+
+        self::assertFalse(ServerSession::isLoggedIn($this->server->id()));
+        self::assertNull(ServerSession::fromServerId($this->server->id(), [$this->server]));
     }
 
     public function testFromServerIdWithoutUsernameReturnsNull(): void

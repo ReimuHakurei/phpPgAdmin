@@ -132,7 +132,6 @@
     $lang['strstarttime'] = 'Timp start';
     $lang['strfile'] = 'Fişier';
     $lang['strfileimported'] = 'Fişier importat';
-    $lang['strtrycred'] = 'Folosiţi aceste acreditări pentru toate serverele';
     $lang['strexecute'] = 'Executare';
 
     // Database sizes

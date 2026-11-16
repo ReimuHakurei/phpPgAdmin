@@ -245,7 +245,7 @@ msgstr "空の文字列/項目"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "管理"
 
 msgid "strvacuum"
@@ -329,13 +329,13 @@ msgstr "OID "
 msgid "stradvanced"
 msgstr "高度な"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "変数"
 
 msgid "strprocess"
 msgstr "プロセス"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "プロセス"
 
 msgid "strsetting"
@@ -361,9 +361,6 @@ msgstr "ファイル"
 
 msgid "strfileimported"
 msgstr "ファイルをインポートしました。"
-
-msgid "strtrycred"
-msgstr "すべてのサーバーでこの情報を使う"
 
 msgid "Actions on multiple lines"
 msgstr "複数行の操作"
@@ -452,7 +449,7 @@ msgstr "スクリプトパラメータが無効です。"
 msgid "strnodata"
 msgstr "レコードが見つかりません。"
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "オブジェクトが見つかりません。"
 
 msgid "strrownotunique"
@@ -1398,7 +1395,7 @@ msgid "stronupdate"
 msgstr "ON UPDATE"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "関数"
 
 msgid "Functions"
@@ -1856,7 +1853,7 @@ msgid "stroperatordroppedbad"
 msgstr "演算子の破棄に失敗しました。"
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "キャスト"
 
 msgid "strnocasts"
@@ -1891,13 +1888,13 @@ msgid "strtargetencoding"
 msgstr "変換先エンコード"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "言語"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "言語が存在しません。"
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Trusted"
 
 # Info
@@ -2154,7 +2151,7 @@ msgid "strvacuumcostlimit"
 msgstr "Vacuum Cost Limit"
 
 # Table-level Locks
-msgid "strlocks"
+msgid "Locks"
 msgstr "ロック"
 
 msgid "strtransaction"

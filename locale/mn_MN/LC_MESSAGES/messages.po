@@ -221,7 +221,7 @@ msgstr "SQL"
 msgid "strgo"
 msgstr "?вЧмЬжЬ??Ь"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "њЯШЩЯЮ ТСЪЧееЬСШ"
 
 msgid "strvacuum"
@@ -327,7 +327,7 @@ msgstr "юХзХвЮйЪ аСвСЭХдв гЫвЩадС."
 msgid "strnodata"
 msgstr "фСЮЮйШ ЮХ ЯТЮСвежХЮЯ."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "яТпХЫдЯз ЮХ ЯТЮСвежХЮЯ."
 
 msgid "strrownotunique"
@@ -1031,7 +1031,7 @@ msgid "stronupdate"
 msgstr "ON UPDATE"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "цеЮЫУЩб"
 
 msgid "Functions"
@@ -1354,7 +1354,7 @@ msgid "stroperatordroppedbad"
 msgstr "ѕФСЬХЮЩХ ЯаХвСдЯвС авХвзСЮЯ."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "яТвСкУй"
 
 msgid "strnocasts"
@@ -1389,13 +1389,13 @@ msgid "strtargetencoding"
 msgstr "ыЯФЩвЯзЫС авЩХЭЮЩЫС"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "ёкйЫЩ"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "ёкйЫЯз ЮХ ЯТЮСвежХЮЯ."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "№вЯзХвХЮЯ"
 
 # Info

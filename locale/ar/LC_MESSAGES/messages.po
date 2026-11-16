@@ -221,7 +221,7 @@ msgstr "SQL"
 msgid "strgo"
 msgstr "Go"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "إدارة Admin"
 
 msgid "strvacuum"
@@ -311,13 +311,13 @@ msgstr "OIDs"
 msgid "stradvanced"
 msgstr "Advanced"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Variables"
 
 msgid "strprocess"
 msgstr "العملية Process"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "العمليات Processes"
 
 msgid "strsetting"
@@ -372,7 +372,7 @@ msgstr "Invalid script parameters."
 msgid "strnodata"
 msgstr "لم توجد سجلات."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "لم توجد كائنات."
 
 msgid "strrownotunique"
@@ -1118,7 +1118,7 @@ msgid "stronupdate"
 msgstr "ON UPDATE"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "دالة Function"
 
 msgid "Functions"
@@ -1444,7 +1444,7 @@ msgid "stroperatordroppedbad"
 msgstr "Operator drop failed."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Casts"
 
 msgid "strnocasts"
@@ -1479,13 +1479,13 @@ msgid "strtargetencoding"
 msgstr "Target encoding"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Languages"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "No languages found."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Trusted"
 
 # Info

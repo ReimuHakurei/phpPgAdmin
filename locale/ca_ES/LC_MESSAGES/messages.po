@@ -260,7 +260,7 @@ msgstr "Cadena o camp buit"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Admin"
 
 msgid "strvacuum"
@@ -344,13 +344,13 @@ msgstr "OIDs"
 msgid "stradvanced"
 msgstr "Avançat"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Variables"
 
 msgid "strprocess"
 msgstr "Procés"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Processos"
 
 msgid "strsetting"
@@ -376,12 +376,6 @@ msgstr "Fitxer"
 
 msgid "strfileimported"
 msgstr "Fitxer importat."
-
-msgid "strtrycred"
-msgstr "Usa aquestes credencials a tots els servidors"
-
-msgid "strconfdropcred"
-msgstr "Per raons de seguretat, la desconnexió eliminarà la informació d'entrada compartida. Està segur de voler desconnectar ?"
 
 msgid "Actions on multiple lines"
 msgstr "Accions a múltiples línies"
@@ -507,7 +501,7 @@ msgstr "Paràmetres del script invàlids."
 msgid "strnodata"
 msgstr "No s'han trobat files."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "No s'han trobat objectes."
 
 msgid "strrownotunique"
@@ -1504,7 +1498,7 @@ msgid "stronupdate"
 msgstr "A L'ACTUALITZAR"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Funció"
 
 msgid "Functions"
@@ -1959,7 +1953,7 @@ msgid "stroperatordroppedbad"
 msgstr "No s'ha pogut eliminar l'operador."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Conversió de tipus"
 
 msgid "strnocasts"
@@ -1994,13 +1988,13 @@ msgid "strtargetencoding"
 msgstr "Codificació final"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Llenguatges"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "No s'han trobat llenguatges."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Fiable"
 
 # Info
@@ -2293,7 +2287,7 @@ msgid "strnotdefaultinred"
 msgstr "Els paràmetres no per defecte en vermell."
 
 # Table-level Locks
-msgid "strlocks"
+msgid "Locks"
 msgstr "Bloquejos"
 
 msgid "strtransaction"

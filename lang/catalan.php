@@ -134,8 +134,6 @@
     $lang['strstarttime'] = 'Hora d\'Inici';
     $lang['strfile'] = 'Fitxer';
     $lang['strfileimported'] = 'Fitxer importat.';
-    $lang['strtrycred'] = 'Usa aquestes credencials a tots els servidors';
-        $lang['strconfdropcred']  =  'Per raons de seguretat, la desconnexió eliminarà la informació d\'entrada compartida. Està segur de voler desconnectar ?';
     $lang['stractionsonmultiplelines'] = 'Accions a múltiples línies';
     $lang['strselectall'] = 'Seleccina\'ls tots';
     $lang['strunselectall'] = 'No en seleccionis cap';

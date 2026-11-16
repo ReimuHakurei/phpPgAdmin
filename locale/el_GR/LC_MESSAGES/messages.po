@@ -248,7 +248,7 @@ msgstr "κενή συμβολοσειρά/κενό πεδίο"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Διαχείριση"
 
 msgid "strvacuum"
@@ -329,13 +329,13 @@ msgstr "OIDs"
 msgid "stradvanced"
 msgstr "Προχωρημένα"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Μεταβλητές"
 
 msgid "strprocess"
 msgstr "Διεργασία"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Διεργασίες"
 
 msgid "strsetting"
@@ -361,9 +361,6 @@ msgstr "Αρχείο"
 
 msgid "strfileimported"
 msgstr "Αρχείο εισήχθη."
-
-msgid "strtrycred"
-msgstr "Χρήση αυτών των διαπιστευτηρίων για όλους τους διακομιστές"
 
 msgid "Execute"
 msgstr "Εκτέλεση"
@@ -421,7 +418,7 @@ msgstr "Λάθος παράμετροι."
 msgid "strnodata"
 msgstr "Δε βρέθηκαν γραμμές."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Δε βρέθηκαν αντικείμενα."
 
 msgid "strrownotunique"
@@ -1295,7 +1292,7 @@ msgid "stronupdate"
 msgstr "ΚΑΤΑ ΤΗΝ ΕΝΗΜΕΡΩΣΗ"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Συνάρτηση"
 
 msgid "Functions"
@@ -1717,7 +1714,7 @@ msgid "stroperatordroppedbad"
 msgstr "Η διαγραφή του τελεστή απέτυχε."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Μετατροπή τύπου"
 
 msgid "strnocasts"
@@ -1752,13 +1749,13 @@ msgid "strtargetencoding"
 msgstr "Κωδικοποίηση εξόδου"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Γλώσσες"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Δε βρέθηκαν γλώσσες."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Αξιόπιστη"
 
 # Info
@@ -2006,7 +2003,7 @@ msgid "strvacuumcostlimit"
 msgstr "Οριο κόστους εκκένωσης"
 
 # Table-level Locks
-msgid "strlocks"
+msgid "Locks"
 msgstr "Κλειδώματα"
 
 msgid "strtransaction"

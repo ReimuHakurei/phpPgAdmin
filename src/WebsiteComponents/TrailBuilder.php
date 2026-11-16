@@ -18,6 +18,7 @@ abstract class TrailBuilder
         $a = self::buildLinkFor($subject, $dom);
 
         $iconUrl = match ($subject) {
+            TrailSubject::Database => Config::getIcon('Database'),
             TrailSubject::Role => Config::getIcon('Roles'),
             TrailSubject::Server => Config::getIcon('Servers'),
             TrailSubject::Tablespace => Config::getIcon('Tablespaces'),
@@ -47,6 +48,7 @@ abstract class TrailBuilder
     {
         $serverId = RequestParameter::getString('server') ?? '';
         $helpUrlParam = match ($subject) {
+            TrailSubject::Database => 'pg.database',
             TrailSubject::Role => 'pg.role',
             TrailSubject::Server => 'pg.server',
             TrailSubject::Tablespace => 'pg.tablespace',
@@ -64,6 +66,10 @@ abstract class TrailBuilder
 
     private static function buildLabelTextFor(TrailSubject $subject): string
     {
+        if ($subject === TrailSubject::Database) {
+            return RequestParameter::getString('database') ?? '';
+        }
+
         if ($subject === TrailSubject::Server) {
             $serverId = RequestParameter::getString('server') ?? '';
             $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
@@ -97,6 +103,7 @@ abstract class TrailBuilder
     private static function buildLinkTitleFor(TrailSubject $subject): string
     {
         return match ($subject) {
+            TrailSubject::Database => _('Database'),
             TrailSubject::Role => _('Role'),
             TrailSubject::Server => _('Server'),
             TrailSubject::Tablespace => _('Tablespace'),
@@ -108,11 +115,18 @@ abstract class TrailBuilder
         $serverId = RequestParameter::getString('server') ?? '';
 
         $script = match ($subject) {
+            TrailSubject::Database => 'redirect.php',
             TrailSubject::Role => 'roles.php',
             TrailSubject::Server => 'all_db.php',
             TrailSubject::Tablespace => 'tablespaces.php',
         };
         $scriptParams = match ($subject) {
+            // Like the legacy Misc::getTrail(): redirect.php opens the database tab that was used last.
+            TrailSubject::Database => [
+                'database' => RequestParameter::getString('database') ?? '',
+                'server' => $serverId,
+                'subject' => 'database',
+            ],
             TrailSubject::Role => [
                 'action' => 'properties',
                 'rolename' => RequestParameter::getString('rolename') ?? '',

@@ -224,7 +224,7 @@ msgstr "SQL"
 msgid "strgo"
 msgstr "Udfør"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Admin"
 
 msgid "strvacuum"
@@ -314,13 +314,13 @@ msgstr "OID´er"
 msgid "stradvanced"
 msgstr "Avanceret"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Variable"
 
 msgid "strprocess"
 msgstr "Proces"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Processer"
 
 msgid "strsetting"
@@ -375,7 +375,7 @@ msgstr "Ugyldig scriptparam."
 msgid "strnodata"
 msgstr "Ingen rækker fundet."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Ingen objekter fundet."
 
 msgid "strrownotunique"
@@ -1136,7 +1136,7 @@ msgid "stronupdate"
 msgstr "VED OPDATERING"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Funktion"
 
 msgid "Functions"
@@ -1474,7 +1474,7 @@ msgid "stroperatordroppedbad"
 msgstr "Fjernelse af operator mislykkedes."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Typekonverteringer"
 
 msgid "strnocasts"
@@ -1509,13 +1509,13 @@ msgid "strtargetencoding"
 msgstr "Målkodning"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Sprog"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Der blev ikke fundet noget sprog."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Pålidelig(e)"
 
 # Info

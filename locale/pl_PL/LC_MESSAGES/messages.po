@@ -248,7 +248,7 @@ msgstr "Pusty ciąg znaków/pole"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Administruj"
 
 msgid "strvacuum"
@@ -341,13 +341,13 @@ msgstr "OIDy"
 msgid "stradvanced"
 msgstr "Zaawansowane"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Zmienne"
 
 msgid "strprocess"
 msgstr "Proces"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Procesy"
 
 msgid "strsetting"
@@ -373,9 +373,6 @@ msgstr "Plik"
 
 msgid "strfileimported"
 msgstr "Plik został zaimportowany."
-
-msgid "strtrycred"
-msgstr "Użyj tych parametrów dla wszystkich serwerów"
 
 msgid "Execute"
 msgstr "Wykonaj"
@@ -433,7 +430,7 @@ msgstr "Błędny parametr."
 msgid "strnodata"
 msgstr "Nie znaleziono danych."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Nie znaleziono obiektów."
 
 msgid "strrownotunique"
@@ -1283,7 +1280,7 @@ msgid "stronupdate"
 msgstr "ON UPDATE"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Funkcja"
 
 msgid "Functions"
@@ -1711,7 +1708,7 @@ msgid "stroperatordroppedbad"
 msgstr "Próba usunięcia operatora się nie powiodła."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Rzutowania"
 
 msgid "strnocasts"
@@ -1746,13 +1743,13 @@ msgid "strtargetencoding"
 msgstr "Kodowanie docelowe"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Języki"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Nie znaleziono języków."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Zaufany"
 
 # Info
@@ -2003,7 +2000,7 @@ msgid "strvacuumcostlimit"
 msgstr "Limit kosztu czyszczenia"
 
 # Table-level Locks
-msgid "strlocks"
+msgid "Locks"
 msgstr "Blokady"
 
 msgid "strtransaction"

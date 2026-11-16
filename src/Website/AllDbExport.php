@@ -11,9 +11,10 @@ final class AllDbExport extends Website
 {
     public function __construct()
     {
-        $this->title = _('Databases');
-
         parent::__construct();
+
+        // After the parent constructor, which sets the locale for the translation.
+        $this->title = _('Databases');
     }
 
     protected function buildHtmlBody(\DOMDocument $dom): \DOMElement

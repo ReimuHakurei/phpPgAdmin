@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace PhpPgAdmin;
 
+use Locr\Lib\HTTP\StatusCode;
+use PhpPgAdmin\DDD\Entities\ServerSession;
+use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+
 abstract class Website
 {
     public const APP_NAME = 'phpPgAdmin';
@@ -32,6 +36,12 @@ abstract class Website
 
         Language::setLocale(Config::locale());
         bindtextdomain('messages', dirname(__DIR__) . DIRECTORY_SEPARATOR . 'locale');
+
+        // After the session is started, which holds the logins. Before the constructors of the pages go on, which
+        // handle the posted forms.
+        if (static::requiresServerLogin()) {
+            self::redirectToLoginUnlessLoggedIn();
+        }
     }
 
     public function buildHtmlDocument(): \DOMDocument
@@ -45,7 +55,15 @@ abstract class Website
         $root = $dom->createElement('html');
         $root->setAttribute('lang', str_replace('_', '-', Config::locale()));
         $root->appendChild($this->buildHtmlHead($dom));
-        $root->appendChild($this->buildHtmlBody($dom));
+
+        $body = $this->buildHtmlBody($dom);
+
+        // At the end of the page, like the legacy Misc::printFooter().
+        if (Session::consumeBrowserReloadRequest()) {
+            $body->appendChild(WebsiteComponents::buildBrowserReloadScript($dom));
+        }
+
+        $root->appendChild($body);
         $dom->appendChild($root);
 
         return $dom;
@@ -56,6 +74,15 @@ abstract class Website
         $dom = $this->buildHtmlDocument();
 
         return $dom->saveHTML() ?: '';
+    }
+
+    /**
+     * Whether the page is only shown while one is logged in to the server of the request. Like the legacy pages, which
+     * need a login unless they set $_no_db_connection (see libraries/lib.inc.php).
+     */
+    public static function requiresServerLogin(): bool
+    {
+        return true;
     }
 
     protected function buildHtmlBody(\DOMDocument $dom): \DOMElement
@@ -197,5 +224,23 @@ abstract class Website
         $table->appendChild($tBody);
 
         return $table;
+    }
+
+    /**
+     * The legacy pages show the login form in place. Here a page leads to it, like the browser tree does (see
+     * Website\Redirect): showing it in place would need a second page, which would start the session again.
+     */
+    private static function redirectToLoginUnlessLoggedIn(): void
+    {
+        $serverId = RequestParameter::getString('server') ?? '';
+
+        if ($serverId === '') {
+            throw new \InvalidArgumentException('Missing required parameter: server', StatusCode::BadRequest->value);
+        }
+
+        if (!ServerSession::isLoggedIn($serverId)) {
+            header('Location: ' . Website\Login::buildUrl($serverId, Website\Login::buildReturnUrl()));
+            exit;
+        }
     }
 }

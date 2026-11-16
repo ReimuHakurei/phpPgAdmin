@@ -221,7 +221,7 @@ msgstr "SQL"
 msgid "strgo"
 msgstr "Kör"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Admin"
 
 msgid "strvacuum"
@@ -305,13 +305,13 @@ msgstr "OIDs"
 msgid "stradvanced"
 msgstr "Avancerat"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Variabler"
 
 msgid "strprocess"
 msgstr "Process"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Processer"
 
 msgid "strsetting"
@@ -345,7 +345,7 @@ msgstr "Otillåtna scriptparametrar."
 msgid "strnodata"
 msgstr "Hittade inga rader."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Hittade inga objekt."
 
 msgid "strrownotunique"
@@ -1073,7 +1073,7 @@ msgid "stronupdate"
 msgstr "VID UPPDATERING"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Funktion"
 
 msgid "Functions"
@@ -1401,7 +1401,7 @@ msgid "stroperatordroppedbad"
 msgstr "Misslyckades att radera operand."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Typomvandlingar"
 
 msgid "strnocasts"
@@ -1436,13 +1436,13 @@ msgid "strtargetencoding"
 msgstr "Målkodning"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Språk"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Hittade inga språk."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Pålitlig(a)"
 
 # Info

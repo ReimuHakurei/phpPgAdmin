@@ -19,5 +19,5 @@
         '@default': true,
     },
     // The current value, so it can only go up: raise it whenever tests kill more mutants.
-    minCoveredMsi: 74,
+    minCoveredMsi: 85,
 }

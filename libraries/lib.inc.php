@@ -29,10 +29,16 @@ if (version_compare(phpversion(), $phpMinVer, '<')) {
     exit(sprintf('Version of PHP not supported. Please upgrade to version %s or later.', $phpMinVer));
 }
 
-// Check to see if the configuration file exists, if not, explain
-if (file_exists('conf/config.inc.php')) {
+// Check to see if the configuration file exists, if not, explain. PHPPGADMIN_CONFIG_INC_PHP_FILE names another file
+// in conf/ instead, like PHPPGADMIN_CONFIG_YAML_FILE does for the YAML configuration (used by the tests).
+$configIncPhpFile = getenv('PHPPGADMIN_CONFIG_INC_PHP_FILE');
+$configIncPhp = 'conf/' . (is_string($configIncPhpFile) && $configIncPhpFile !== '' ? $configIncPhpFile : 'config.inc.php');
+
+if (file_exists($configIncPhp)) {
     $conf = array();
-    include './conf/config.inc.php';
+    // A plain include on purpose (Sonar php:S2003): the file only fills $conf. include_once would skip it if it was
+    // already loaded before, and $conf would stay empty.
+    include './' . $configIncPhp; // NOSONAR
 } else {
     echo 'Configuration error: Copy conf/config.inc.php-dist to conf/config.inc.php and edit appropriately.';
     exit;
@@ -92,27 +98,6 @@ $misc->setForm();
 
 // Enforce PHP environment
 ini_set('arg_separator.output', '&amp;');
-
-// If login action is set, then set session variables
-if (
-    isset($_POST['loginServer']) && isset($_POST['loginUsername']) &&
-    isset($_POST['loginPassword_' . md5($_POST['loginServer'])])
-) {
-    $_server_info = $misc->getServerInfo($_POST['loginServer']);
-
-    $_server_info['username'] = $_POST['loginUsername'];
-    $_server_info['password'] = $_POST['loginPassword_' . md5($_POST['loginServer'])];
-
-    $misc->setServerInfo(null, $_server_info, $_POST['loginServer']);
-
-    // Check for shared credentials
-    if (isset($_POST['loginShared'])) {
-        $_SESSION['sharedUsername'] = $_POST['loginUsername'];
-        $_SESSION['sharedPassword'] = $_POST['loginPassword_' . md5($_POST['loginServer'])];
-    }
-
-    $_reload_browser = true;
-}
 
 /* select the theme */
 unset($_theme);

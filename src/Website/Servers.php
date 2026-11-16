@@ -15,6 +15,14 @@ final class Servers extends Website
         $this->title = _('Servers');
     }
 
+    /**
+     * The list of all servers, also the ones one is not logged in to.
+     */
+    public static function requiresServerLogin(): bool
+    {
+        return false;
+    }
+
     protected function buildHtmlBody(\DOMDocument $dom): \DOMElement
     {
         $body = parent::buildHtmlBody($dom);

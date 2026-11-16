@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PhpPgAdmin\Website;
 
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
-use PhpPgAdmin\Website;
+use PhpPgAdmin\{Website, WebsiteComponents};
 
 final class ServerLogout extends Website
 {
@@ -25,14 +25,18 @@ final class ServerLogout extends Website
         }
     }
 
+    /**
+     * The logout, which has its own parameter for the server (like the legacy servers.php?action=logout).
+     */
+    public static function requiresServerLogin(): bool
+    {
+        return false;
+    }
+
     protected function buildHtmlBody(\DOMDocument $dom): \DOMElement
     {
         $body = $dom->createElement('body');
-
-        $scriptElement = $dom->createElement('script');
-        $scriptElement->setAttribute('type', 'text/javascript');
-        $scriptElement->appendChild($dom->createCDATASection('parent.frames.browser.location.reload();'));
-        $body->appendChild($scriptElement);
+        $body->appendChild(WebsiteComponents::buildBrowserReloadScript($dom));
 
         return $body;
     }

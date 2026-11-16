@@ -294,7 +294,8 @@ msgstr "Empty string/field"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+# original: "stradmin"
+msgid "Admin"
 msgstr "Admin"
 
 msgid "strvacuum"
@@ -385,13 +386,15 @@ msgstr "OIDs"
 msgid "stradvanced"
 msgstr "Advanced"
 
-msgid "strvariables"
+# original: "strvariables"
+msgid "Variables"
 msgstr "Variables"
 
 msgid "strprocess"
 msgstr "Process"
 
-msgid "strprocesses"
+# original: "strprocesses"
+msgid "Processes"
 msgstr "Processes"
 
 msgid "strblocked"
@@ -422,12 +425,6 @@ msgstr "File"
 
 msgid "strfileimported"
 msgstr "File imported."
-
-msgid "strtrycred"
-msgstr "Use these credentials for all servers"
-
-msgid "strconfdropcred"
-msgstr "For security reason, disconnecting will destroy your shared login information. Are you sure you want to disconnect ?"
 
 # original: "stractionsonmultiplelines"
 msgid "Actions on multiple lines"
@@ -578,7 +575,8 @@ msgstr "Invalid script parameters."
 msgid "strnodata"
 msgstr "No rows found."
 
-msgid "strnoobjects"
+# original: "strnoobjects"
+msgid "No objects found."
 msgstr "No objects found."
 
 msgid "strrownotunique"
@@ -1632,7 +1630,8 @@ msgid "stronupdate"
 msgstr "ON UPDATE"
 
 # Functions
-msgid "strfunction"
+# original: "strfunction"
+msgid "Function"
 msgstr "Function"
 
 # original: "strfunctions"
@@ -2093,7 +2092,8 @@ msgid "stroperatordroppedbad"
 msgstr "Operator drop failed."
 
 # Casts
-msgid "strcasts"
+# original: "strcasts"
+msgid "Casts"
 msgstr "Casts"
 
 msgid "strnocasts"
@@ -2128,13 +2128,16 @@ msgid "strtargetencoding"
 msgstr "Target encoding"
 
 # Languages
-msgid "strlanguages"
+# original: "strlanguages"
+msgid "Languages"
 msgstr "Languages"
 
-msgid "strnolanguages"
+# original: "strnolanguages"
+msgid "No languages found."
 msgstr "No languages found."
 
-msgid "strtrusted"
+# original: "strtrusted"
+msgid "Trusted"
 msgstr "Trusted"
 
 # Info
@@ -2449,7 +2452,8 @@ msgid "strnotdefaultinred"
 msgstr "Not default values are in red."
 
 # Table-level Locks
-msgid "strlocks"
+# original: "strlocks"
+msgid "Locks"
 msgstr "Locks"
 
 msgid "strtransaction"

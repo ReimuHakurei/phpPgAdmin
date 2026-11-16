@@ -12,11 +12,12 @@ final class AllDb extends Website
 {
     public function __construct()
     {
-        $this->title = _('Databases');
         $this->scripts['multiactionform'] = ['src' => 'multiactionform.js'];
-        $this->scripts['all_db'] = ['src' => 'js/all_db.js'];
 
         parent::__construct();
+
+        // After the parent constructor, which sets the locale for the translation.
+        $this->title = _('Databases');
     }
 
     protected function buildHtmlBody(\DOMDocument $dom): \DOMElement

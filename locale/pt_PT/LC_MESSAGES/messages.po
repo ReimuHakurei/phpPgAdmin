@@ -205,7 +205,7 @@ msgstr "Ir"
 msgid "strimport"
 msgstr "Importar"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Administrador"
 
 msgid "strvacuum"
@@ -916,7 +916,7 @@ msgid "stronupdate"
 msgstr "ALTERAR ACTIVO"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Função"
 
 msgid "Functions"
@@ -1184,13 +1184,13 @@ msgstr "OIDs"
 msgid "stradvanced"
 msgstr "Avançado"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Variáveis"
 
 msgid "strprocess"
 msgstr "Processo"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Processos"
 
 msgid "strsetting"
@@ -1223,7 +1223,7 @@ msgstr "Versão do PHP não é suportada. Por favor actualize para a versão %s 
 msgid "strpostgresqlversionnotsupported"
 msgstr "Versão do PostgreSQL não é suportada. Por favor actualize para a versão %s ou superior."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Não foram escontrados objectos."
 
 msgid "strrownotunique"
@@ -1529,7 +1529,7 @@ msgstr "Operador eliminado."
 msgid "stroperatordroppedbad"
 msgstr "Falha ao eliminar o operador."
 
-msgid "strcasts"
+msgid "Casts"
 msgstr "Molde"
 
 msgid "strnocasts"
@@ -1562,13 +1562,13 @@ msgstr "Codificação da fonte"
 msgid "strtargetencoding"
 msgstr "Codificação do alvo"
 
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Línguas"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Não foram encontradas línguas."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Confiado"
 
 msgid "strnoinfo"

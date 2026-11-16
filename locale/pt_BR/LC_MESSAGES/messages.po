@@ -260,7 +260,7 @@ msgstr "Texto/campo vazio"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Administração"
 
 msgid "strvacuum"
@@ -344,13 +344,13 @@ msgstr "OIDs"
 msgid "stradvanced"
 msgstr "Avançado"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Variáveis"
 
 msgid "strprocess"
 msgstr "Processo"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Processos"
 
 msgid "strsetting"
@@ -376,12 +376,6 @@ msgstr "Arquivo"
 
 msgid "strfileimported"
 msgstr "Arquivo importado."
-
-msgid "strtrycred"
-msgstr "Utilizar estas credenciais para todos os servidores"
-
-msgid "strconfdropcred"
-msgstr "Por motivos de segurança, a desconexão irá destruir suas informações de login compartilhado. Tem certeza que deseja se desconectar?"
 
 msgid "Actions on multiple lines"
 msgstr "Ações sobre múltiplas linhas"
@@ -504,7 +498,7 @@ msgstr "Parâmetros de script inválidos."
 msgid "strnodata"
 msgstr "Nenhuma linha encontrada."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Nenhum objeto encontrado."
 
 msgid "strrownotunique"
@@ -1507,7 +1501,7 @@ msgid "stronupdate"
 msgstr "ON UPDATE"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Função"
 
 msgid "Functions"
@@ -1962,7 +1956,7 @@ msgid "stroperatordroppedbad"
 msgstr "Falha ao deletar o operador."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Moldes"
 
 msgid "strnocasts"
@@ -1997,13 +1991,13 @@ msgid "strtargetencoding"
 msgstr "Codificação alvo"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Linguagens"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Nenhuma linguagem encontrada."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Confiado"
 
 # Info
@@ -2296,7 +2290,7 @@ msgid "strnotdefaultinred"
 msgstr "Valores não padrão estão em vermelho."
 
 # Table-level Locks
-msgid "strlocks"
+msgid "Locks"
 msgstr "Travas"
 
 msgid "strtransaction"

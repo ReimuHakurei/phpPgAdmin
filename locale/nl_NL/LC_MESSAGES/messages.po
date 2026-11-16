@@ -89,7 +89,7 @@ msgstr "Sequence"
 msgid "Sequences"
 msgstr "Sequences"
 
-msgid "strfunction"
+msgid "Function"
 msgstr "Functie"
 
 msgid "Functions"
@@ -512,7 +512,7 @@ msgstr "SQL"
 msgid "strgo"
 msgstr "Go"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Admin"
 
 msgid "strvacuum"

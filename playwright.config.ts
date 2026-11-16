@@ -46,6 +46,7 @@ export default defineConfig({
     url: baseURL,
     env: {
       PHPPGADMIN_CONFIG_YAML_FILE: 'config-test.yml',
+      PHPPGADMIN_CONFIG_INC_PHP_FILE: 'config-test.inc.php',
     },
     /* Never reuse a running server: it would not have the test configuration. */
     reuseExistingServer: false,

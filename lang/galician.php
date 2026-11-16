@@ -145,8 +145,6 @@
     $lang['strstarttime'] = 'Hora de inicio';
     $lang['strfile'] = 'Ficheiro';
     $lang['strfileimported'] = 'Importouse o ficheiro.';
-    $lang['strtrycred'] = 'Utilizar estas credenciais para todos os servidores';
-    $lang['strconfdropcred'] = 'Por motivos de seguridade, ao desconectarse destruirase a información compartida sobre a súa identidade. Está seguro de que quere desconectarse?';
     $lang['stractionsonmultiplelines'] = 'Accións en varias liñas';
     $lang['strselectall'] = 'Marcar todo';
     $lang['strunselectall'] = 'Desmarcar todo';

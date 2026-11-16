@@ -91,6 +91,15 @@ Don't forget to make sure your changes still pass the existing test suites
 (PHPUnit: composer dev:test, Playwright: npm run test:e2e). Additionally, you
 should add or update the tests as needed to cover your new features.
 
+To try your changes in the browser, run composer dev:serve and open
+http://127.0.0.1:9876. It starts the PHP built-in server with the same
+configuration the Playwright tests use (conf/config-test.yml for the new pages,
+conf/config-test.inc.php for the legacy ones, database settings from .env, see
+.env.sample). Your own conf/config.yml and conf/config.inc.php are neither read
+nor changed. Stop it before running npm run test:e2e, which needs the same
+port. Some Playwright tests check a page in French, so on Linux the locale
+fr_FR.UTF-8 has to be installed (e.g. sudo locale-gen fr_FR.UTF-8).
+
 To see whether the tests actually check the code they cover, run the mutation
 tests (Infection: composer dev:test:mutation). They change the code in src/ in
 small ways and report every change no test notices; the HTML report ends up in

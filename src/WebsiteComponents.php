@@ -22,6 +22,89 @@ abstract class WebsiteComponents
         return $a;
     }
 
+    /**
+     * Reloads the browser tree, like the legacy Misc::printReload(false).
+     */
+    public static function buildBrowserReloadScript(\DOMDocument $dom): \DOMElement
+    {
+        $script = $dom->createElement('script');
+        $script->setAttribute('type', 'text/javascript');
+        $script->appendChild($dom->createCDATASection('parent.frames.browser.location.reload();'));
+
+        return $script;
+    }
+
+    /**
+     * The tabs of the pages about one database, as in the legacy Misc::getNavTabs('database').
+     *
+     * @param string $activeTab 'schemas'|'sql'|'find'|'variables'|'processes'|'locks'|'admin'|'privileges'|
+     *                          'languages'|'casts'|'export'
+     * @param ?bool $showAdvanced Whether to show the Languages and Casts tabs; show_advanced by default.
+     */
+    public static function buildDatabaseTabs(
+        \DOMDocument $dom,
+        string $serverId,
+        string $database,
+        string $activeTab,
+        ?bool $showAdvanced = null,
+    ): \DOMElement {
+        // redirect.php?subject=database opens the tab that was used last.
+        $lastTabs = isset($_SESSION['webdbLastTab']) && is_array($_SESSION['webdbLastTab'])
+            ? $_SESSION['webdbLastTab']
+            : [];
+        $lastTabs['database'] = $activeTab;
+        $_SESSION['webdbLastTab'] = $lastTabs;
+
+        $urlParams = [
+            'database' => $database,
+            'server' => $serverId,
+            'subject' => 'database',
+        ];
+        // Id, label, icon, URL, help page and additional URL parameters. A list of literal arrays instead of a closure:
+        // PHPStan ignores the PHPDoc of closures, but infers the exact types of literal arrays.
+        $tabs = [
+            ['schemas', _('Schemas'), 'Schemas', 'schemas.php', 'pg.schema', []],
+            ['sql', _('SQL'), 'SqlEditor', 'database.php', 'pg.sql', ['action' => 'sql', 'new' => '1']],
+            ['find', _('Find'), 'Search', 'database.php', null, ['action' => 'find']],
+            ['variables', _('Variables'), 'Variables', 'database.php', 'pg.variable', ['action' => 'variables']],
+            ['processes', _('Processes'), 'Processes', 'database.php', 'pg.process', ['action' => 'processes']],
+            ['locks', _('Locks'), 'Key', 'database.php', 'pg.locks', ['action' => 'locks']],
+            ['admin', _('Admin'), 'Admin', 'database.php', null, ['action' => 'admin']],
+            ['privileges', _('Privileges'), 'Privileges', 'privileges.php', 'pg.privilege', []],
+        ];
+
+        if ($showAdvanced ?? Config::showAdvanced()) {
+            $tabs[] = ['languages', _('Languages'), 'Languages', 'languages.php', 'pg.language', []];
+            $tabs[] = ['casts', _('Casts'), 'Casts', 'casts.php', 'pg.cast', []];
+        }
+
+        $tabs[] = ['export', _('Export'), 'Export', 'database.php', null, ['action' => 'export']];
+
+        $tabLinks = [];
+
+        foreach ($tabs as [$id, $label, $icon, $url, $help, $additionalUrlParams]) {
+            $tabLinks[] = [
+                'help' => is_null($help)
+                    ? null
+                    : [
+                        'url' => 'help.php',
+                        'url-params' => [
+                            'help' => $help,
+                            'server' => $serverId,
+                        ],
+                    ],
+                'icon' => $icon,
+                'id' => $id,
+                'label' => $label,
+                'url' => $url,
+                'url-params' => array_merge($urlParams, $additionalUrlParams),
+            ];
+        }
+
+        // Rounded down like the legacy Misc::printTabs().
+        return self::buildTabs($dom, $tabLinks, $activeTab, intdiv(100, count($tabLinks)) . '%');
+    }
+
     public static function buildDatabasesTable(\DOMDocument $dom, ?ServerSession $serverSession): \DOMElement
     {
         $dbConnection = PhpPgAdminConnection::createFromServerSession($serverSession);
@@ -346,7 +429,7 @@ abstract class WebsiteComponents
                 'help' => [
                     'url' => 'help.php',
                     'url-params' => [
-                        'help' => 'pg.role',
+                        'help' => 'pg.database',
                         'server' => $serverId,
                     ],
                 ],
@@ -404,56 +487,7 @@ abstract class WebsiteComponents
             ],
         ];
 
-        $table = $dom->createElement('table');
-        $table->setAttribute('class', 'tabs');
-
-        $tBody = $dom->createElement('tbody');
-        $tr = $dom->createElement('tr');
-
-        foreach ($tabLinks as $tabLink) {
-            $td = $dom->createElement('td');
-            $tdClass = 'tab';
-
-            if ($tabLink['id'] === $activeTab) {
-                $tdClass .= ' active';
-            }
-
-            $td->setAttribute('class', $tdClass);
-            $td->setAttribute('style', 'width: 20%');
-
-            $href = $tabLink['url'] . '?' . http_build_query($tabLink['url-params']);
-
-            $a = $dom->createElement('a');
-            $a->setAttribute('href', $href);
-            $spanIcon = $dom->createElement('span');
-            $spanIcon->setAttribute('class', 'icon');
-            $imgIcon = $dom->createElement('img');
-            $imgIcon->setAttribute('src', Config::getIcon($tabLink['icon']));
-            $imgIcon->setAttribute('alt', $tabLink['label']);
-            $spanIcon->appendChild($imgIcon);
-            $spanLabel = $dom->createElement('span', $tabLink['label']);
-            $spanLabel->setAttribute('class', 'label');
-            $a->appendChild($spanIcon);
-            $a->appendChild($spanLabel);
-            $td->appendChild($a);
-
-            if (isset($tabLink['help'])) {
-                $aHelp = self::buildHelpLink(
-                    dom: $dom,
-                    url: $tabLink['help']['url'],
-                    urlParams: $tabLink['help']['url-params'],
-                );
-                $td->appendChild($aHelp);
-            }
-
-            $tr->appendChild($td);
-        }
-
-        $tBody->appendChild($tr);
-
-        $table->appendChild($tBody);
-
-        return $table;
+        return self::buildTabs($dom, $tabLinks, $activeTab, '20%');
     }
 
     /**
@@ -718,7 +752,10 @@ abstract class WebsiteComponents
         return $tr;
     }
 
-    public static function buildTopBar(\DOMDocument $dom): \DOMElement
+    /**
+     * @param ?string $database The database of the page, which the SQL, History and Find links lead to.
+     */
+    public static function buildTopBar(\DOMDocument $dom, ?string $database = null): \DOMElement
     {
         $divWrapper = $dom->createElement('div');
 
@@ -764,7 +801,7 @@ abstract class WebsiteComponents
             $tdTopbar->appendChild($fragment);
             $trTopbar->appendChild($tdTopbar);
 
-            $trTopbar->appendChild(self::buildTopBarLinks($dom, $serverSession));
+            $trTopbar->appendChild(self::buildTopBarLinks($dom, $serverSession, $database));
         } else {
             $tdTopbar = $dom->createElement('td');
             $spanAppname = $dom->createElement('span', Website::APP_NAME);
@@ -826,42 +863,115 @@ abstract class WebsiteComponents
         return $divTrail;
     }
 
-    private static function buildTopBarLinks(\DOMDocument $dom, ServerSession $serverSession): \DOMElement
+    /**
+     * @param array<array{
+     *  'help'?: array{'url': string, 'url-params': array<string, string>}|null,
+     *  'icon': string,
+     *  'id': string,
+     *  'label': string,
+     *  'url': string,
+     *  'url-params': array<string, string>,
+     * }> $tabLinks
+     */
+    private static function buildTabs(\DOMDocument $dom, array $tabLinks, string $activeTab, string $width): \DOMElement
     {
+        $table = $dom->createElement('table');
+        $table->setAttribute('class', 'tabs');
+
+        $tBody = $dom->createElement('tbody');
+        $tr = $dom->createElement('tr');
+
+        foreach ($tabLinks as $tabLink) {
+            $td = $dom->createElement('td');
+            $tdClass = 'tab';
+
+            if ($tabLink['id'] === $activeTab) {
+                $tdClass .= ' active';
+            }
+
+            $td->setAttribute('class', $tdClass);
+            $td->setAttribute('style', "width: {$width}");
+
+            $href = $tabLink['url'] . '?' . http_build_query($tabLink['url-params']);
+
+            $a = $dom->createElement('a');
+            $a->setAttribute('href', $href);
+            $spanIcon = $dom->createElement('span');
+            $spanIcon->setAttribute('class', 'icon');
+            $imgIcon = $dom->createElement('img');
+            $imgIcon->setAttribute('src', Config::getIcon($tabLink['icon']));
+            $imgIcon->setAttribute('alt', $tabLink['label']);
+            $spanIcon->appendChild($imgIcon);
+            $spanLabel = $dom->createElement('span', $tabLink['label']);
+            $spanLabel->setAttribute('class', 'label');
+            $a->appendChild($spanIcon);
+            $a->appendChild($spanLabel);
+            $td->appendChild($a);
+
+            if (isset($tabLink['help'])) {
+                $aHelp = self::buildHelpLink(
+                    dom: $dom,
+                    url: $tabLink['help']['url'],
+                    urlParams: $tabLink['help']['url-params'],
+                );
+                $td->appendChild($aHelp);
+            }
+
+            $tr->appendChild($td);
+        }
+
+        $tBody->appendChild($tr);
+
+        $table->appendChild($tBody);
+
+        return $table;
+    }
+
+    private static function buildTopBarLinks(
+        \DOMDocument $dom,
+        ServerSession $serverSession,
+        ?string $database,
+    ): \DOMElement {
         $tableCell = $dom->createElement('td');
         $tableCell->setAttribute('style', 'text-align: right;');
 
         $ulTopLinks = $dom->createElement('ul');
         $ulTopLinks->setAttribute('class', 'toplink');
 
+        // Like the legacy Misc::getRequestVars('table'), which the links of Misc::printTopbar() take.
+        $requestParams = [
+            'server' => $serverSession->id(),
+            'subject' => 'table',
+        ];
+
+        if (!is_null($database)) {
+            $requestParams['database'] = $database;
+        }
+
+        // The windows js/topbar.js opens the links in, named after the server like in the legacy Misc::printTopbar(),
+        // so that the links of another server open in another window. The SQL and the Find link share one.
+        $sqlWindow = 'sqledit:' . $serverSession->id();
+
         $topLinks = [];
         $topLinks['sql'] = [
             'target' => 'sqledit',
             'text' => _('SQL'),
             'url' => 'sqledit.php',
-            'url-params' => [
-                'action' => 'sql',
-                'server' => $serverSession->id(),
-                'subject' => 'table',
-            ],
+            'url-params' => array_merge($requestParams, ['action' => 'sql']),
+            'window' => $sqlWindow,
         ];
         $topLinks['history'] = [
             'text' => _('History'),
             'url' => 'history.php',
-            'url-params' => [
-                'server' => $serverSession->id(),
-                'subject' => 'table',
-            ],
+            'url-params' => $requestParams,
+            'window' => 'history:' . $serverSession->id(),
         ];
         $topLinks['find'] = [
             'target' => 'sqledit',
             'text' => _('Find'),
             'url' => 'sqledit.php',
-            'url-params' => [
-                'action' => 'find',
-                'server' => $serverSession->id(),
-                'subject' => 'table',
-            ],
+            'url-params' => array_merge($requestParams, ['action' => 'find']),
+            'window' => $sqlWindow,
         ];
         $topLinks['logout'] = [
             'text' => _('Logout'),
@@ -880,12 +990,22 @@ abstract class WebsiteComponents
                 $a->setAttribute('target', $link['target']);
             }
 
+            if (isset($link['window'])) {
+                $a->setAttribute('data-window', $link['window']);
+            }
+
             $a->setAttribute('id', 'toplink_' . $key);
             $li->appendChild($a);
             $ulTopLinks->appendChild($li);
         }
 
         $tableCell->appendChild($ulTopLinks);
+
+        // Like the script of the legacy Misc::printTopbar(), which comes with the links.
+        $script = $dom->createElement('script');
+        $script->setAttribute('src', 'js/topbar.js');
+        $script->setAttribute('type', 'text/javascript');
+        $tableCell->appendChild($script);
 
         return $tableCell;
     }

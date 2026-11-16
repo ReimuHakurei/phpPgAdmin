@@ -133,8 +133,6 @@
     $lang['strstarttime'] = 'Heure de début';
     $lang['strfile'] = 'Fichier';
     $lang['strfileimported'] = 'Fichier importé.';
-    $lang['strtrycred'] = 'Utilisez ces identifiants pour tous les serveurs';
-    $lang['strconfdropcred'] = 'For security reason, disconnecting will destroy your shared login information. Are you sure you want to disconnect ?';
     $lang['stractionsonmultiplelines'] = 'Actions sur plusieurs lignes';
     $lang['strselectall'] = 'Sélectionner tout';
     $lang['strunselectall'] = 'Desélectionner tout';

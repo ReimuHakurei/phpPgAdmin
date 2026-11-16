@@ -6,6 +6,7 @@ node_modules/
 /infection/
 # Left behind when Infection kills a timed-out test process (see Tests/bootstrap.php).
 /conf/config-test-*.yml
+/conf/config-test-*.inc.php
 vendor/
 
 .DS_Store

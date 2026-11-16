@@ -132,7 +132,6 @@
     $lang['strstarttime']  =  'Başlangıç zamanı';
     $lang['strfile']  =  'Dosya';
     $lang['strfileimported']  =  'Dosya import edildi.';
-    $lang['strtrycred']  =  'Giriş bilgilerini tüm sunucular için kullan';
 $lang['strexecute']  =  'Execute';
 
     // Error handling

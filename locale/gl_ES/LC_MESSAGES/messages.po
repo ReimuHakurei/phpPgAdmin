@@ -260,7 +260,7 @@ msgstr "Cadea ou campo baleiro"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Administración"
 
 msgid "strvacuum"
@@ -344,13 +344,13 @@ msgstr "OIDs"
 msgid "stradvanced"
 msgstr "Avanzado"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Variables"
 
 msgid "strprocess"
 msgstr "Proceso"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Procesos"
 
 msgid "strsetting"
@@ -376,12 +376,6 @@ msgstr "Ficheiro"
 
 msgid "strfileimported"
 msgstr "Importouse o ficheiro."
-
-msgid "strtrycred"
-msgstr "Utilizar estas credenciais para todos os servidores"
-
-msgid "strconfdropcred"
-msgstr "Por motivos de seguridade, ao desconectarse destruirase a información compartida sobre a súa identidade. Está seguro de que quere desconectarse?"
 
 msgid "Actions on multiple lines"
 msgstr "Accións en varias liñas"
@@ -507,7 +501,7 @@ msgstr "Os parámetros fornecidos ao guión non son correctos."
 msgid "strnodata"
 msgstr "Non se atopou fila algunha."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Non se atopou obxecto algún."
 
 msgid "strrownotunique"
@@ -1509,7 +1503,7 @@ msgstr "AO BORRAR"
 # interface paréceme mellor traducilos.
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Función"
 
 msgid "Functions"
@@ -1966,7 +1960,7 @@ msgid "stroperatordroppedbad"
 msgstr "Non se conseguiu eliminar o operador."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Molde"
 
 msgid "strnocasts"
@@ -2001,13 +1995,13 @@ msgid "strtargetencoding"
 msgstr "Codificación obxectivo"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Linguas"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Non se atopou lingua algunha."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "De confianza"
 
 # Info
@@ -2301,7 +2295,7 @@ msgid "strnotdefaultinred"
 msgstr "Os valores que non sexan os predeterminados están en cor vermella."
 
 # Table-level Locks
-msgid "strlocks"
+msgid "Locks"
 msgstr "Bloqueos"
 
 msgid "strtransaction"

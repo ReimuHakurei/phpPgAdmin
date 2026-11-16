@@ -50,6 +50,9 @@ jobs:
       run: npm ci --ignore-scripts
     - name: Install Playwright Browsers
       run: npm run test:e2e:install -- --with-deps
+    - name: Generate the French locale
+      # The tests check a page in French, which gettext only translates with the locale on the system.
+      run: sudo locale-gen fr_FR.UTF-8
     - name: Run Playwright tests
       run: npm run test:e2e
       env:

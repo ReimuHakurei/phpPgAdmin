@@ -239,7 +239,7 @@ msgstr "Prázdny reťazec/pole"
 msgid "SQL"
 msgstr "SQL"
 
-msgid "stradmin"
+msgid "Admin"
 msgstr "Admin"
 
 msgid "strvacuum"
@@ -332,13 +332,13 @@ msgstr "OIDs"
 msgid "stradvanced"
 msgstr "Viac"
 
-msgid "strvariables"
+msgid "Variables"
 msgstr "Premenné"
 
 msgid "strprocess"
 msgstr "Proces"
 
-msgid "strprocesses"
+msgid "Processes"
 msgstr "Procesy"
 
 msgid "strsetting"
@@ -364,9 +364,6 @@ msgstr "Súbor"
 
 msgid "strfileimported"
 msgstr "Súbor importovaný."
-
-msgid "strtrycred"
-msgstr "Použiť tieto hodnoty pre všetky hodnoty"
 
 msgid "Execute"
 msgstr "Execute"
@@ -405,7 +402,7 @@ msgstr "Chybné parametre skriptu."
 msgid "strnodata"
 msgstr "Nenájdené žiadne záznamy."
 
-msgid "strnoobjects"
+msgid "No objects found."
 msgstr "Nenájdené žiadne objekty."
 
 msgid "strrownotunique"
@@ -1198,7 +1195,7 @@ msgid "stronupdate"
 msgstr "ON UPDATE"
 
 # Functions
-msgid "strfunction"
+msgid "Function"
 msgstr "Funkcia"
 
 msgid "Functions"
@@ -1574,7 +1571,7 @@ msgid "stroperatordroppedbad"
 msgstr "Operátor nebol zmazaný."
 
 # Casts
-msgid "strcasts"
+msgid "Casts"
 msgstr "Cast-y"
 
 msgid "strnocasts"
@@ -1609,13 +1606,13 @@ msgid "strtargetencoding"
 msgstr "Cieľové kódovanie"
 
 # Languages
-msgid "strlanguages"
+msgid "Languages"
 msgstr "Jazyky"
 
-msgid "strnolanguages"
+msgid "No languages found."
 msgstr "Nenájdené žiadne jazyky."
 
-msgid "strtrusted"
+msgid "Trusted"
 msgstr "Trusted"
 
 # Info
