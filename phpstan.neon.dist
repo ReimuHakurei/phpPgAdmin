@@ -46,3 +46,4 @@ services:
     - { tags: [phpat.test], class: Tests\Architecture\DDD\DomainTest }
     - { tags: [phpat.test], class: Tests\Architecture\DDD\ValueObjectsTest }
     - { tags: [phpat.test], class: Tests\Architecture\ExceptionsTest }
+    - { tags: [phpat.test], class: Tests\Architecture\LayersTest }
