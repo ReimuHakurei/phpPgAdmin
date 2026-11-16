@@ -39,6 +39,11 @@ parameters:
         - tablespaces.php
     excludePaths:
         - vendor/
+    # Only to know the legacy classes, which no autoloader loads. LegacyTest does not see the classes it does not know.
+    scanDirectories:
+        - classes/
+        - libraries/
+        - plugins/
     phpat:
         ignore_built_in_classes: true
         show_rule_names: true
@@ -47,4 +52,5 @@ services:
     - { tags: [phpat.test], class: Tests\Architecture\DDD\ValueObjectsTest }
     - { tags: [phpat.test], class: Tests\Architecture\ExceptionsTest }
     - { tags: [phpat.test], class: Tests\Architecture\LayersTest }
+    - { tags: [phpat.test], class: Tests\Architecture\LegacyTest }
     - { tags: [phpat.test], class: Tests\Architecture\WebsiteTest }
