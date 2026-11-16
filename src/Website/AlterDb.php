@@ -6,8 +6,8 @@ namespace PhpPgAdmin\Website;
 
 use PhpPgAdmin\{Config, TrailSubject, Website, WebsiteComponents};
 use PhpPgAdmin\Database\PhpPgAdminConnection;
-use PhpPgAdmin\DDD\Entities\ServerSession;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+use PhpPgAdmin\Infrastructure\Session\Logins;
 
 final class AlterDb extends Website
 {
@@ -30,7 +30,7 @@ final class AlterDb extends Website
             return;
         }
 
-        $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+        $serverSession = Logins::serverSession($serverId, Config::getServers());
         $db = PhpPgAdminConnection::createFromServerSession($serverSession);
 
         if (is_null($db)) {
@@ -70,7 +70,7 @@ final class AlterDb extends Website
         $database = RequestParameter::getString('database') ?? '';
         $serverId = RequestParameter::getString('server') ?? '';
 
-        $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+        $serverSession = Logins::serverSession($serverId, Config::getServers());
 
         $h2 = $dom->createElement('h2', _('Alter'));
         $aHelp = WebsiteComponents::buildHelpLink(

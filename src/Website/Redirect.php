@@ -6,8 +6,8 @@ namespace PhpPgAdmin\Website;
 
 use Locr\Lib\HTTP\StatusCode;
 use PhpPgAdmin\{Config, Website};
-use PhpPgAdmin\DDD\Entities\ServerSession;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+use PhpPgAdmin\Infrastructure\Session\Logins;
 
 final class Redirect extends Website
 {
@@ -59,7 +59,7 @@ final class Redirect extends Website
             );
         }
 
-        $locationUrl = ServerSession::isLoggedIn($server)
+        $locationUrl = Logins::isLoggedIn($server)
             ? './all_db.php?' . http_build_query(['server' => $server])
             : Login::buildUrl($server);
 

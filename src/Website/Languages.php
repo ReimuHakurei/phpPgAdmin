@@ -7,8 +7,8 @@ namespace PhpPgAdmin\Website;
 use Locr\Lib\HTTP\StatusCode;
 use PhpPgAdmin\{Config, TrailSubject, Website, WebsiteComponents};
 use PhpPgAdmin\Database\PhpPgAdminConnection;
-use PhpPgAdmin\DDD\Entities\ServerSession;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+use PhpPgAdmin\Infrastructure\Session\Logins;
 
 /**
  * The languages of a database.
@@ -55,7 +55,7 @@ final class Languages extends Website
         $body->appendChild(WebsiteComponents::buildTrail($dom, [TrailSubject::Server, TrailSubject::Database]));
         $body->appendChild(WebsiteComponents::buildDatabaseTabs($dom, $serverId, $database, 'languages'));
 
-        $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+        $serverSession = Logins::serverSession($serverId, Config::getServers());
         $languages = PhpPgAdminConnection::createFromServerSession($serverSession, $database)?->getLanguages() ?? [];
 
         $body->appendChild(self::buildLanguageList($dom, $languages));

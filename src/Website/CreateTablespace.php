@@ -7,9 +7,9 @@ namespace PhpPgAdmin\Website;
 use PhpPgAdmin\{Config, TrailSubject, Website, WebsiteComponents};
 use PhpPgAdmin\Application\DTO\Tablespace as DTOTablespace;
 use PhpPgAdmin\Database\PhpPgAdminConnection;
-use PhpPgAdmin\DDD\Entities\ServerSession;
 use PhpPgAdmin\DDD\ValueObjects\Tablespace;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+use PhpPgAdmin\Infrastructure\Session\Logins;
 
 class CreateTablespace extends Website
 {
@@ -141,7 +141,7 @@ class CreateTablespace extends Website
         ];
         $trName = WebsiteComponents::buildTableRowForInputFormular($dom, $nameSpecs);
 
-        $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+        $serverSession = Logins::serverSession($serverId, Config::getServers());
         $db = PhpPgAdminConnection::createFromServerSession($serverSession);
         $dbUsers = $db?->getUsers() ?? [];
         $ownerSelectionValues = [];
@@ -207,7 +207,7 @@ class CreateTablespace extends Website
         $tablespace = DTOTablespace::createFromFormRequest();
 
         $serverId = RequestParameter::getString('server') ?? '';
-        $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+        $serverSession = Logins::serverSession($serverId, Config::getServers());
         $db = PhpPgAdminConnection::createFromServerSession($serverSession);
 
         if (is_null($db)) {

@@ -7,9 +7,9 @@ namespace PhpPgAdmin\Website;
 use PhpPgAdmin\{Config, TrailSubject, Website, WebsiteComponents};
 use PhpPgAdmin\Application\DTO\Role as DTORole;
 use PhpPgAdmin\Database\PhpPgAdminConnection;
-use PhpPgAdmin\DDD\Entities\ServerSession;
 use PhpPgAdmin\DDD\ValueObjects\Role;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+use PhpPgAdmin\Infrastructure\Session\Logins;
 
 class CreateRole extends Website
 {
@@ -210,7 +210,7 @@ class CreateRole extends Website
         ];
         $trExpires = WebsiteComponents::buildTableRowForInputFormular($dom, $expiresSpecs);
 
-        $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+        $serverSession = Logins::serverSession($serverId, Config::getServers());
         $db = PhpPgAdminConnection::createFromServerSession($serverSession);
         $roles = $db?->getRoles() ?? [];
         $membersSelectionValues = [];
@@ -324,7 +324,7 @@ class CreateRole extends Website
         }
 
         $serverId = RequestParameter::getString('server') ?? '';
-        $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+        $serverSession = Logins::serverSession($serverId, Config::getServers());
         $db = PhpPgAdminConnection::createFromServerSession($serverSession);
 
         if (is_null($db)) {

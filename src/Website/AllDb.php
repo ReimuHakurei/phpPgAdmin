@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace PhpPgAdmin\Website;
 
 use PhpPgAdmin\{Config, TrailSubject, Website, WebsiteComponents};
-use PhpPgAdmin\DDD\Entities\ServerSession;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+use PhpPgAdmin\Infrastructure\Session\Logins;
 
 final class AllDb extends Website
 {
@@ -36,7 +36,7 @@ final class AllDb extends Website
             $body->appendChild(WebsiteComponents::buildMessage($dom, $message));
         }
 
-        $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+        $serverSession = Logins::serverSession($serverId, Config::getServers());
         $form = $dom->createElement('form');
         $form->setAttribute('id', 'multi_form');
         $form->setAttribute('action', 'all_db.php');

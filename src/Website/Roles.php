@@ -6,8 +6,8 @@ namespace PhpPgAdmin\Website;
 
 use PhpPgAdmin\{Config, TrailSubject, Website, WebsiteComponents};
 use PhpPgAdmin\Database\PhpPgAdminConnection;
-use PhpPgAdmin\DDD\Entities\ServerSession;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+use PhpPgAdmin\Infrastructure\Session\Logins;
 
 final class Roles extends Website
 {
@@ -153,7 +153,7 @@ final class Roles extends Website
         $tHeadRow->appendChild($thValue);
 
         $rolename = RequestParameter::getString('rolename') ?? '';
-        $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+        $serverSession = Logins::serverSession($serverId, Config::getServers());
         $db = PhpPgAdminConnection::createFromServerSession($serverSession);
         $role = $db?->getRole($rolename);
 
@@ -270,7 +270,7 @@ final class Roles extends Website
         $tHead->appendChild($tHeadRow);
         $table->appendChild($tHead);
 
-        $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+        $serverSession = Logins::serverSession($serverId, Config::getServers());
         $db = PhpPgAdminConnection::createFromServerSession($serverSession);
         $roles = $db?->getRoles() ?? [];
 

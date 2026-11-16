@@ -7,8 +7,8 @@ namespace PhpPgAdmin\Website;
 use PhpPgAdmin\{Config, TrailSubject, Website, WebsiteComponents};
 use PhpPgAdmin\Application\DTO\Tablespace as DTOTablespace;
 use PhpPgAdmin\Database\PhpPgAdminConnection;
-use PhpPgAdmin\DDD\Entities\ServerSession;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+use PhpPgAdmin\Infrastructure\Session\Logins;
 
 final class AlterTablespace extends CreateTablespace
 {
@@ -50,7 +50,7 @@ final class AlterTablespace extends CreateTablespace
         $tablespace = null;
 
         if (!is_null($tablespaceName)) {
-            $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+            $serverSession = Logins::serverSession($serverId, Config::getServers());
             $db = PhpPgAdminConnection::createFromServerSession($serverSession);
             $tablespace = $db?->getTablespace($tablespaceName);
         }
@@ -66,7 +66,7 @@ final class AlterTablespace extends CreateTablespace
     private function handlePostRequest(): void
     {
         $serverId = RequestParameter::getString('server') ?? '';
-        $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+        $serverSession = Logins::serverSession($serverId, Config::getServers());
 
         $db = PhpPgAdminConnection::createFromServerSession($serverSession);
 

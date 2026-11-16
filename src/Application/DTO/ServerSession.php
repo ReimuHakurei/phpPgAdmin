@@ -6,6 +6,7 @@ namespace PhpPgAdmin\Application\DTO;
 
 use PhpPgAdmin\Config;
 use PhpPgAdmin\DDD\Entities\ServerSession as EntityServerSession;
+use PhpPgAdmin\Infrastructure\Session\Logins;
 
 abstract readonly class ServerSession
 {
@@ -15,6 +16,6 @@ abstract readonly class ServerSession
             return null;
         }
 
-        return EntityServerSession::fromServerId($_REQUEST['server'], Config::getServers());
+        return Logins::serverSession($_REQUEST['server'], Config::getServers());
     }
 }

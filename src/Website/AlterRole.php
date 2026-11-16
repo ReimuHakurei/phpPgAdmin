@@ -7,9 +7,9 @@ namespace PhpPgAdmin\Website;
 use PhpPgAdmin\{Config, TrailSubject, Website, WebsiteComponents};
 use PhpPgAdmin\Application\DTO\Role as DTORole;
 use PhpPgAdmin\Database\PhpPgAdminConnection;
-use PhpPgAdmin\DDD\Entities\ServerSession;
 use PhpPgAdmin\DDD\ValueObjects\Role;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+use PhpPgAdmin\Infrastructure\Session\Logins;
 
 final class AlterRole extends CreateRole
 {
@@ -51,7 +51,7 @@ final class AlterRole extends CreateRole
         $role = null;
 
         if (!is_null($rolename)) {
-            $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+            $serverSession = Logins::serverSession($serverId, Config::getServers());
             $db = PhpPgAdminConnection::createFromServerSession($serverSession);
             $role = $db?->getRole($rolename);
         }
@@ -78,7 +78,7 @@ final class AlterRole extends CreateRole
         }
 
         $serverId = RequestParameter::getString('server') ?? '';
-        $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+        $serverSession = Logins::serverSession($serverId, Config::getServers());
 
         $formMemberOf = RequestParameter::getArray('memberof') ?? [];
         $formMembers = RequestParameter::getArray('members') ?? [];

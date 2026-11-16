@@ -6,9 +6,9 @@ namespace PhpPgAdmin\Website;
 
 use PhpPgAdmin\Application\Exceptions\{FileNotFoundException, ServerNotFoundException, ServerSessionNotFoundException};
 use PhpPgAdmin\Config;
-use PhpPgAdmin\DDD\Entities\ServerSession;
 use PhpPgAdmin\DDD\ValueObjects\Server\Filename;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+use PhpPgAdmin\Infrastructure\Session\Logins;
 use PhpPgAdmin\Website;
 
 final class DbExport extends Website
@@ -161,7 +161,7 @@ final class DbExport extends Website
     private function setEnvironmentVariables(): void
     {
         $serverId = RequestParameter::getString('server') ?? '';
-        $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+        $serverSession = Logins::serverSession($serverId, Config::getServers());
 
         if (is_null($serverSession)) {
             throw new ServerSessionNotFoundException("No ServerSession for server ($serverId) found.");

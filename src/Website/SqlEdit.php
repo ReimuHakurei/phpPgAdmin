@@ -6,8 +6,8 @@ namespace PhpPgAdmin\Website;
 
 use PhpPgAdmin\{Config, Website, WebsiteComponents};
 use PhpPgAdmin\Database\PhpPgAdminConnection;
-use PhpPgAdmin\DDD\Entities\ServerSession;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+use PhpPgAdmin\Infrastructure\Session\Logins;
 
 final class SqlEdit extends Website
 {
@@ -107,7 +107,7 @@ final class SqlEdit extends Website
         $emptyOption = $dom->createElement('option', '--');
         $emptyOption->setAttribute('value', '');
         $databaseSelection->appendChild($emptyOption);
-        $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+        $serverSession = Logins::serverSession($serverId, Config::getServers());
         $db = PhpPgAdminConnection::createFromServerSession($serverSession);
 
         if (!is_null($db)) {

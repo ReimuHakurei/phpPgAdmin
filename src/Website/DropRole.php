@@ -6,8 +6,8 @@ namespace PhpPgAdmin\Website;
 
 use PhpPgAdmin\{Config, TrailSubject, Website, WebsiteComponents};
 use PhpPgAdmin\Database\PhpPgAdminConnection;
-use PhpPgAdmin\DDD\Entities\ServerSession;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+use PhpPgAdmin\Infrastructure\Session\Logins;
 
 final class DropRole extends Website
 {
@@ -85,7 +85,7 @@ final class DropRole extends Website
     {
         $rolename = RequestParameter::getString('rolename') ?? '';
         $serverId = RequestParameter::getString('server') ?? '';
-        $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+        $serverSession = Logins::serverSession($serverId, Config::getServers());
 
         $redirectUrl = 'roles.php';
         $redirectUrlParams = [

@@ -6,8 +6,8 @@ namespace PhpPgAdmin\Api\Servers;
 
 use PhpPgAdmin\{Config, Session};
 use PhpPgAdmin\Database\PhpPgAdminConnection;
-use PhpPgAdmin\DDD\Entities\ServerSession;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+use PhpPgAdmin\Infrastructure\Session\Logins;
 
 final class Tree
 {
@@ -31,7 +31,7 @@ final class Tree
 
         $serverIdParam = RequestParameter::getString('server');
         $serverSession = !is_null($serverIdParam)
-            ? ServerSession::fromServerId($serverIdParam, Config::getServers())
+            ? Logins::serverSession($serverIdParam, Config::getServers())
             : null;
         $dbConnection = PhpPgAdminConnection::createFromServerSession($serverSession);
 

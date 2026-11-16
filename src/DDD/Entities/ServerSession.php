@@ -49,89 +49,20 @@ final class ServerSession extends Server
         );
     }
 
-    /**
-     * @param array<Server> $servers
-     */
-    public static function fromServerId(string $serverId, array $servers): ?self
+    public static function fromServer(Server $server, Username $username, Password $password, Platform $platform): self
     {
-        foreach ($servers as $server) {
-            if ($server->id() !== $serverId) {
-                continue;
-            }
-
-            $username = '';
-            $password = '';
-            $platform = 'Unknown';
-
-            if (
-                isset($_SESSION['webdbLogin']) &&
-                is_array($_SESSION['webdbLogin']) &&
-                isset($_SESSION['webdbLogin'][$serverId]) &&
-                is_array($_SESSION['webdbLogin'][$serverId])
-            ) {
-                if (
-                    isset($_SESSION['webdbLogin'][$serverId]['username']) &&
-                    is_string($_SESSION['webdbLogin'][$serverId]['username']) &&
-                    isset($_SESSION['webdbLogin'][$serverId]['password']) &&
-                    is_string($_SESSION['webdbLogin'][$serverId]['password'])
-                ) {
-                    $username = $_SESSION['webdbLogin'][$serverId]['username'];
-                    $password = $_SESSION['webdbLogin'][$serverId]['password'];
-                }
-
-                if (
-                    isset($_SESSION['webdbLogin'][$serverId]['platform']) &&
-                    is_string($_SESSION['webdbLogin'][$serverId]['platform'])
-                ) {
-                    $platform = $_SESSION['webdbLogin'][$serverId]['platform'];
-                }
-            }
-
-            // The password may be empty, e.g. with trust authentication; loginIsAllowed() decided that at login.
-            if ($username !== '') {
-                return new self(
-                    username: new Username($username),
-                    password: new Password($password),
-                    name: new Name((string)$server->Name),
-                    host: new Host((string)$server->Host),
-                    port: new Port($server->Port->Value),
-                    sslMode: $server->SslMode,
-                    defaultDb: new DatabaseName((string)$server->DefaultDb),
-                    pgDumpPath: new Filename((string)$server->PgDumpPath),
-                    pgDumpAllPath: new Filename((string)$server->PgDumpAllPath),
-                    platform: new Platform($platform),
-                );
-            }
-        }
-
-        return null;
-    }
-
-    public static function isLoggedIn(string $serverId): bool
-    {
-        if (!isset($_SESSION['webdbLogin']) || !is_array($_SESSION['webdbLogin'])) {
-            return false;
-        }
-
-        if (!isset($_SESSION['webdbLogin'][$serverId]) || !is_array($_SESSION['webdbLogin'][$serverId])) {
-            return false;
-        }
-
-        if (
-            !isset($_SESSION['webdbLogin'][$serverId]['username']) ||
-            !isset($_SESSION['webdbLogin'][$serverId]['password'])
-        ) {
-            return false;
-        }
-
-        $sessionUsername = $_SESSION['webdbLogin'][$serverId]['username'];
-        $sessionPassword = $_SESSION['webdbLogin'][$serverId]['password'];
-
-        if (!is_string($sessionUsername) || !is_string($sessionPassword)) {
-            return false;
-        }
-
-        return $sessionUsername !== '';
+        return new self(
+            username: $username,
+            password: $password,
+            name: $server->Name,
+            host: $server->Host,
+            port: $server->Port,
+            sslMode: $server->SslMode,
+            defaultDb: $server->DefaultDb,
+            pgDumpPath: $server->PgDumpPath,
+            pgDumpAllPath: $server->PgDumpAllPath,
+            platform: $platform,
+        );
     }
 
     /**

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace PhpPgAdmin\WebsiteComponents;
 
 use PhpPgAdmin\{Config, TrailSubject, WebsiteComponents};
-use PhpPgAdmin\DDD\Entities\ServerSession;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+use PhpPgAdmin\Infrastructure\Session\Logins;
 
 abstract class TrailBuilder
 {
@@ -72,7 +72,7 @@ abstract class TrailBuilder
 
         if ($subject === TrailSubject::Server) {
             $serverId = RequestParameter::getString('server') ?? '';
-            $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+            $serverSession = Logins::serverSession($serverId, Config::getServers());
 
             if (!is_null($serverSession)) {
                 return (string)$serverSession->Name;

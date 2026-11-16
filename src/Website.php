@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace PhpPgAdmin;
 
 use Locr\Lib\HTTP\StatusCode;
-use PhpPgAdmin\DDD\Entities\ServerSession;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+use PhpPgAdmin\Infrastructure\Session\Logins;
 
 abstract class Website
 {
@@ -238,7 +238,7 @@ abstract class Website
             throw new \InvalidArgumentException('Missing required parameter: server', StatusCode::BadRequest->value);
         }
 
-        if (!ServerSession::isLoggedIn($serverId)) {
+        if (!Logins::isLoggedIn($serverId)) {
             header('Location: ' . Website\Login::buildUrl($serverId, Website\Login::buildReturnUrl()));
             exit;
         }

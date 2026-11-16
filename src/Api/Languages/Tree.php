@@ -6,8 +6,8 @@ namespace PhpPgAdmin\Api\Languages;
 
 use PhpPgAdmin\{Config, Language as Locale, Session};
 use PhpPgAdmin\Database\PhpPgAdminConnection;
-use PhpPgAdmin\DDD\Entities\ServerSession;
 use PhpPgAdmin\Infrastructure\Http\RequestParameter;
+use PhpPgAdmin\Infrastructure\Session\Logins;
 
 /**
  * The Languages node of a database in the browser tree, loaded from languages.php?action=tree.
@@ -28,7 +28,7 @@ final class Tree
         $serverId = RequestParameter::getString('server') ?? '';
         $database = RequestParameter::getString('database') ?? '';
 
-        $serverSession = ServerSession::fromServerId($serverId, Config::getServers());
+        $serverSession = Logins::serverSession($serverId, Config::getServers());
         $connection = $database !== ''
             ? PhpPgAdminConnection::createFromServerSession($serverSession, $database)
             : null;
