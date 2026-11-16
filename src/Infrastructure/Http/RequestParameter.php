@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace PhpPgAdmin\Infrastructure\Http;
 
+/**
+ * The parameters of the request, from the query before the posted form.
+ *
+ * Reads $_GET and $_POST rather than filter_input(), which only knows the request PHP started with and ignores what
+ * tests write into them.
+ */
 final class RequestParameter
 {
     /**
@@ -12,14 +18,10 @@ final class RequestParameter
      */
     public static function getArray(string $name, ?array $default = null): ?array
     {
-        $value = null;
+        $value = $_GET[$name] ?? null;
 
-        if (filter_has_var(INPUT_GET, $name) && is_array($_GET[$name])) {
-            $value = $_GET[$name];
-        }
-
-        if (!is_array($value) && filter_has_var(INPUT_POST, $name) && is_array($_POST[$name])) {
-            $value = $_POST[$name];
+        if (!is_array($value)) {
+            $value = $_POST[$name] ?? null;
         }
 
         if (!is_array($value)) {
@@ -31,10 +33,10 @@ final class RequestParameter
 
     public static function getString(string $name, ?string $default = null): ?string
     {
-        $value = filter_input(INPUT_GET, $name, FILTER_UNSAFE_RAW);
+        $value = $_GET[$name] ?? null;
 
         if (!is_string($value)) {
-            $value = filter_input(INPUT_POST, $name, FILTER_UNSAFE_RAW);
+            $value = $_POST[$name] ?? null;
         }
 
         if (!is_string($value)) {
