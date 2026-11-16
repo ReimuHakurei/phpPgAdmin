@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Unit\Infrastructure\Session;
 
 use PhpPgAdmin\DDD\Entities\Server;
-use PhpPgAdmin\DDD\ValueObjects\Server\Filename;
 use PhpPgAdmin\DDD\ValueObjects\Server\Name;
 use PhpPgAdmin\Infrastructure\Session\Logins;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -125,12 +124,7 @@ final class LoginsTest extends TestCase
     {
         $_SESSION = [];
 
-        // An existing file as pg_dump path, so Filename does not log a missing file.
-        $this->server = new Server(
-            name: new Name('Test Server'),
-            pgDumpPath: new Filename(__FILE__),
-            pgDumpAllPath: new Filename(__FILE__),
-        );
+        $this->server = new Server(name: new Name('Test Server'));
     }
 
     protected function tearDown(): void
