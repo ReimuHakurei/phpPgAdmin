@@ -50,7 +50,11 @@ final class DbExport extends Website
                 );
             }
 
-            throw new FileNotFoundException(sprintf($errorMessageFormat, (string)$dumpFilename));
+            $configuredFilename = $all
+                ? $server->PgDumpAllPath
+                : $server->PgDumpPath;
+
+            throw new FileNotFoundException(sprintf($errorMessageFormat, (string)$configuredFilename));
         }
 
         return $dumpFilename;
