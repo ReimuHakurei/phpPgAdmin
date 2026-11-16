@@ -21,6 +21,11 @@ final class PgDumpTest extends TestCase
 
     private string $pgDumpAll;
 
+    /**
+     * @var list<string>
+     */
+    private array $tempFiles = [];
+
     public function testTryGetFilenameReturnsThePgDumpPathOfTheServer(): void
     {
         $server = $this->server();
@@ -33,6 +38,15 @@ final class PgDumpTest extends TestCase
         $server = $this->server();
 
         self::assertSame($server->PgDumpAllPath, PgDump::tryGetFilename($server, true));
+    }
+
+    public function testTryGetFilenameOfAPathWithSpaces(): void
+    {
+        $this->pgDump = $this->tempFile('pg dump');
+        $this->writeProgram($this->pgDump, 'pg_dump (PostgreSQL) 18.1');
+        $server = $this->server();
+
+        self::assertSame($server->PgDumpPath, PgDump::tryGetFilename($server, false));
     }
 
     public function testTryGetFilenameOfAMissingProgramReturnsNull(): void
@@ -61,9 +75,9 @@ final class PgDumpTest extends TestCase
 
     protected function tearDown(): void
     {
-        foreach ([$this->pgDump, $this->pgDumpAll] as $program) {
-            if (file_exists($program)) {
-                unlink($program);
+        foreach ($this->tempFiles as $tempFile) {
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
             }
         }
     }
@@ -77,10 +91,11 @@ final class PgDumpTest extends TestCase
         );
     }
 
-    private function tempFile(): string
+    private function tempFile(string $prefix = 'pg_dump'): string
     {
-        $filename = tempnam(sys_get_temp_dir(), 'pg_dump');
+        $filename = tempnam(sys_get_temp_dir(), $prefix);
         self::assertIsString($filename);
+        $this->tempFiles[] = $filename;
 
         return $filename;
     }

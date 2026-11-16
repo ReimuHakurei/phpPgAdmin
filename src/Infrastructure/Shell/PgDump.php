@@ -27,7 +27,7 @@ final class PgDump
 
         $pregMatchResult = preg_match(
             "/(\d+(?:\.\d+)?)(?:\.\d+)?.*$/",
-            exec($pgDumpFilename . " --version") ?: '',
+            exec(escapeshellarg((string)$pgDumpFilename) . " --version") ?: '',
         );
 
         if (!$pregMatchResult) {

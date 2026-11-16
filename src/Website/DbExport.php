@@ -112,7 +112,7 @@ final class DbExport extends Website
         $dumpAll = ($subject === 'server');
         $dumpFilename = $this->ensurePgDumpFilenameExists($dumpAll);
 
-        $command = escapeshellcmd((string)$dumpFilename);
+        $command = escapeshellarg((string)$dumpFilename);
         $command = $this->applySubjectSpecificCommandArguments($command, $subject);
         $command = $this->applyCompressSpecificCommandArguments($command, $dumpAll);
         $command = $this->applyWhatSpecificCommandArguments($command);
