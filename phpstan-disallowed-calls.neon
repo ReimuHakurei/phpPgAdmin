@@ -9,14 +9,23 @@ parameters:
                 - '$_COOKIE'
                 - '$_ENV'
                 - '$_FILES'
-                - '$_GET'
-                - '$_POST'
-                - '$_REQUEST'
                 - '$_SERVER'
                 - '$_SESSION'
             message: 'the domain gets its input as parameters, PhpPgAdmin\Infrastructure reads it.'
             allowExceptIn:
                 - src/DDD/*
+        # The rest of src/ reads the request only through RequestParameter. This entry covers src/DDD/ as well, because
+        # a later entry for the same superglobal replaces an earlier one.
+        -
+            superglobal:
+                - '$_GET'
+                - '$_POST'
+                - '$_REQUEST'
+            message: 'PhpPgAdmin\Infrastructure\Http\RequestParameter reads the request, the domain gets it as parameters.'
+            allowIn:
+                - src/Infrastructure/Http/*
+            allowExceptIn:
+                - src/*
     disallowedFunctionCalls:
         -
             function:
