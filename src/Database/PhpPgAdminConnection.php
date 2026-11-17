@@ -465,7 +465,7 @@ final class PhpPgAdminConnection extends \PDO
             : 'NOT pdb.datistemplate';
 
         if (!is_null($serverInfo) && Config::ownedOnly() && !$this->isSuperUser()) {
-            $whereClause = " AND pg_has_role('{$serverInfo->Username}'::name, pr.rolname, 'USAGE')";
+            $whereClause .= " AND pg_has_role('{$serverInfo->Username}'::name, pr.rolname, 'USAGE')";
         }
 
         $orderBy = "pdb.datname";

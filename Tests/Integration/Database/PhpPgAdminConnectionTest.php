@@ -9,6 +9,7 @@ use PhpPgAdmin\Database\PhpPgAdminConnection;
 use PhpPgAdmin\DDD\Entities\{Server, ServerSession};
 use PhpPgAdmin\DDD\ValueObjects\Server\{Host, Name, Port};
 use PhpPgAdmin\DDD\ValueObjects\ServerSession\{Password, Username};
+use PhpPgAdmin\Infrastructure\Session\Logins;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\TestEnvironment;
@@ -16,6 +17,13 @@ use Tests\Support\TestEnvironment;
 #[CoversClass(PhpPgAdminConnection::class)]
 final class PhpPgAdminConnectionTest extends TestCase
 {
+    private const USER_PASSWORD = 'ppa_test_user';
+
+    /**
+     * The connection that created the user, which drops it again after the test.
+     */
+    private ?PhpPgAdminConnection $administrator = null;
+
     public function testLoginDataIsValidForTheRunningServer(): void
     {
         self::assertTrue(self::loginDataIsValid(self::configuredServer(TestEnvironment::RUNNING_SERVER_DESC)));
@@ -86,6 +94,68 @@ final class PhpPgAdminConnectionTest extends TestCase
         self::assertSame($sortedNames, $names, 'Languages are sorted by name.');
     }
 
+    public function testGetDatabasesWithOwnedOnlyListsOnlyTheDatabasesOfTheUser(): void
+    {
+        $this->createTheUser();
+        $this->createADatabaseAndATemplateOfTheUser();
+        self::turnOnOwnedOnly();
+        $connection = self::logInAs(self::user(), self::USER_PASSWORD);
+
+        $databases = array_column($connection->getDatabases(), 'datname');
+
+        // show_system is off in the test configuration, which hides the template.
+        self::assertSame([self::databaseOfTheUser()], $databases);
+    }
+
+    public function testGetDatabasesWithoutOwnedOnlyListsTheDatabasesOfOtherUsersToo(): void
+    {
+        // owned_only is off in the test configuration.
+        $this->createTheUser();
+        $connection = self::logInAs(self::user(), self::USER_PASSWORD);
+
+        $databases = array_column($connection->getDatabases(), 'datname');
+
+        self::assertContains('postgres', $databases);
+    }
+
+    protected function tearDown(): void
+    {
+        $_GET = [];
+        $_SESSION = [];
+        // Config reads the configuration file again.
+        (new \ReflectionProperty(Config::class, 'conf'))->setValue(null, null);
+
+        if (!is_null($this->administrator)) {
+            self::dropTheUser($this->administrator);
+        }
+    }
+
+    /**
+     * A role that is no superuser, so owned_only applies to it.
+     */
+    private function createTheUser(): void
+    {
+        $administrator = self::connection();
+        $this->administrator = $administrator;
+
+        // Removes what an aborted run of this thread left behind.
+        self::dropTheUser($administrator);
+
+        $administrator->exec('CREATE ROLE "' . self::user() . '" LOGIN PASSWORD \'' . self::USER_PASSWORD . '\'');
+    }
+
+    private function createADatabaseAndATemplateOfTheUser(): void
+    {
+        self::assertNotNull($this->administrator, 'Create the user first.');
+
+        // template1 cannot be copied while another test is connected to it, template0 takes no connections.
+        $options = 'OWNER "' . self::user() . '" TEMPLATE template0';
+        $this->administrator->exec('CREATE DATABASE "' . self::databaseOfTheUser() . '" ' . $options);
+        $this->administrator->exec(
+            'CREATE DATABASE "' . self::templateOfTheUser() . '" ' . $options . ' IS_TEMPLATE true',
+        );
+    }
+
     private static function connection(?string $database = null): PhpPgAdminConnection
     {
         $serverSession = new ServerSession(
@@ -102,6 +172,83 @@ final class PhpPgAdminConnectionTest extends TestCase
         $connection = is_null($database)
             ? PhpPgAdminConnection::createFromServerSession($serverSession)
             : PhpPgAdminConnection::createFromServerSession($serverSession, $database);
+
+        self::assertNotNull($connection);
+
+        return $connection;
+    }
+
+    private static function user(): string
+    {
+        return self::perThread('ppa_test_user');
+    }
+
+    private static function databaseOfTheUser(): string
+    {
+        return self::perThread('ppa_test_user_database');
+    }
+
+    private static function templateOfTheUser(): string
+    {
+        return self::perThread('ppa_test_user_template');
+    }
+
+    /**
+     * Infection runs the tests in parallel threads, which it numbers in TEST_TOKEN, so each thread gets its own role
+     * and databases.
+     */
+    private static function perThread(string $name): string
+    {
+        $thread = TestEnvironment::getEnvVar('TEST_TOKEN');
+
+        return is_null($thread)
+            ? $name
+            : "{$name}_{$thread}";
+    }
+
+    private static function dropTheUser(PhpPgAdminConnection $administrator): void
+    {
+        $template = self::templateOfTheUser();
+        $templateExists = self::queryValue(
+            $administrator,
+            "SELECT EXISTS (SELECT FROM pg_database WHERE datname = '{$template}')",
+        );
+
+        // A template cannot be dropped.
+        if ($templateExists === true) {
+            $administrator->exec('ALTER DATABASE "' . $template . '" IS_TEMPLATE false');
+        }
+
+        $administrator->exec('DROP DATABASE IF EXISTS "' . $template . '"');
+        $administrator->exec('DROP DATABASE IF EXISTS "' . self::databaseOfTheUser() . '"');
+        $administrator->exec('DROP ROLE IF EXISTS "' . self::user() . '"');
+    }
+
+    /**
+     * Config reads the configuration file only once, so this changes what it read.
+     */
+    private static function turnOnOwnedOnly(): void
+    {
+        $conf = new \ReflectionProperty(Config::class, 'conf');
+        // Reads the configuration file.
+        Config::ownedOnly();
+        $configuration = $conf->getValue();
+        self::assertIsArray($configuration);
+        $conf->setValue(null, ['owned_only' => true] + $configuration);
+    }
+
+    /**
+     * getDatabases() reads the user from the login of the requested server.
+     */
+    private static function logInAs(string $username, string $password): PhpPgAdminConnection
+    {
+        $serverId = self::configuredServer(TestEnvironment::RUNNING_SERVER_DESC)->id();
+        $_GET['server'] = $serverId;
+        $_SESSION['webdbLogin'] = [$serverId => ['username' => $username, 'password' => $password]];
+
+        $connection = PhpPgAdminConnection::createFromServerSession(
+            Logins::serverSession($serverId, Config::getServers()),
+        );
 
         self::assertNotNull($connection);
 
