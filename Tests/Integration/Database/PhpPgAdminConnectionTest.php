@@ -18,6 +18,8 @@ final class PhpPgAdminConnectionTest extends TestCase
 {
     private const USER_PASSWORD = 'ppa_test_user';
 
+    private const COMMENT_OF_THE_DATABASE = 'The database of the user';
+
     /**
      * The connection that created the user, which drops it again after the test.
      */
@@ -97,10 +99,24 @@ final class PhpPgAdminConnectionTest extends TestCase
     {
         $this->createTheUser();
         $this->createADatabaseOfTheUser();
-        self::turnOnOwnedOnly();
+        self::turnOn('owned_only');
         $connection = self::logInAs(self::user(), self::USER_PASSWORD);
 
-        self::assertSame([self::databaseOfTheUser()], array_column($connection->getDatabases(), 'datname'));
+        self::assertSame(
+            [
+                [
+                    'datcollate' => 'C',
+                    'datcomment' => self::COMMENT_OF_THE_DATABASE,
+                    'datctype' => 'C',
+                    'datencoding' => 'UTF8',
+                    'datname' => self::databaseOfTheUser(),
+                    'datowner' => self::user(),
+                    'dbsize' => $this->sizeOfTheDatabaseOfTheUser(),
+                    'tablespace' => 'pg_default',
+                ],
+            ],
+            $connection->getDatabases(),
+        );
 
         $this->makeTheDatabaseOfTheUserATemplate();
 
@@ -117,6 +133,30 @@ final class PhpPgAdminConnectionTest extends TestCase
         $databases = array_column($connection->getDatabases(), 'datname');
 
         self::assertContains('postgres', $databases);
+    }
+
+    public function testGetDatabasesWithShowSystemListsTheTemplatesThatTakeConnections(): void
+    {
+        self::turnOn('show_system');
+
+        $databases = array_column(self::connection()->getDatabases(), 'datname');
+
+        self::assertContains('postgres', $databases);
+        self::assertContains('template1', $databases);
+        self::assertNotContains('template0', $databases);
+    }
+
+    public function testIsSuperUserIsTrueForASuperuser(): void
+    {
+        // The tests connect as a superuser, as they create roles and databases.
+        self::assertTrue(self::connection()->isSuperUser());
+    }
+
+    public function testIsSuperUserIsFalseForAUserWhoIsNoSuperuser(): void
+    {
+        $this->createTheUser();
+
+        self::assertFalse(self::logInAs(self::user(), self::USER_PASSWORD)->isSuperUser());
     }
 
     protected function tearDown(): void
@@ -151,10 +191,30 @@ final class PhpPgAdminConnectionTest extends TestCase
     {
         self::assertNotNull($this->administrator, 'Create the user first.');
 
+        $database = self::databaseOfTheUser();
         // template1 cannot be copied while another test is connected to it, template0 takes no connections.
+        // The servers differ in their locale, so the database gets its own.
         $this->administrator->exec(
-            'CREATE DATABASE "' . self::databaseOfTheUser() . '" OWNER "' . self::user() . '" TEMPLATE template0',
+            'CREATE DATABASE "' . $database . '" OWNER "' . self::user() . '" TEMPLATE template0'
+                . " ENCODING 'UTF8' LOCALE_PROVIDER libc LOCALE 'C'",
         );
+        $this->administrator->exec(
+            'COMMENT ON DATABASE "' . $database . '" IS \'' . self::COMMENT_OF_THE_DATABASE . '\'',
+        );
+    }
+
+    private function sizeOfTheDatabaseOfTheUser(): int
+    {
+        self::assertNotNull($this->administrator, 'Create the user first.');
+
+        $size = self::queryValue(
+            $this->administrator,
+            "SELECT pg_database_size('" . self::databaseOfTheUser() . "')",
+        );
+
+        self::assertIsInt($size);
+
+        return $size;
     }
 
     private function makeTheDatabaseOfTheUserATemplate(): void
@@ -226,14 +286,14 @@ final class PhpPgAdminConnectionTest extends TestCase
     /**
      * Config reads the configuration file only once, so this changes what it read.
      */
-    private static function turnOnOwnedOnly(): void
+    private static function turnOn(string $setting): void
     {
         $conf = new \ReflectionProperty(Config::class, 'conf');
         // Reads the configuration file.
         Config::ownedOnly();
         $configuration = $conf->getValue();
         self::assertIsArray($configuration);
-        $conf->setValue(null, ['owned_only' => true] + $configuration);
+        $conf->setValue(null, [$setting => true] + $configuration);
     }
 
     private static function logInAs(string $username, string $password): PhpPgAdminConnection
