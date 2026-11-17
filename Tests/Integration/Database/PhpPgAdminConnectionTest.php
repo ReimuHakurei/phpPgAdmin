@@ -96,14 +96,16 @@ final class PhpPgAdminConnectionTest extends TestCase
     public function testGetDatabasesWithOwnedOnlyListsOnlyTheDatabasesOfTheUser(): void
     {
         $this->createTheUser();
-        $this->createADatabaseAndATemplateOfTheUser();
+        $this->createADatabaseOfTheUser();
         self::turnOnOwnedOnly();
         $connection = self::logInAs(self::user(), self::USER_PASSWORD);
 
-        $databases = array_column($connection->getDatabases(), 'datname');
+        self::assertSame([self::databaseOfTheUser()], array_column($connection->getDatabases(), 'datname'));
+
+        $this->makeTheDatabaseOfTheUserATemplate();
 
         // show_system is off in the test configuration, which hides the template.
-        self::assertSame([self::databaseOfTheUser()], $databases);
+        self::assertSame([], $connection->getDatabases());
     }
 
     public function testGetDatabasesWithoutOwnedOnlyListsTheDatabasesOfOtherUsersToo(): void
@@ -141,16 +143,25 @@ final class PhpPgAdminConnectionTest extends TestCase
         $administrator->exec('CREATE ROLE "' . self::user() . '" LOGIN PASSWORD \'' . self::USER_PASSWORD . '\'');
     }
 
-    private function createADatabaseAndATemplateOfTheUser(): void
+    /**
+     * Every dropped database forces a checkpoint, which the parallel threads of Infection wait for in turn, so the
+     * tests create as few databases as they can.
+     */
+    private function createADatabaseOfTheUser(): void
     {
         self::assertNotNull($this->administrator, 'Create the user first.');
 
         // template1 cannot be copied while another test is connected to it, template0 takes no connections.
-        $options = 'OWNER "' . self::user() . '" TEMPLATE template0';
-        $this->administrator->exec('CREATE DATABASE "' . self::databaseOfTheUser() . '" ' . $options);
         $this->administrator->exec(
-            'CREATE DATABASE "' . self::templateOfTheUser() . '" ' . $options . ' IS_TEMPLATE true',
+            'CREATE DATABASE "' . self::databaseOfTheUser() . '" OWNER "' . self::user() . '" TEMPLATE template0',
         );
+    }
+
+    private function makeTheDatabaseOfTheUserATemplate(): void
+    {
+        self::assertNotNull($this->administrator, 'Create the user first.');
+
+        $this->administrator->exec('ALTER DATABASE "' . self::databaseOfTheUser() . '" IS_TEMPLATE true');
     }
 
     private static function connection(?string $database = null): PhpPgAdminConnection
@@ -182,11 +193,6 @@ final class PhpPgAdminConnectionTest extends TestCase
         return self::perThread('ppa_test_user_database');
     }
 
-    private static function templateOfTheUser(): string
-    {
-        return self::perThread('ppa_test_user_template');
-    }
-
     /**
      * Infection runs the tests in parallel threads, which it numbers in TEST_TOKEN, so each thread gets its own role
      * and databases.
@@ -202,19 +208,18 @@ final class PhpPgAdminConnectionTest extends TestCase
 
     private static function dropTheUser(PhpPgAdminConnection $administrator): void
     {
-        $template = self::templateOfTheUser();
-        $templateExists = self::queryValue(
+        $database = self::databaseOfTheUser();
+        $isTemplate = self::queryValue(
             $administrator,
-            "SELECT EXISTS (SELECT FROM pg_database WHERE datname = '{$template}')",
+            "SELECT datistemplate FROM pg_database WHERE datname = '{$database}'",
         );
 
         // A template cannot be dropped.
-        if ($templateExists === true) {
-            $administrator->exec('ALTER DATABASE "' . $template . '" IS_TEMPLATE false');
+        if ($isTemplate === true) {
+            $administrator->exec('ALTER DATABASE "' . $database . '" IS_TEMPLATE false');
         }
 
-        $administrator->exec('DROP DATABASE IF EXISTS "' . $template . '"');
-        $administrator->exec('DROP DATABASE IF EXISTS "' . self::databaseOfTheUser() . '"');
+        $administrator->exec('DROP DATABASE IF EXISTS "' . $database . '"');
         $administrator->exec('DROP ROLE IF EXISTS "' . self::user() . '"');
     }
 
