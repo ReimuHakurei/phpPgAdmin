@@ -73,7 +73,10 @@
         "dev:test:integration": "phpunit --testsuite Integration",
         "dev:test:coverage:ci": "phpunit --coverage-clover coverage/clover.xml",
         "dev:test:coverage:html": "phpunit --coverage-html coverage/html",
-        "dev:test:mutation": "infection --threads=max",
+        "dev:test:mutation": [
+            "Composer\\Config::disableProcessTimeout",
+            "infection --threads=max"
+        ],
         "build-locales": [
             "@build-locale-af_ZA",
             "@build-locale-ar",
