@@ -18,8 +18,8 @@ final class DbExportTest extends TestCase
     {
         $this->expectException(FileNotFoundException::class);
         $this->expectExceptionMessage(
-            'Export error: Failed to execute pg_dump (given path in your conf/config.inc.php : /missing/pg_dump).'
-                . ' Please, fix this path in your configuration and relog.',
+            'Export error: Failed to execute pg_dump (given path in your conf/config.yml : /missing/pg_dump).'
+                . ' Please, fix this path in your configuration.',
         );
 
         DbExport::ensurePgDumpFilenameExists(self::serverWithoutPgDump(), false);
@@ -29,8 +29,8 @@ final class DbExportTest extends TestCase
     {
         $this->expectException(FileNotFoundException::class);
         $this->expectExceptionMessage(
-            'Export error: Failed to execute pg_dumpall (given path in your conf/config.inc.php : /missing/pg_dumpall).'
-                . ' Please, fix this path in your configuration and relog.',
+            'Export error: Failed to execute pg_dumpall (given path in your conf/config.yml : /missing/pg_dumpall).'
+                . ' Please, fix this path in your configuration.',
         );
 
         DbExport::ensurePgDumpFilenameExists(self::serverWithoutPgDump(), true);

@@ -534,11 +534,11 @@ msgstr "Érvénytelen kiszolgáló paraméterrel próbáltak csatlakozni. Lehet,
 msgid "strnoserversupplied"
 msgstr "Nincs megadva kiszolgáló!"
 
-msgid "Export error: Failed to execute pg_dump (given path in your conf/config.inc.php : %s). Please, fix this path in your configuration and relog."
-msgstr "Kiviteli hiba: Elbukott a pg_dump végrehajtása (conf/config.inc.php fájlban megadott ösvény: %s). Kérem, javítsa ki ezt a beállításban, és ismételjen."
+msgid "Export error: Failed to execute pg_dump (given path in your conf/config.yml : %s). Please, fix this path in your configuration."
+msgstr "Kiviteli hiba: Elbukott a pg_dump végrehajtása (conf/config.yml fájlban megadott ösvény: %s). Kérem, javítsa ki ezt a beállításban, és ismételjen."
 
-msgid "Export error: Failed to execute pg_dumpall (given path in your conf/config.inc.php : %s). Please, fix this path in your configuration and relog."
-msgstr "Kiviteli hiba: Elbukott a pg_dumpall végrehajtása (conf/config.inc.php fájlban megadott ösvény: %s). Kérem, javítsa ki ezt a beállításban, és ismételjen."
+msgid "Export error: Failed to execute pg_dumpall (given path in your conf/config.yml : %s). Please, fix this path in your configuration."
+msgstr "Kiviteli hiba: Elbukott a pg_dumpall végrehajtása (conf/config.yml fájlban megadott ösvény: %s). Kérem, javítsa ki ezt a beállításban, és ismételjen."
 
 msgid "strconnectionfail"
 msgstr "Nem csatlakozhatok a szolgálóhoz."

@@ -531,11 +531,11 @@ msgstr "Попытка соединения с некорректным знач
 msgid "strnoserversupplied"
 msgstr "Значение параметра \"сервер\" не представлено!"
 
-msgid "Export error: Failed to execute pg_dump (given path in your conf/config.inc.php : %s). Please, fix this path in your configuration and relog."
-msgstr "Ошибка экспорта: Невозможно выполнить pg_dump (указанный в conf/config.inc.php путь: %s). Пожалуйста, исправте этот путь в конфигурации и заново войдите в систему."
+msgid "Export error: Failed to execute pg_dump (given path in your conf/config.yml : %s). Please, fix this path in your configuration."
+msgstr "Ошибка экспорта: Невозможно выполнить pg_dump (указанный в conf/config.yml путь: %s). Пожалуйста, исправте этот путь в конфигурации."
 
-msgid "Export error: Failed to execute pg_dumpall (given path in your conf/config.inc.php : %s). Please, fix this path in your configuration and relog."
-msgstr "Ошибка экспорта: Невозможно выполнить pg_dumpall (указанный в conf/config.inc.php путь: %s). Пожалуйста, исправте этот путь в конфигурации и заново войдите в систему."
+msgid "Export error: Failed to execute pg_dumpall (given path in your conf/config.yml : %s). Please, fix this path in your configuration."
+msgstr "Ошибка экспорта: Невозможно выполнить pg_dumpall (указанный в conf/config.yml путь: %s). Пожалуйста, исправте этот путь в конфигурации."
 
 msgid "strconnectionfail"
 msgstr "Ошибка подключения к серверу."

@@ -534,11 +534,11 @@ msgstr "尝试用无效的服务器参数连接,可能有人正尝试攻击你�
 msgid "strnoserversupplied"
 msgstr "没有选择数据库!"
 
-msgid "Export error: Failed to execute pg_dump (given path in your conf/config.inc.php : %s). Please, fix this path in your configuration and relog."
-msgstr "导出错误：在 conf/config.inc.php 中指定的路径 %s 下执行pg_dump失败。请在配置中修改路径并重新登录。"
+msgid "Export error: Failed to execute pg_dump (given path in your conf/config.yml : %s). Please, fix this path in your configuration."
+msgstr "导出错误：在 conf/config.yml 中指定的路径 %s 下执行pg_dump失败。请在配置中修改路径。"
 
-msgid "Export error: Failed to execute pg_dumpall (given path in your conf/config.inc.php : %s). Please, fix this path in your configuration and relog."
-msgstr "导出错误：在 conf/config.inc.php 中指定的路径 %s 下执行pg_dumpall失败。请在配置中修改路径并重新登录。"
+msgid "Export error: Failed to execute pg_dumpall (given path in your conf/config.yml : %s). Please, fix this path in your configuration."
+msgstr "导出错误：在 conf/config.yml 中指定的路径 %s 下执行pg_dumpall失败。请在配置中修改路径。"
 
 msgid "strconnectionfail"
 msgstr "无法连接服务器。"

@@ -39,14 +39,14 @@ final class DbExport extends Website
 
         if (is_null($dumpFilename)) {
             $errorMessageFormat = _(
-                'Export error: Failed to execute pg_dump (given path in your conf/config.inc.php : %s).'
-                . ' Please, fix this path in your configuration and relog.',
+                'Export error: Failed to execute pg_dump (given path in your conf/config.yml : %s).'
+                . ' Please, fix this path in your configuration.',
             );
 
             if ($all) {
                 $errorMessageFormat = _(
-                    'Export error: Failed to execute pg_dumpall (given path in your conf/config.inc.php : %s).'
-                    . ' Please, fix this path in your configuration and relog.',
+                    'Export error: Failed to execute pg_dumpall (given path in your conf/config.yml : %s).'
+                    . ' Please, fix this path in your configuration.',
                 );
             }
 

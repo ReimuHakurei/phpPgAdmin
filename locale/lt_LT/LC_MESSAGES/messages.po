@@ -549,11 +549,11 @@ msgstr "Bandymas prisijungti su negaliojančiu serverio parametru, galbūt kas n
 msgid "strnoserversupplied"
 msgstr "Nenurodytas serveris!"
 
-msgid "Export error: Failed to execute pg_dump (given path in your conf/config.inc.php : %s). Please, fix this path in your configuration and relog."
-msgstr "Eksportavimo klaida: nepavyko įvykdyti pg_dump (pateiktas kelias Jūsų conf/config.inc.php : %s). Pataisykite šį kelią savo konfigūracijoje ir prisijunkite iš naujo."
+msgid "Export error: Failed to execute pg_dump (given path in your conf/config.yml : %s). Please, fix this path in your configuration."
+msgstr "Eksportavimo klaida: nepavyko įvykdyti pg_dump (pateiktas kelias Jūsų conf/config.yml : %s). Pataisykite šį kelią savo konfigūracijoje."
 
-msgid "Export error: Failed to execute pg_dumpall (given path in your conf/config.inc.php : %s). Please, fix this path in your configuration and relog."
-msgstr "Eksportavimo klaida: nepavyko įvykdyti pg_dumpall (pateiktas kelias Jūsų conf/config.inc.php : %s). Pataisykite šį kelią savo konfigūracijoje ir prisijunkite iš naujo."
+msgid "Export error: Failed to execute pg_dumpall (given path in your conf/config.yml : %s). Please, fix this path in your configuration."
+msgstr "Eksportavimo klaida: nepavyko įvykdyti pg_dumpall (pateiktas kelias Jūsų conf/config.yml : %s). Pataisykite šį kelią savo konfigūracijoje."
 
 msgid "strconnectionfail"
 msgstr "Nepavyksta prisijungti prie serverio."

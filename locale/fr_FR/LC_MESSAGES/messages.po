@@ -543,11 +543,11 @@ msgstr "Tentative de connexion avec un serveur invalide, il est possible que que
 msgid "strnoserversupplied"
 msgstr "Aucun serveur fournis !"
 
-msgid "Export error: Failed to execute pg_dump (given path in your conf/config.inc.php : %s). Please, fix this path in your configuration and relog."
-msgstr "Erreur d'export : n'a pu exécuter pg_dump (chemin indiqué dans votre conf/config.inc.php : %s). Merci de corriger le chemin dans votre configuration et de vous reconnecter."
+msgid "Export error: Failed to execute pg_dump (given path in your conf/config.yml : %s). Please, fix this path in your configuration."
+msgstr "Erreur d'export : n'a pu exécuter pg_dump (chemin indiqué dans votre conf/config.yml : %s). Merci de corriger le chemin dans votre configuration."
 
-msgid "Export error: Failed to execute pg_dumpall (given path in your conf/config.inc.php : %s). Please, fix this path in your configuration and relog."
-msgstr "Erreur d'export : n'a pu exécuter pg_dumpall (chemin indiqué dans votre conf/config.inc.php : %s). Merci de corriger le chemin dans votre configuration et de vous reconnecter."
+msgid "Export error: Failed to execute pg_dumpall (given path in your conf/config.yml : %s). Please, fix this path in your configuration."
+msgstr "Erreur d'export : n'a pu exécuter pg_dumpall (chemin indiqué dans votre conf/config.yml : %s). Merci de corriger le chemin dans votre configuration."
 
 msgid "strconnectionfail"
 msgstr "Connexion au serveur échouée."

@@ -537,11 +537,11 @@ msgstr "Intento de conexión al servidor con un parámetro inválido. Posiblemen
 msgid "strnoserversupplied"
 msgstr "No se suministró un servidor"
 
-msgid "Export error: Failed to execute pg_dump (given path in your conf/config.inc.php : %s). Please, fix this path in your configuration and relog."
-msgstr "Error de exportación: Falló la ejecución de execute pg_dump (según la ruta dada en conf/config.inc.php : %s). Por favor, arregla esta ruta en tu configuración y vuelve a iniciar sesión."
+msgid "Export error: Failed to execute pg_dump (given path in your conf/config.yml : %s). Please, fix this path in your configuration."
+msgstr "Error de exportación: Falló la ejecución de execute pg_dump (según la ruta dada en conf/config.yml : %s). Por favor, arregla esta ruta en tu configuración."
 
-msgid "Export error: Failed to execute pg_dumpall (given path in your conf/config.inc.php : %s). Please, fix this path in your configuration and relog."
-msgstr "Error de exportación: Falló la ejecución de pg_dumpall (según la ruta dada en conf/config.inc.php : %s). Por favor, arregla esta ruta en tu configuración y vuelve a iniciar sesión."
+msgid "Export error: Failed to execute pg_dumpall (given path in your conf/config.yml : %s). Please, fix this path in your configuration."
+msgstr "Error de exportación: Falló la ejecución de pg_dumpall (según la ruta dada en conf/config.yml : %s). Por favor, arregla esta ruta en tu configuración."
 
 msgid "strconnectionfail"
 msgstr "No se puede conectar al servidor."

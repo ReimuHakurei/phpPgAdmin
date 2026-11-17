@@ -534,11 +534,11 @@ msgstr "Intent de connexió amb un paràmetre del servidor invàlid, possiblemen
 msgid "strnoserversupplied"
 msgstr "No s'ha proporcionat cap servidor!"
 
-msgid "Export error: Failed to execute pg_dump (given path in your conf/config.inc.php : %s). Please, fix this path in your configuration and relog."
-msgstr "Error d'exportació: Fallada en l'execució de pg_dump (path definit a conf/config.inc.php : %s ). Sisplau, arregli el path en la configuració."
+msgid "Export error: Failed to execute pg_dump (given path in your conf/config.yml : %s). Please, fix this path in your configuration."
+msgstr "Error d'exportació: Fallada en l'execució de pg_dump (path definit a conf/config.yml : %s ). Sisplau, arregli el path en la configuració."
 
-msgid "Export error: Failed to execute pg_dumpall (given path in your conf/config.inc.php : %s). Please, fix this path in your configuration and relog."
-msgstr "Error d'exportació: Fallada en l'execució de pg_dumpall (path definit a conf/config.inc.php : %s ). Sisplau, arregli el path en la configuració."
+msgid "Export error: Failed to execute pg_dumpall (given path in your conf/config.yml : %s). Please, fix this path in your configuration."
+msgstr "Error d'exportació: Fallada en l'execució de pg_dumpall (path definit a conf/config.yml : %s ). Sisplau, arregli el path en la configuració."
 
 msgid "strconnectionfail"
 msgstr "No hi ha connexió amb el servidor."
