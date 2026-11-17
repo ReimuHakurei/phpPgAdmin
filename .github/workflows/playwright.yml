@@ -44,6 +44,7 @@ jobs:
       with:
         php-version: 8.5
         extensions: intl, pgsql, pdo_pgsql, zip
+        coverage: none
     - name: Install Composer dependencies
       run: composer install --prefer-dist --no-progress
     - name: Install dependencies

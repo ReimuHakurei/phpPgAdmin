@@ -104,7 +104,9 @@ To see whether the tests actually check the code they cover, run the mutation
 tests (Infection: composer dev:test:mutation). They change the code in src/ in
 small ways and report every change no test notices; the HTML report ends up in
 infection/infection.html. The CI fails if the covered code MSI drops below
-the minimum set in infection.json5.
+the minimum set in infection.json5. The mutation tests and the coverage report
+(composer dev:test:coverage:html) need the PHP extension PCOV; Xdebug only
+works if xdebug.mode includes coverage.
 
 If you are adding a new class function, be sure to use the "clean",
 "fieldClean", "arrayClean" and "fieldArrayClean" functions to properly escape

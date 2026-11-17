@@ -71,18 +71,9 @@
         "dev:test": "phpunit",
         "dev:test:unit": "phpunit --testsuite Unit",
         "dev:test:integration": "phpunit --testsuite Integration",
-        "dev:test:coverage:ci": [
-            "@putenv XDEBUG_MODE=coverage",
-            "phpunit --coverage-clover coverage/clover.xml"
-        ],
-        "dev:test:coverage:html": [
-            "@putenv XDEBUG_MODE=coverage",
-            "phpunit --coverage-html coverage/html"
-        ],
-        "dev:test:mutation": [
-            "@putenv XDEBUG_MODE=coverage",
-            "infection --threads=max"
-        ],
+        "dev:test:coverage:ci": "phpunit --coverage-clover coverage/clover.xml",
+        "dev:test:coverage:html": "phpunit --coverage-html coverage/html",
+        "dev:test:mutation": "infection --threads=max",
         "build-locales": [
             "@build-locale-af_ZA",
             "@build-locale-ar",

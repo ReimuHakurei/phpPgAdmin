@@ -25,7 +25,8 @@ jobs:
       uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
       with:
         php-version: 8.5
-        extensions: intl, pdo_pgsql, xdebug, zip
+        extensions: intl, pdo_pgsql, zip
+        coverage: none
 
     - name: Restore dependencies
       run: composer install --prefer-dist --no-progress
