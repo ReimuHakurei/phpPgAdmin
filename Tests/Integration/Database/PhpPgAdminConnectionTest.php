@@ -9,7 +9,6 @@ use PhpPgAdmin\Database\PhpPgAdminConnection;
 use PhpPgAdmin\DDD\Entities\{Server, ServerSession};
 use PhpPgAdmin\DDD\ValueObjects\Server\{Host, Name, Port};
 use PhpPgAdmin\DDD\ValueObjects\ServerSession\{Password, Username};
-use PhpPgAdmin\Infrastructure\Session\Logins;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\TestEnvironment;
@@ -120,8 +119,6 @@ final class PhpPgAdminConnectionTest extends TestCase
 
     protected function tearDown(): void
     {
-        $_GET = [];
-        $_SESSION = [];
         // Config reads the configuration file again.
         (new \ReflectionProperty(Config::class, 'conf'))->setValue(null, null);
 
@@ -158,15 +155,9 @@ final class PhpPgAdminConnectionTest extends TestCase
 
     private static function connection(?string $database = null): PhpPgAdminConnection
     {
-        $serverSession = new ServerSession(
-            username: new Username(TestEnvironment::getEnvVar('PHPPGADMIN_TEST_SERVER_USERNAME') ?? 'postgres'),
-            password: new Password(TestEnvironment::getEnvVar('PHPPGADMIN_TEST_SERVER_PASSWORD') ?? ''),
-            name: new Name(TestEnvironment::RUNNING_SERVER_DESC),
-            host: new Host(
-                TestEnvironment::getEnvVar('PHPPGADMIN_TEST_SERVER_HOSTNAME')
-                    ?? TestEnvironment::RUNNING_SERVER_DEFAULT_HOST,
-            ),
-            port: new Port(TestEnvironment::RUNNING_SERVER_PORT),
+        $serverSession = self::serverSession(
+            TestEnvironment::getEnvVar('PHPPGADMIN_TEST_SERVER_USERNAME') ?? 'postgres',
+            TestEnvironment::getEnvVar('PHPPGADMIN_TEST_SERVER_PASSWORD') ?? '',
         );
 
         $connection = is_null($database)
@@ -178,9 +169,12 @@ final class PhpPgAdminConnectionTest extends TestCase
         return $connection;
     }
 
+    /**
+     * The quote shows that getDatabases() keeps the name of the user out of its SQL.
+     */
     private static function user(): string
     {
-        return self::perThread('ppa_test_user');
+        return self::perThread("ppa_test_o'user");
     }
 
     private static function databaseOfTheUser(): string
@@ -237,22 +231,27 @@ final class PhpPgAdminConnectionTest extends TestCase
         $conf->setValue(null, ['owned_only' => true] + $configuration);
     }
 
-    /**
-     * getDatabases() reads the user from the login of the requested server.
-     */
     private static function logInAs(string $username, string $password): PhpPgAdminConnection
     {
-        $serverId = self::configuredServer(TestEnvironment::RUNNING_SERVER_DESC)->id();
-        $_GET['server'] = $serverId;
-        $_SESSION['webdbLogin'] = [$serverId => ['username' => $username, 'password' => $password]];
-
-        $connection = PhpPgAdminConnection::createFromServerSession(
-            Logins::serverSession($serverId, Config::getServers()),
-        );
+        $connection = PhpPgAdminConnection::createFromServerSession(self::serverSession($username, $password));
 
         self::assertNotNull($connection);
 
         return $connection;
+    }
+
+    private static function serverSession(string $username, string $password): ServerSession
+    {
+        return new ServerSession(
+            username: new Username($username),
+            password: new Password($password),
+            name: new Name(TestEnvironment::RUNNING_SERVER_DESC),
+            host: new Host(
+                TestEnvironment::getEnvVar('PHPPGADMIN_TEST_SERVER_HOSTNAME')
+                    ?? TestEnvironment::RUNNING_SERVER_DEFAULT_HOST,
+            ),
+            port: new Port(TestEnvironment::RUNNING_SERVER_PORT),
+        );
     }
 
     private static function currentDatabase(PhpPgAdminConnection $connection): mixed

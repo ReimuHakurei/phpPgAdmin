@@ -7,7 +7,6 @@ namespace PhpPgAdmin\Database;
 use PhpPgAdmin\Application\DTO\{
     Language as DTOLanguage,
     Role as DTORole,
-    ServerSession as DTOServerSession,
     Tablespace as DTOTablespace,
 };
 use PhpPgAdmin\Config;
@@ -458,14 +457,13 @@ final class PhpPgAdminConnection extends \PDO
      */
     public function getDatabases(): array
     {
-        $serverInfo = DTOServerSession::createFromRequestParameter();
-
         $whereClause = Config::showSystem()
             ? 'pdb.datallowconn'
             : 'NOT pdb.datistemplate';
 
-        if (!is_null($serverInfo) && Config::ownedOnly() && !$this->isSuperUser()) {
-            $whereClause .= " AND pg_has_role('{$serverInfo->Username}'::name, pr.rolname, 'USAGE')";
+        if (Config::ownedOnly() && !$this->isSuperUser()) {
+            // Without a user, pg_has_role() checks the user of the connection.
+            $whereClause .= " AND pg_has_role(pr.rolname, 'USAGE')";
         }
 
         $orderBy = "pdb.datname";
