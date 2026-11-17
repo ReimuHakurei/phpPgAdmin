@@ -28,11 +28,6 @@ jobs:
         image: postgres:${{ matrix.pg-version }}@sha256:2203e6282d9e7de7c24d7da234e2a744fb325df366a3fd8ed940e8abbee39527
         env:
           POSTGRES_PASSWORD: ${{ vars.PHPPGADMIN_TEST_SERVER_PASSWORD }}
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
         ports:
           - 5432:5432
 
@@ -56,6 +51,10 @@ jobs:
       - run: composer run-script "dev:analyze:phpstan-${PHP_VERSION}"
         env:
           PHP_VERSION: ${{ matrix.php-version }}
+      - name: Wait for PostgreSQL
+        # The service has no health check, so the steps start before Postgres is up; the tests wait for it here.
+        run: until pg_isready --host=localhost --port=5432; do sleep 1; done
+        timeout-minutes: 1
       - run: composer run-script dev:test
         env:
           PHPPGADMIN_TEST_SERVER_HOSTNAME: localhost
@@ -71,11 +70,6 @@ jobs:
         image: postgres:17@sha256:2203e6282d9e7de7c24d7da234e2a744fb325df366a3fd8ed940e8abbee39527
         env:
           POSTGRES_PASSWORD: ${{ vars.PHPPGADMIN_TEST_SERVER_PASSWORD }}
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
         ports:
           - 5432:5432
 
@@ -93,6 +87,10 @@ jobs:
           ini-values: error_reporting=E_ALL,display_errors=On
 
       - run: composer install --prefer-dist --no-progress
+      - name: Wait for PostgreSQL
+        # The service has no health check, so the steps start before Postgres is up; the tests wait for it here.
+        run: until pg_isready --host=localhost --port=5432; do sleep 1; done
+        timeout-minutes: 1
       - run: composer run-script dev:test:coverage:ci
         env:
           PHPPGADMIN_TEST_SERVER_HOSTNAME: localhost
