@@ -105,6 +105,8 @@ jobs:
           # Pull requests from forks get no secrets; Codecov accepts their uploads without a token.
           token: ${{ secrets.CODECOV_TOKEN }}
       - run: composer run-script dev:test:mutation -- $INFECTION_OPTIONS
+        # Composer's process timeout is off here (setup-php sets COMPOSER_PROCESS_TIMEOUT=0), so this stops a hung run.
+        timeout-minutes: 30
         env:
           PHPPGADMIN_TEST_SERVER_HOSTNAME: localhost
           PHPPGADMIN_TEST_SERVER_PASSWORD: ${{ vars.PHPPGADMIN_TEST_SERVER_PASSWORD }}
