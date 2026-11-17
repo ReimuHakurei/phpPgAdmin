@@ -20,4 +20,6 @@
     },
     // The current value, so it can only go up: raise it whenever tests kill more mutants.
     minCoveredMsi: 85,
+    // Pull requests only mutate the lines they change (see php.yml); lines that give no mutants leave no MSI to check.
+    ignoreMsiWithNoMutations: true,
 }

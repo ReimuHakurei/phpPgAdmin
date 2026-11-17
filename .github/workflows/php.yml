@@ -79,6 +79,8 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
+          # A pull request checks out a merge commit; Infection diffs it against its first parent, the base branch.
+          fetch-depth: 2
       - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
         with:
           php-version: '8.5'
@@ -102,10 +104,13 @@ jobs:
           files: coverage/clover.xml
           # Pull requests from forks get no secrets; Codecov accepts their uploads without a token.
           token: ${{ secrets.CODECOV_TOKEN }}
-      - run: composer run-script dev:test:mutation
+      - run: composer run-script dev:test:mutation -- $INFECTION_OPTIONS
         env:
           PHPPGADMIN_TEST_SERVER_HOSTNAME: localhost
           PHPPGADMIN_TEST_SERVER_PASSWORD: ${{ vars.PHPPGADMIN_TEST_SERVER_PASSWORD }}
+          # Pull requests only mutate the lines they change; pushes to main mutate all of src/ for the minimum MSI and
+          # the Stryker Dashboard.
+          INFECTION_OPTIONS: ${{ github.event_name == 'pull_request' && '--git-diff-lines --git-diff-base=HEAD^1' || '' }}
           # Pull request builds do not send the report to the Stryker Dashboard (see infection.json5).
           STRYKER_DASHBOARD_API_KEY: ${{ github.event_name == 'push' && secrets.STRYKER_DASHBOARD_API_KEY || '' }}
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
